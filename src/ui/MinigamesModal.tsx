@@ -59,7 +59,7 @@ export function MinigamesModal() {
     if (activeMinigame !== 'posterPaste') return;
     const id = setInterval(() => {
       setPatrolDanger((d) => !d);
-    }, 2400);
+    }, 3800);
     return () => clearInterval(id);
   }, [activeMinigame]);
 

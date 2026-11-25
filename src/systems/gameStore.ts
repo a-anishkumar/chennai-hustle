@@ -330,7 +330,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   toggleAccessibility: (key) => set((s) => ({ [key]: !s[key] })),
 
   startFloodReliefMission: () => {
+    const s = get();
     set({
+      currentVehicle: s.unlockedVehicles.includes('boat') ? 'boat' : s.currentVehicle,
       activeJob: {
         id: `relief_${Date.now()}`,
         jobType: 'floodRelief',
