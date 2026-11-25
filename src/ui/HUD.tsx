@@ -343,9 +343,9 @@ export function HUD() {
         </button>
       </div>
 
-      {/* Bottom-Right: Controls Hint */}
+      {/* Bottom-Right: Controls Hint (desktop only) */}
       <div
-        className="hud-pill"
+        className="hud-pill desktop-only-hint"
         style={{
           position: 'absolute',
           bottom: 14,

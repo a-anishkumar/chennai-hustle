@@ -170,7 +170,7 @@ export function PlayerController() {
     if (isMoving) _move.normalize();
 
     const vSpec = jobsConfig.vehicles[state.currentVehicle] || jobsConfig.vehicles.foot;
-    const isSprinting = keys.current['ShiftLeft'] || keys.current['ShiftRight'];
+    const isSprinting = keys.current['ShiftLeft'] || keys.current['ShiftRight'] || virtualInput.sprint;
     const rainPenalty =
       state.currentVehicle !== 'boat' && (state.weather === 'monsoon' || state.weather === 'flood') ? 0.78 : 1.0;
     const speedMult = (isSprinting ? 1.32 : 1.0) * rainPenalty;

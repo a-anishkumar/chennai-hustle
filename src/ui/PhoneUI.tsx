@@ -65,10 +65,10 @@ export function PhoneUI() {
     <div
       style={{
         position: 'fixed',
-        right: 20,
-        bottom: 70,
-        width: 326,
-        height: 525,
+        right: 12,
+        bottom: 66,
+        width: 'min(326px, calc(100vw - 24px))',
+        height: 'min(525px, calc(100vh - 90px))',
         zIndex: 40,
         background: '#0f172a',
         borderRadius: 28,
