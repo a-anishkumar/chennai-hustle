@@ -84,51 +84,47 @@ export function HUD() {
     : null;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 20, padding: 14 }}>
-      {/* Top-Left: Wallet, Time & Location */}
-      <div
-        className="hud-pill"
-        style={{
-          position: 'absolute',
-          top: 14,
-          left: 14,
-          padding: '10px 14px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 5,
-          pointerEvents: 'auto',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <span style={{ fontSize: 20, fontWeight: 800, color: '#4ade80' }}>₹{money.toFixed(0)}</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#fde047', fontWeight: 600 }}>
-            <Clock size={14} /> Day {dayCount} • {formatClock(timeOfDay)}
-          </span>
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 20, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* Responsive Top Header Row: Wallet + Toolbar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+        {/* Top-Left: Wallet, Time & Location */}
+        <div
+          className="hud-pill"
+          style={{
+            padding: '8px 12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+            pointerEvents: 'auto',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 18, fontWeight: 800, color: '#4ade80' }}>₹{money.toFixed(0)}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#fde047', fontWeight: 600 }}>
+              <Clock size={13} /> Day {dayCount} • {formatClock(timeOfDay)}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#cbd5e1' }}>
+            <MapPin size={12} color="#fb923c" />
+            <span>{nearestLandmark}</span>
+            <span style={{ color: '#64748b' }}>
+              [{currentChunk[0]},{currentChunk[1]}]
+            </span>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#cbd5e1' }}>
-          <MapPin size={13} color="#fb923c" />
-          <span>{nearestLandmark}</span>
-          <span style={{ color: '#64748b' }}>
-            [Chunk {currentChunk[0]},{currentChunk[1]}]
-          </span>
-        </div>
-      </div>
 
-      {/* Top-Right: FPS, Quality, Time & Save */}
-      <div
-        className="hud-pill"
-        style={{
-          position: 'absolute',
-          top: 14,
-          right: 14,
-          padding: '8px 12px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          pointerEvents: 'auto',
-          flexWrap: 'wrap',
-        }}
-      >
+        {/* Top-Right: FPS, Quality, Time, Weather, Audio, Outcome, Settings, Save & Phone */}
+        <div
+          className="hud-pill"
+          style={{
+            padding: '6px 10px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            pointerEvents: 'auto',
+            flexWrap: 'wrap',
+          }}
+        >
         <span
           style={{
             fontSize: 12,
@@ -231,16 +227,15 @@ export function HUD() {
         >
           <Smartphone size={14} /> {isPhoneOpen ? 'Close [P]' : 'Phone [P]'}
         </button>
+        </div>
       </div>
 
-      {/* Minimap & Active Mission Tracker (Left below Wallet) */}
+      {/* Minimap & Active Mission Tracker (Flows cleanly below header row) */}
       <div
         style={{
-          position: 'absolute',
-          top: 86,
-          left: 14,
           display: 'flex',
           flexDirection: 'column',
+          alignItems: 'flex-start',
           gap: 8,
           pointerEvents: 'none',
         }}
