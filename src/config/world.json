@@ -19,6 +19,10 @@
     { "id": "fanHouse", "name": "Poes Garden Superstar House", "x": 380, "z": 860, "type": "fanhouse" },
     { "id": "busHub", "name": "Koyambedu Flyover & Metro Hub", "x": 0, "z": -180, "type": "transit" },
     { "id": "railway", "name": "Chennai Central Railway Station", "x": -320, "z": -180, "type": "transit" },
-    { "id": "court", "name": "Madras High Court & Police HQ", "x": 220, "z": -360, "type": "civic" }
+    { "id": "court", "name": "Madras High Court & Police HQ", "x": 220, "z": -360, "type": "civic" },
+    { "id": "museum", "name": "Government Museum (Egmore)", "x": -420, "z": 260, "type": "civic" },
+    { "id": "airport", "name": "Chennai International Airport (MAA)", "x": -850, "z": 420, "type": "transit" },
+    { "id": "park", "name": "Semmozhi Public Park", "x": -20, "z": 80, "type": "park" },
+    { "id": "school", "name": "Chennai High School", "x": -260, "z": 140, "type": "civic" }
   ]
 }

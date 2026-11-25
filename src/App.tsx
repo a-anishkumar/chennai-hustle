@@ -9,6 +9,7 @@ import { StoryEvents } from './systems/StoryEvents';
 import { FpsMonitor } from './systems/FpsMonitor';
 import { TrafficSystem } from './systems/TrafficSystem';
 import { NpcSystem } from './systems/NpcSystem';
+import { StreetLifeSystem } from './systems/StreetLifeSystem';
 import { useGameStore } from './systems/gameStore';
 import { ChunkManager } from './world/ChunkManager';
 import { FloodWater } from './world/water/FloodWater';
@@ -17,6 +18,7 @@ import { CoastLandmarks } from './world/landmarks/CoastLandmarks';
 import { HarbourLandmark } from './world/landmarks/HarbourLandmark';
 import { UrbanLandmarks } from './world/landmarks/UrbanLandmarks';
 import { CivicAndShops } from './world/landmarks/CivicAndShops';
+import { MoreChennaiLandmarks } from './world/landmarks/MoreChennaiLandmarks';
 import { PosterBoardWorld } from './world/PosterBoardWorld';
 import { RoadLoop } from './world/RoadLoop';
 import { JobMarkers } from './world/JobMarkers';
@@ -74,10 +76,12 @@ export function App() {
             <HarbourLandmark />
             <UrbanLandmarks />
             <CivicAndShops />
+            <MoreChennaiLandmarks />
             <PosterBoardWorld />
             <RoadLoop />
             <TrafficSystem />
             <NpcSystem />
+            <StreetLifeSystem />
             <JobMarkers />
             <PlayerController />
           </Physics>

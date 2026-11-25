@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import dialogues from '../config/dialogues.json';
 import { useGameStore } from './gameStore';
 
-type NpcRole = 'office' | 'student' | 'vendor' | 'fan' | 'fisherman' | 'influencer';
+type NpcRole = 'office' | 'student' | 'vendor' | 'fan' | 'fisherman' | 'influencer' | 'beggar';
 
 interface NpcAgent {
   role: NpcRole;
@@ -27,6 +27,7 @@ const ROLE_COLORS: Record<NpcRole, string> = {
   fan: '#facc15',
   fisherman: '#14b8a6',
   influencer: '#ec4899',
+  beggar: '#78716c',
 };
 
 const INFLUENCER_LINES = [
@@ -35,8 +36,13 @@ const INFLUENCER_LINES = [
   'GRWM for Marina Beach sunset — outfit link in bio!',
 ];
 
-const ROLES: NpcRole[] = ['office', 'student', 'vendor', 'fan', 'fisherman', 'influencer'];
-const NPC_COUNT = 44;
+const BEGGAR_LINES = [
+  'Konjam udhavi pannunga saar, sapda onnum illa.',
+  'Thanni irundhaa kudunga thambi, romba veyil.',
+];
+
+const ROLES: NpcRole[] = ['office', 'student', 'vendor', 'fan', 'fisherman', 'influencer', 'beggar'];
+const NPC_COUNT = 49;
 
 export function NpcSystem() {
   const bodyRef = useRef<THREE.InstancedMesh>(null);
@@ -73,6 +79,8 @@ export function NpcSystem() {
         line:
           role === 'influencer'
             ? INFLUENCER_LINES[i % INFLUENCER_LINES.length]
+            : role === 'beggar'
+            ? BEGGAR_LINES[i % BEGGAR_LINES.length]
             : dialogues.streetChatter[i % dialogues.streetChatter.length],
       });
     }
