@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { RigidBody } from '@react-three/rapier';
-import { getAsphaltNormalMap, getAsphaltTexture } from './ProceduralTextures';
+import { getAsphaltNormalMap, getAsphaltTexture, getChessboardTexture, getSignTexture } from './ProceduralTextures';
 import { useGameStore } from '../systems/gameStore';
 import { isNightHour } from '../systems/timeUtils';
 
@@ -73,6 +73,9 @@ export function RoadLoop() {
   const powerCut = night && weather === 'flood';
   const wet = weather === 'monsoon' || weather === 'flood';
 
+  const chessTex = useMemo(() => getChessboardTexture(), []);
+  const napierSign = useMemo(() => getSignTexture('NAPIER CHESS BRIDGE', 'Cooum River • Marina Coast', '#0f172a', '#f8fafc'), []);
+
   return (
     <group name="Road_Loop">
       {/* West Road (x = -190) */}
@@ -110,23 +113,40 @@ export function RoadLoop() {
           </mesh>
         ))}
 
-      {/* Canal Bridge Extension (x = 40, z = 140..250) */}
+      {/* Napier Chess Bridge over Cooum Canal (x = 40, z = 180) */}
       <RigidBody type="fixed" colliders="cuboid">
         <mesh position={[40, 0.2, 180]} receiveShadow castShadow>
           <boxGeometry args={[15, 0.4, 58]} />
           <meshStandardMaterial color="#475569" roughness={0.9} />
         </mesh>
-        {/* Bridge Guardrails */}
-        <mesh position={[32.8, 0.9, 180]} castShadow>
-          <boxGeometry args={[0.4, 1.0, 58]} />
-          <meshStandardMaterial color="#cbd5e1" />
+        {/* Black & White Chessboard Bridge Parapets */}
+        <mesh position={[32.8, 1.0, 180]} castShadow>
+          <boxGeometry args={[0.5, 1.3, 58]} />
+          <meshStandardMaterial map={chessTex} />
         </mesh>
-        <mesh position={[47.2, 0.9, 180]} castShadow>
-          <boxGeometry args={[0.4, 1.0, 58]} />
-          <meshStandardMaterial color="#cbd5e1" />
+        <mesh position={[47.2, 1.0, 180]} castShadow>
+          <boxGeometry args={[0.5, 1.3, 58]} />
+          <meshStandardMaterial map={chessTex} />
         </mesh>
       </RigidBody>
-      <RoadSegment x={40} z={180} width={13} length={60} />
+      {/* Chess Bridge Arches & Pillar Chess Pieces */}
+      {[-20, 0, 20].map((zOff, i) => (
+        <group key={`arch_${i}`} position={[40, 0, 180 + zOff]}>
+          <mesh position={[-7.2, 4.2, 0]} castShadow>
+            <torusGeometry args={[1.4, 0.28, 8, 16, Math.PI]} />
+            <meshStandardMaterial map={chessTex} />
+          </mesh>
+          <mesh position={[7.2, 4.2, 0]} castShadow>
+            <torusGeometry args={[1.4, 0.28, 8, 16, Math.PI]} />
+            <meshStandardMaterial map={chessTex} />
+          </mesh>
+        </group>
+      ))}
+      <mesh position={[40, 3.8, 152]}>
+        <boxGeometry args={[10, 1.6, 0.25]} />
+        <meshStandardMaterial map={napierSign} />
+      </mesh>
+      <RoadSegment x={40} z={180} width={13} length={60} wet={wet} />
 
       {/* Arterial Roads Connecting All 10 Landmarks */}
       {/* East Arterial: Road Loop -> Mall / Marina Beach & Lighthouse */}

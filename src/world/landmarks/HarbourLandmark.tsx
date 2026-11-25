@@ -1,10 +1,29 @@
+import { useMemo } from 'react';
 import { RigidBody } from '@react-three/rapier';
+import { getSignTexture } from '../ProceduralTextures';
 
 const CONTAINER_COLORS = ['#dc2626', '#2563eb', '#f97316', '#16a34a', '#0284c7'];
 
 export function HarbourLandmark() {
+  const portSign = useMemo(() => getSignTexture('CHENNAI PORT & HARBOUR', 'Container Terminal & Kasimedu', '#0f172a', '#facc15'), []);
+
   return (
     <group name="Harbour_Landmark" position={[950, 0, -1350]}>
+      <mesh position={[0, 12, 42]}>
+        <boxGeometry args={[26, 3.6, 0.4]} />
+        <meshStandardMaterial map={portSign} />
+      </mesh>
+      {/* Docked Cargo Ship */}
+      <group position={[-10, 1.8, -82]}>
+        <mesh castShadow>
+          <boxGeometry args={[42, 4.2, 11]} />
+          <meshStandardMaterial color="#991b1b" />
+        </mesh>
+        <mesh position={[14, 4.2, 0]} castShadow>
+          <boxGeometry args={[7, 4.8, 8.5]} />
+          <meshStandardMaterial color="#f8fafc" />
+        </mesh>
+      </group>
       {/* Concrete Pier Apron */}
       <mesh position={[0, 0.1, 0]} receiveShadow>
         <boxGeometry args={[160, 0.2, 120]} />

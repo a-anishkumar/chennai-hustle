@@ -19,6 +19,7 @@ export function MoreChennaiLandmarks() {
       airport: getSignTexture('CHENNAI AIRPORT (MAA)', 'Domestic & International', '#0f172a', '#38bdf8'),
       park: getSignTexture('SEMMOZHI PARK', 'Morning Walk & Fountain', '#15803d', '#ffffff'),
       school: getSignTexture('CHENNAI HIGH SCHOOL', 'Education & Sports', '#b45309', '#fef9c3'),
+      ripon: getSignTexture('RIPON BUILDING', 'Greater Chennai Corporation', '#f8fafc', '#1e3a8a'),
     }),
     []
   );
@@ -160,20 +161,82 @@ export function MoreChennaiLandmarks() {
         </mesh>
       </group>
 
-      {/* Moving Express Train */}
+      {/* Moving Express Train with Detailed Passenger Compartments */}
       <group ref={trainRef} position={[-200, 0, -196]}>
-        {/* Engine */}
-        <mesh position={[28, 1.9, 0]} castShadow>
-          <boxGeometry args={[11, 3.4, 3.1]} />
-          <meshStandardMaterial color="#dc2626" />
-        </mesh>
-        {/* 4 Blue Passenger Coaches */}
+        {/* Electric Locomotive with Pantograph */}
+        <group position={[30, 0, 0]}>
+          <mesh position={[0, 1.9, 0]} castShadow>
+            <boxGeometry args={[11.5, 3.4, 3.1]} />
+            <meshStandardMaterial color="#dc2626" />
+          </mesh>
+          <mesh position={[0, 2.5, 0]}>
+            <boxGeometry args={[11.6, 0.4, 3.15]} />
+            <meshStandardMaterial color="#facc15" />
+          </mesh>
+          <mesh position={[0, 3.9, 0]}>
+            <boxGeometry args={[1.6, 0.6, 1.4]} />
+            <meshStandardMaterial color="#94a3b8" metalness={0.7} />
+          </mesh>
+        </group>
+
+        {/* 4 Detailed Passenger Compartments with Windows, Doors & Bogies */}
         {[-28, -14, 0, 14].map((cx, i) => (
-          <mesh key={i} position={[cx, 1.85, 0]} castShadow>
-            <boxGeometry args={[12.5, 3.2, 3.0]} />
-            <meshStandardMaterial color="#1d4ed8" />
+          <group key={i} position={[cx, 0, 0]}>
+            {/* Compartment Hull */}
+            <mesh position={[0, 1.9, 0]} castShadow>
+              <boxGeometry args={[12.6, 3.1, 3.0]} />
+              <meshStandardMaterial color="#1d4ed8" roughness={0.4} />
+            </mesh>
+            {/* Yellow Express Stripe */}
+            <mesh position={[0, 1.2, 0]}>
+              <boxGeometry args={[12.65, 0.35, 3.04]} />
+              <meshStandardMaterial color="#facc15" />
+            </mesh>
+            {/* Illuminated Compartment Windows */}
+            {[-4.5, -2.5, -0.5, 1.5, 3.5].map((wx, wi) => (
+              <mesh key={wi} position={[wx, 2.25, 0]}>
+                <boxGeometry args={[1.1, 0.85, 3.06]} />
+                <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={0.6} />
+              </mesh>
+            ))}
+            {/* Compartment Connectors & Bogie Wheels */}
+            <mesh position={[6.7, 1.7, 0]}>
+              <boxGeometry args={[0.8, 2.2, 2.1]} />
+              <meshStandardMaterial color="#1e293b" />
+            </mesh>
+            {[-4.2, 4.2].map((bx, bi) => (
+              <mesh key={bi} position={[bx, 0.38, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                <cylinderGeometry args={[0.35, 0.35, 2.8, 10]} />
+                <meshStandardMaterial color="#0f172a" />
+              </mesh>
+            ))}
+          </group>
+        ))}
+      </group>
+
+      {/* Ripon Building (White Indo-Saracenic Corporation Building next to Central Station, -245, -180) */}
+      <group position={[-245, 0, -225]}>
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[0, 6.5, 0]} castShadow receiveShadow>
+            <boxGeometry args={[42, 13, 20]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.45} />
+          </mesh>
+        </RigidBody>
+        {/* 3 White Indo-Saracenic Domes & Central Clock Tower */}
+        <mesh position={[0, 16, 4]} castShadow>
+          <boxGeometry args={[7, 10, 7]} />
+          <meshStandardMaterial color="#f1f5f9" />
+        </mesh>
+        {[-13, 0, 13].map((dx, i) => (
+          <mesh key={i} position={[dx, i === 1 ? 22 : 14.5, i === 1 ? 4 : 0]} castShadow>
+            <sphereGeometry args={[i === 1 ? 3.8 : 2.8, 14, 14]} />
+            <meshStandardMaterial color="#ffffff" />
           </mesh>
         ))}
+        <mesh position={[0, 11.2, 10.2]}>
+          <boxGeometry args={[22, 3.0, 0.35]} />
+          <meshStandardMaterial map={signs.ripon} />
+        </mesh>
       </group>
 
       {/* 5. Chennai Public Park (-20, 0, 80) */}

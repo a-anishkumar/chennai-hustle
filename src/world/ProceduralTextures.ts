@@ -256,3 +256,22 @@ export function getChennaiFacadeNormalMap(): THREE.CanvasTexture {
   cache.chennaiFacadeNormal = tex;
   return tex;
 }
+
+export function getChessboardTexture(): THREE.CanvasTexture {
+  if (cache.chessboard) return cache.chessboard;
+  const [canvas, ctx] = makeCanvas(256, 256);
+  const sq = 32;
+  for (let y = 0; y < 8; y++) {
+    for (let x = 0; x < 8; x++) {
+      ctx.fillStyle = (x + y) % 2 === 0 ? '#f8fafc' : '#0f172a';
+      ctx.fillRect(x * sq, y * sq, sq, sq);
+    }
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(4, 2);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  cache.chessboard = tex;
+  return tex;
+}

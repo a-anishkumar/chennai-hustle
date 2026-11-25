@@ -29,6 +29,8 @@
     { "id": "fire", "name": "Chennai Fire & Rescue Station", "x": -260, "z": -140, "type": "civic" },
     { "id": "amusement", "name": "ECR Fun World Amusement Park", "x": 1180, "z": 620, "type": "park" },
     { "id": "mechanic", "name": "TTF Vasan Mechanic Shop", "x": -155, "z": -35, "type": "shop" },
-    { "id": "oyo", "name": "OYO Rooms Chennai", "x": 80, "z": -35, "type": "hotel" }
+    { "id": "oyo", "name": "OYO Rooms Chennai", "x": 80, "z": -35, "type": "hotel" },
+    { "id": "napier", "name": "Napier Chess Bridge (Cooum)", "x": 40, "z": 180, "type": "transit" },
+    { "id": "ripon", "name": "Ripon Building (Chennai Corp)", "x": -245, "z": -225, "type": "civic" }
   ]
 }
