@@ -3,21 +3,23 @@ import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGameStore } from './gameStore';
+import { FlyingBird, RoamingAnimal, type AnimalSpecies } from '../world/AnimatedAnimal';
 
-const COW_SPOTS: [number, number, number][] = [
-  [-155, 108, 0.4],
-  [-55, -20, 1.8],
-  [28, 85, -0.7],
-  [-175, -15, 2.2],
-  [580, 505, 0.9],
+const COW_SPOTS: { x: number; z: number; rotY: number; species: 'cow' | 'bull' }[] = [
+  { x: -155, z: 108, rotY: 0.4, species: 'cow' },
+  { x: -55, z: -20, rotY: 1.8, species: 'bull' },
+  { x: 28, z: 85, rotY: -0.7, species: 'cow' },
+  { x: -175, z: -15, rotY: 2.2, species: 'cow' },
+  { x: 580, z: 505, rotY: 0.9, species: 'bull' },
 ];
 
-const DOG_CAT_SPOTS: { x: number; z: number; isCat: boolean; color: string }[] = [
-  { x: -135, z: 88, isCat: false, color: '#b45309' },
-  { x: -45, z: -28, isCat: false, color: '#d97706' },
-  { x: -125, z: 45, isCat: true, color: '#f8fafc' },
-  { x: -85, z: 75, isCat: true, color: '#1e293b' },
-  { x: 35, z: -20, isCat: false, color: '#78350f' },
+const DOG_CAT_SPOTS: { x: number; z: number; species: AnimalSpecies; roamRadius: number }[] = [
+  { x: -135, z: 88, species: 'shiba', roamRadius: 4.5 },
+  { x: -45, z: -28, species: 'husky', roamRadius: 5.0 },
+  { x: -125, z: 45, species: 'fox', roamRadius: 3.2 },
+  { x: -85, z: 75, species: 'fox', roamRadius: 3.5 },
+  { x: 35, z: -20, species: 'shiba', roamRadius: 4.0 },
+  { x: -195, z: 22, species: 'husky', roamRadius: 4.2 },
 ];
 
 const DRAINAGE_SPOTS: [number, number][] = [
@@ -28,11 +30,18 @@ const DRAINAGE_SPOTS: [number, number][] = [
   [-95, 128],
 ];
 
-const BIRD_COUNT = 18;
+const BIRD_FLOCK: { species: 'parrot' | 'stork'; radius: number; altitude: number; speed: number; phase: number }[] =
+  Array.from({ length: 12 }, (_, i) => ({
+    species: i % 3 === 0 ? 'stork' : 'parrot',
+    radius: 26 + (i % 5) * 14,
+    altitude: 17 + (i % 4) * 3,
+    speed: 0.35 + (i % 3) * 0.08,
+    phase: i * 0.85,
+  }));
+
 const INSECT_COUNT = 30;
 
 export function StreetLifeSystem() {
-  const birdsRef = useRef<THREE.InstancedMesh>(null);
   const insectsRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
@@ -40,23 +49,6 @@ export function StreetLifeSystem() {
     const state = useGameStore.getState();
     if (!state.isStarted || state.isPaused) return;
     const t = clock.getElapsedTime();
-
-    // Birds circling overhead
-    if (birdsRef.current) {
-      for (let i = 0; i < BIRD_COUNT; i++) {
-        const ang = t * (0.45 + (i % 3) * 0.1) + i * 0.7;
-        const rad = 25 + (i % 5) * 14;
-        const bx = -90 + Math.cos(ang) * rad;
-        const bz = 30 + Math.sin(ang) * rad;
-        const by = 18 + (i % 4) * 3 + Math.sin(t * 4 + i) * 0.6;
-        dummy.position.set(bx, by, bz);
-        dummy.rotation.set(0, -ang, Math.sin(t * 9 + i) * 0.25);
-        dummy.scale.set(1, 1, 1);
-        dummy.updateMatrix();
-        birdsRef.current.setMatrixAt(i, dummy.matrix);
-      }
-      birdsRef.current.instanceMatrix.needsUpdate = true;
-    }
 
     // Insects buzzing over roadside drainage & mud
     if (insectsRef.current) {
@@ -77,44 +69,30 @@ export function StreetLifeSystem() {
 
   return (
     <group name="Street_Life_And_Animals">
-      {/* Cows */}
-      {COW_SPOTS.map(([cx, cz, rotY], i) => (
-        <group key={`cow_${i}`} position={[cx, 0, cz]} rotation={[0, rotY, 0]}>
-          <mesh position={[0, 0.85, 0]} castShadow>
-            <boxGeometry args={[0.8, 0.85, 1.7]} />
-            <meshStandardMaterial color={i % 2 === 0 ? '#f8fafc' : '#78350f'} />
-          </mesh>
-          <mesh position={[0, 1.15, 0.95]} castShadow>
-            <boxGeometry args={[0.45, 0.45, 0.55]} />
-            <meshStandardMaterial color={i % 2 === 0 ? '#f8fafc' : '#78350f'} />
-          </mesh>
-          {/* Legs */}
-          {[
-            [-0.25, 0.25, 0.6],
-            [0.25, 0.25, 0.6],
-            [-0.25, 0.25, -0.6],
-            [0.25, 0.25, -0.6],
-          ].map(([lx, ly, lz], li) => (
-            <mesh key={li} position={[lx, ly, lz]}>
-              <boxGeometry args={[0.14, 0.5, 0.14]} />
-              <meshStandardMaterial color="#cbd5e1" />
-            </mesh>
-          ))}
-        </group>
+      {/* High-Quality Animated 3D Cows & Bulls */}
+      {COW_SPOTS.map((c, i) => (
+        <RoamingAnimal
+          key={`cow_${i}`}
+          species={c.species}
+          home={[c.x, c.z]}
+          initialRotY={c.rotY}
+          roamRadius={3.2}
+          speed={0.45}
+          phase={i}
+        />
       ))}
 
-      {/* Street Dogs & Cats */}
+      {/* High-Quality Animated 3D Street Dogs & Cats/Strays */}
       {DOG_CAT_SPOTS.map((a, i) => (
-        <group key={`pet_${i}`} position={[a.x, 0, a.z]} rotation={[0, i * 1.1, 0]}>
-          <mesh position={[0, a.isCat ? 0.28 : 0.42, 0]} castShadow>
-            <boxGeometry args={[a.isCat ? 0.24 : 0.34, a.isCat ? 0.24 : 0.36, a.isCat ? 0.55 : 0.82]} />
-            <meshStandardMaterial color={a.color} />
-          </mesh>
-          <mesh position={[0, a.isCat ? 0.42 : 0.62, a.isCat ? 0.28 : 0.42]} castShadow>
-            <boxGeometry args={[0.22, 0.22, 0.24]} />
-            <meshStandardMaterial color={a.color} />
-          </mesh>
-        </group>
+        <RoamingAnimal
+          key={`pet_${i}`}
+          species={a.species}
+          home={[a.x, a.z]}
+          initialRotY={i * 1.1}
+          roamRadius={a.roamRadius}
+          speed={0.95}
+          phase={i + 5}
+        />
       ))}
 
       {/* Open Roadside Drainage, Mud & Dirt Patches */}
@@ -133,11 +111,18 @@ export function StreetLifeSystem() {
         </group>
       ))}
 
-      {/* Birds Overhead */}
-      <instancedMesh ref={birdsRef} args={[undefined, undefined, BIRD_COUNT]} frustumCulled={false}>
-        <boxGeometry args={[0.9, 0.08, 0.32]} />
-        <meshStandardMaterial color="#334155" />
-      </instancedMesh>
+      {/* High-Quality Animated 3D Birds Overhead */}
+      {BIRD_FLOCK.map((b, i) => (
+        <FlyingBird
+          key={`bird_${i}`}
+          species={b.species}
+          center={[-90, 30]}
+          radius={b.radius}
+          altitude={b.altitude}
+          speed={b.speed}
+          phase={b.phase}
+        />
+      ))}
 
       {/* Buzzing Insects Over Drainage */}
       <instancedMesh ref={insectsRef} args={[undefined, undefined, INSECT_COUNT]} frustumCulled={false}>
