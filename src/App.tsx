@@ -19,6 +19,7 @@ import { HarbourLandmark } from './world/landmarks/HarbourLandmark';
 import { UrbanLandmarks } from './world/landmarks/UrbanLandmarks';
 import { CivicAndShops } from './world/landmarks/CivicAndShops';
 import { MoreChennaiLandmarks } from './world/landmarks/MoreChennaiLandmarks';
+import { ExtraChennaiLandmarks } from './world/landmarks/ExtraChennaiLandmarks';
 import { PosterBoardWorld } from './world/PosterBoardWorld';
 import { RoadLoop } from './world/RoadLoop';
 import { JobMarkers } from './world/JobMarkers';
@@ -28,6 +29,7 @@ import { HUD } from './ui/HUD';
 import { PhoneUI } from './ui/PhoneUI';
 import { MinigamesModal } from './ui/MinigamesModal';
 import { EndingModal } from './ui/EndingModal';
+import { FullMapModal } from './ui/FullMapModal';
 import { MobileControls } from './ui/MobileControls';
 import { SettingsModal } from './ui/SettingsModal';
 
@@ -77,6 +79,7 @@ export function App() {
             <UrbanLandmarks />
             <CivicAndShops />
             <MoreChennaiLandmarks />
+            <ExtraChennaiLandmarks />
             <PosterBoardWorld />
             <RoadLoop />
             <TrafficSystem />
@@ -93,6 +96,7 @@ export function App() {
       <PhoneUI />
       <MinigamesModal />
       <EndingModal />
+      <FullMapModal />
       <MobileControls />
       <SettingsModal />
       <StoryEvents />

@@ -50,6 +50,7 @@ export function HUD() {
   const cycleWeather = useGameStore((s) => s.cycleWeather);
   const startFloodReliefMission = useGameStore((s) => s.startFloodReliefMission);
   const setShowEndingModal = useGameStore((s) => s.setShowEndingModal);
+  const toggleFullMap = useGameStore((s) => s.toggleFullMap);
   const setShowSettings = useGameStore((s) => s.setShowSettings);
   const subtitles = useGameStore((s) => s.subtitles);
   const toggleVehicleCycle = useGameStore((s) => s.toggleVehicleCycle);
@@ -218,6 +219,15 @@ export function HUD() {
           title="Reset Save"
         >
           <RotateCcw size={13} />
+        </button>
+        <button
+          className="btn-secondary"
+          style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}
+          onClick={() => toggleFullMap()}
+          title="Full City Map [M]"
+          data-testid="fullmap-btn"
+        >
+          <MapPin size={13} /> Map
         </button>
         <button
           className="btn-primary"

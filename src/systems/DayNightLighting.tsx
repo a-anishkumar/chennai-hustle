@@ -17,6 +17,8 @@ const SUN_NIGHT = new THREE.Color('#93c5fd');
 export function DayNightLighting() {
   const dirLightRef = useRef<THREE.DirectionalLight>(null);
   const hemiLightRef = useRef<THREE.HemisphereLight>(null);
+  const sunMeshRef = useRef<THREE.Mesh>(null);
+  const cloudsRef = useRef<THREE.Group>(null);
   const bgRef = useRef<THREE.Color>(null);
   const fogRef = useRef<THREE.FogExp2>(null);
   const quality = useGameStore((s) => s.quality);
@@ -97,6 +99,22 @@ export function DayNightLighting() {
       hemiLightRef.current.intensity = 0.35 + dayFactor * 0.55;
       hemiLightRef.current.color.copy(skyCol).lerp(SUN_DAY, 0.35);
     }
+
+    if (sunMeshRef.current) {
+      const isDay = sunY > -0.1;
+      sunMeshRef.current.position.set(
+        px + (isDay ? sunX : -sunX) * 420,
+        Math.max(24, (isDay ? sunY : 0.4) * 320),
+        pz - 180
+      );
+      const mat = sunMeshRef.current.material as THREE.MeshBasicMaterial;
+      mat.color.set(isDay ? '#fef08a' : '#e2e8f0');
+    }
+
+    if (cloudsRef.current) {
+      const drift = (performance.now() * 0.004) % 600;
+      cloudsRef.current.position.set(px - 300 + drift, 95, pz);
+    }
   });
 
   return (
@@ -104,6 +122,26 @@ export function DayNightLighting() {
       <color ref={bgRef} attach="background" args={['#60a5fa']} />
       <fogExp2 ref={fogRef} attach="fog" args={['#60a5fa', 0.0022]} />
       <hemisphereLight ref={hemiLightRef} args={['#93c5fd', '#78350f', 0.75]} />
+      {/* Visible Sun / Moon Disc */}
+      <mesh ref={sunMeshRef}>
+        <sphereGeometry args={[18, 16, 16]} />
+        <meshBasicMaterial color="#fef08a" />
+      </mesh>
+      {/* Drifting Stylized Clouds */}
+      <group ref={cloudsRef}>
+        {[-220, -80, 60, 200, 340].map((cx, i) => (
+          <group key={i} position={[cx, (i % 2) * 12, ((i * 97) % 240) - 120]}>
+            <mesh>
+              <boxGeometry args={[28, 7, 16]} />
+              <meshStandardMaterial color="#f8fafc" roughness={1} />
+            </mesh>
+            <mesh position={[8, 4, 0]}>
+              <boxGeometry args={[16, 6, 12]} />
+              <meshStandardMaterial color="#f1f5f9" roughness={1} />
+            </mesh>
+          </group>
+        ))}
+      </group>
       <directionalLight
         ref={dirLightRef}
         castShadow={quality !== 'low'}

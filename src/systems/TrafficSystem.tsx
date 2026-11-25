@@ -85,6 +85,10 @@ export function TrafficSystem() {
   const carLightsRef = useRef<THREE.InstancedMesh>(null);
   const heroTruckRef = useRef<THREE.Group>(null);
   const heroProgressRef = useRef(120);
+  const policeRef = useRef<THREE.Group>(null);
+  const ambulanceRef = useRef<THREE.Group>(null);
+  const taxiRef = useRef<THREE.Group>(null);
+  const specialProgRef = useRef({ police: 320, ambulance: 610, taxi: 820 });
 
   const [nsGreen, setNsGreen] = useState(true);
   const [honkBubble, setHonkBubble] = useState<{ x: number; z: number; text: string } | null>(null);
@@ -181,6 +185,26 @@ export function TrafficSystem() {
       const hs = sampleLoop(heroProgressRef.current, 1);
       heroTruckRef.current.position.set(hs.x, 0, hs.z);
       heroTruckRef.current.rotation.y = hs.rotY - Math.PI / 2;
+    }
+
+    // Police Patrol, 108 Ambulance & Yellow Taxi driving on road loop
+    specialProgRef.current.police += 16 * dt;
+    specialProgRef.current.ambulance += 17.5 * dt;
+    specialProgRef.current.taxi -= 13.5 * dt;
+    if (policeRef.current) {
+      const ps = sampleLoop(specialProgRef.current.police, 1);
+      policeRef.current.position.set(ps.x, 0, ps.z);
+      policeRef.current.rotation.y = ps.rotY;
+    }
+    if (ambulanceRef.current) {
+      const am = sampleLoop(specialProgRef.current.ambulance, 1);
+      ambulanceRef.current.position.set(am.x, 0, am.z);
+      ambulanceRef.current.rotation.y = am.rotY;
+    }
+    if (taxiRef.current) {
+      const tx = sampleLoop(specialProgRef.current.taxi, -1);
+      taxiRef.current.position.set(tx.x, 0, tx.z);
+      taxiRef.current.rotation.y = tx.rotY + Math.PI;
     }
 
     const [px, , pz] = state.playerPos;
@@ -360,6 +384,54 @@ export function TrafficSystem() {
       {/* Online CC0 Delivery Truck Driving on Loop */}
       <group ref={heroTruckRef}>
         <OnlineModel url={MILK_TRUCK_URL} scale={1.15} />
+      </group>
+
+      {/* Police Patrol SUV */}
+      <group ref={policeRef}>
+        <mesh geometry={geos.car.body} castShadow>
+          <meshStandardMaterial color="#1e293b" roughness={0.35} />
+        </mesh>
+        <mesh geometry={geos.car.trim}>
+          <meshStandardMaterial color="#0f172a" />
+        </mesh>
+        <mesh position={[-0.3, 1.35, -0.1]}>
+          <boxGeometry args={[0.45, 0.14, 0.2]} />
+          <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={2} />
+        </mesh>
+        <mesh position={[0.3, 1.35, -0.1]}>
+          <boxGeometry args={[0.45, 0.14, 0.2]} />
+          <meshStandardMaterial color="#3b82f6" emissive="#3b82f6" emissiveIntensity={2} />
+        </mesh>
+      </group>
+
+      {/* 108 Ambulance */}
+      <group ref={ambulanceRef}>
+        <mesh position={[0, 1.0, 0]} castShadow>
+          <boxGeometry args={[1.9, 1.6, 4.2]} />
+          <meshStandardMaterial color="#f8fafc" roughness={0.35} />
+        </mesh>
+        <mesh position={[0, 1.05, 0]}>
+          <boxGeometry args={[1.95, 0.3, 3.6]} />
+          <meshStandardMaterial color="#dc2626" />
+        </mesh>
+        <mesh position={[0, 1.9, 1.4]}>
+          <boxGeometry args={[0.9, 0.16, 0.24]} />
+          <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={2} />
+        </mesh>
+      </group>
+
+      {/* Yellow City Taxi */}
+      <group ref={taxiRef}>
+        <mesh geometry={geos.car.body} castShadow>
+          <meshStandardMaterial color="#facc15" roughness={0.35} />
+        </mesh>
+        <mesh geometry={geos.car.trim}>
+          <meshStandardMaterial color="#0f172a" />
+        </mesh>
+        <mesh position={[0, 1.36, 0]}>
+          <boxGeometry args={[0.6, 0.18, 0.24]} />
+          <meshStandardMaterial color="#fef08a" emissive="#eab308" emissiveIntensity={1.2} />
+        </mesh>
       </group>
 
       {/* 4 Intersection Traffic Signals */}

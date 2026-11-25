@@ -1,5 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGameStore } from './gameStore';
 
@@ -143,6 +144,39 @@ export function StreetLifeSystem() {
         <sphereGeometry args={[0.05, 6, 6]} />
         <meshBasicMaterial color="#111827" />
       </instancedMesh>
+
+      {/* Alley Gang Fight Event (-210, 0, 110) */}
+      <group position={[-210, 0, 110]}>
+        {[-1.8, -0.9, 0.9, 1.8].map((gx, i) => (
+          <group key={i} position={[gx, 0, (i % 2) * 0.4]}>
+            <mesh position={[0, 0.75, 0]} castShadow>
+              <boxGeometry args={[0.5, 1.1, 0.32]} />
+              <meshStandardMaterial color={i < 2 ? '#dc2626' : '#2563eb'} />
+            </mesh>
+            <mesh position={[0, 1.5, 0]} castShadow>
+              <sphereGeometry args={[0.2, 8, 8]} />
+              <meshStandardMaterial color="#8d5524" />
+            </mesh>
+          </group>
+        ))}
+        <Html position={[0, 2.4, 0]} center zIndexRange={[1, 8]}>
+          <div
+            style={{
+              background: '#7f1d1d',
+              color: '#fef08a',
+              padding: '3px 8px',
+              borderRadius: 6,
+              fontSize: 10,
+              fontWeight: 800,
+              whiteSpace: 'nowrap',
+              border: '1px solid #f59e0b',
+              pointerEvents: 'none',
+            }}
+          >
+            💥 GANG CLASH! DISHUM!
+          </div>
+        </Html>
+      </group>
     </group>
   );
 }

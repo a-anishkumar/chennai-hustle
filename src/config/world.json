@@ -23,6 +23,11 @@
     { "id": "museum", "name": "Government Museum (Egmore)", "x": -420, "z": 260, "type": "civic" },
     { "id": "airport", "name": "Chennai International Airport (MAA)", "x": -850, "z": 420, "type": "transit" },
     { "id": "park", "name": "Semmozhi Public Park", "x": -20, "z": 80, "type": "park" },
-    { "id": "school", "name": "Chennai High School", "x": -260, "z": 140, "type": "civic" }
+    { "id": "school", "name": "Chennai High School", "x": -260, "z": 140, "type": "civic" },
+    { "id": "hospital", "name": "Chennai Hospital (24x7)", "x": 260, "z": 120, "type": "civic" },
+    { "id": "fire", "name": "Chennai Fire & Rescue Station", "x": -260, "z": -140, "type": "civic" },
+    { "id": "amusement", "name": "ECR Fun World Amusement Park", "x": 1180, "z": 620, "type": "park" },
+    { "id": "mechanic", "name": "TTF Vasan Mechanic Shop", "x": -155, "z": -35, "type": "shop" },
+    { "id": "oyo", "name": "OYO Rooms Chennai", "x": 80, "z": -35, "type": "hotel" }
   ]
 }

@@ -65,6 +65,7 @@ export interface GameState {
   floodAidCount: number;
   floodSurgeCount: number;
   showEndingModal: boolean;
+  showFullMap: boolean;
   showSettings: boolean;
   subtitles: boolean;
   reducedMotion: boolean;
@@ -99,6 +100,8 @@ export interface GameState {
   setTimeOfDay: (hour: number) => void;
   cycleWeather: () => void;
   setShowEndingModal: (open: boolean) => void;
+  setShowFullMap: (open: boolean) => void;
+  toggleFullMap: () => void;
   setShowSettings: (open: boolean) => void;
   toggleAccessibility: (key: 'subtitles' | 'reducedMotion' | 'colorBlind' | 'forceTouchControls') => void;
   startFloodReliefMission: () => void;
@@ -203,6 +206,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   floodAidCount: 0,
   floodSurgeCount: 0,
   showEndingModal: false,
+  showFullMap: false,
   showSettings: false,
   subtitles: true,
   reducedMotion: false,
@@ -326,6 +330,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   setShowEndingModal: (open) => set({ showEndingModal: open }),
+  setShowFullMap: (open) => set({ showFullMap: open }),
+  toggleFullMap: () => set((s) => ({ showFullMap: !s.showFullMap })),
   setShowSettings: (open) => set({ showSettings: open }),
   toggleAccessibility: (key) => set((s) => ({ [key]: !s[key] })),
 

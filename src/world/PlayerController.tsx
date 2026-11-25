@@ -52,6 +52,8 @@ export function PlayerController() {
         useGameStore.getState().toggleVehicleCycle();
       } else if (code === 'KeyP') {
         useGameStore.getState().togglePhone();
+      } else if (code === 'KeyM') {
+        useGameStore.getState().toggleFullMap();
       } else if (code === 'KeyE') {
         const s = useGameStore.getState();
         const [px, , pz] = s.playerPos;
