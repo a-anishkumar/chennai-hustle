@@ -155,7 +155,7 @@ export function UrbanLandmarks() {
         </mesh>
       </group>
 
-      {/* 10. Central Flyover & Bus Hub (0, 0, -180) */}
+      {/* 10. Central Flyover, Bus Hub & CMRL-Style Elevated Metro Viaduct (0, 0, -180) */}
       <group position={[0, 0, -180]}>
         <RigidBody type="fixed" colliders="cuboid">
           <mesh position={[0, 5.5, 0]} castShadow receiveShadow>
@@ -167,6 +167,28 @@ export function UrbanLandmarks() {
         {[-60, -20, 20, 60].map((px, i) => (
           <mesh key={i} position={[px, 2.7, 0]} castShadow>
             <cylinderGeometry args={[1.4, 1.6, 5.4, 10]} />
+            <meshStandardMaterial color="#94a3b8" />
+          </mesh>
+        ))}
+
+        {/* Elevated Chennai Metro (CMRL-Style) Viaduct & Station */}
+        <mesh position={[140, 11.5, -28]} castShadow>
+          <boxGeometry args={[480, 1.4, 9]} />
+          <meshStandardMaterial color="#cbd5e1" roughness={0.75} />
+        </mesh>
+        <mesh position={[140, 12.6, -28]}>
+          <boxGeometry args={[480, 0.5, 9.4]} />
+          <meshStandardMaterial color="#0284c7" />
+        </mesh>
+        {/* Metro Station Canopy */}
+        <mesh position={[120, 14.5, -28]} castShadow>
+          <boxGeometry args={[44, 2.8, 13]} />
+          <meshStandardMaterial color="#0ea5e9" roughness={0.4} metalness={0.2} />
+        </mesh>
+        {/* Metro Viaduct Piers */}
+        {[-60, 0, 60, 120, 180, 240, 300, 360].map((mx, i) => (
+          <mesh key={i} position={[mx, 5.8, -28]} castShadow>
+            <cylinderGeometry args={[1.2, 1.5, 11.4, 8]} />
             <meshStandardMaterial color="#94a3b8" />
           </mesh>
         ))}
