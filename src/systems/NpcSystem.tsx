@@ -7,6 +7,7 @@ import { useGameStore } from './gameStore';
 import {
   AnimatedHumanNpc,
   type HumanNpcAnim,
+  type HumanNpcProp,
   type HumanNpcVariant,
 } from '../world/AnimatedHumanNpc';
 
@@ -17,6 +18,7 @@ interface NpcAgent {
   id: number;
   role: NpcRole;
   variant: HumanNpcVariant;
+  prop: HumanNpcProp;
   action: NpcAction;
   actionTimer: number;
   homeX: number;
@@ -70,6 +72,16 @@ const ACTION_LABELS: Record<NpcAction, string> = {
   fleeing_rain: '☔ Running from Rain!',
 };
 
+const ROLE_PROPS: Record<NpcRole, HumanNpcProp[]> = {
+  office: ['bag', 'newspaper', 'phone'],
+  student: ['school_bag', 'phone'],
+  vendor: ['shopping_bag', 'tools'],
+  fan: ['shopping_bag', 'phone'],
+  fisherman: ['tools', 'cigarette'],
+  influencer: ['phone', 'shopping_bag'],
+  beggar: ['none'],
+};
+
 const ROLES: NpcRole[] = ['office', 'student', 'vendor', 'fan', 'fisherman', 'influencer', 'beggar'];
 const NPC_COUNT = 24;
 
@@ -103,10 +115,12 @@ export function NpcSystem() {
       const role = ROLES[i % ROLES.length];
       const angle = (i * 1.7) % (Math.PI * 2);
       const radius = 5 + (i % 6) * 2.5;
+      const roleProps = ROLE_PROPS[role];
       list.push({
         id: i,
         role,
         variant: ROLE_VARIANTS[role],
+        prop: roleProps[i % roleProps.length],
         action: 'walking',
         actionTimer: 2 + (i % 5),
         homeX: hub[0] + ((i * 13) % 14) - 7,
@@ -230,6 +244,7 @@ export function NpcSystem() {
             anim={npcAnims[i]}
             timeScale={0.9 + (i % 3) * 0.1}
             tintColor={n.color}
+            prop={npcAnims[i] === 'idle' && n.action === 'checking_phone' ? 'phone' : n.prop}
           />
         </group>
       ))}

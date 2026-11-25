@@ -184,8 +184,9 @@ export function StreetLifeSystem() {
             <AnimatedHumanNpc
               variant="xbot"
               anim={idx === 1 ? 'run' : 'idle'}
-              scale={0.78}
+              scale={0.74}
               tintColor={String(col)}
+              prop={idx === 0 || idx === 2 ? 'cricket_bat' : 'none'}
             />
           </group>
         ))}

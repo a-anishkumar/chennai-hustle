@@ -5,6 +5,16 @@ import * as THREE from 'three';
 
 export type HumanNpcVariant = 'cesium' | 'soldier' | 'xbot' | 'michelle';
 export type HumanNpcAnim = 'walk' | 'run' | 'idle' | 'dance' | 'agree';
+export type HumanNpcProp =
+  | 'none'
+  | 'cigarette'
+  | 'newspaper'
+  | 'phone'
+  | 'bag'
+  | 'school_bag'
+  | 'shopping_bag'
+  | 'tools'
+  | 'cricket_bat';
 
 export const HUMAN_NPC_URLS: Record<HumanNpcVariant, string> = {
   cesium: '/models/npcs/CesiumMan.glb',
@@ -135,31 +145,153 @@ export function HumanFallback({ color = '#38bdf8' }: { color?: string }) {
   );
 }
 
+function NpcHandProp({ prop }: { prop: HumanNpcProp }) {
+  if (prop === 'none') return null;
+
+  if (prop === 'bag' || prop === 'school_bag') {
+    const isSchool = prop === 'school_bag';
+    return (
+      <group position={[0, 1.05, -0.2]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.3, 0.36, 0.16]} />
+          <meshStandardMaterial color={isSchool ? '#1d4ed8' : '#334155'} roughness={0.75} />
+        </mesh>
+        <mesh position={[0, -0.04, -0.09]}>
+          <boxGeometry args={[0.24, 0.2, 0.04]} />
+          <meshStandardMaterial color={isSchool ? '#facc15' : '#475569'} roughness={0.7} />
+        </mesh>
+      </group>
+    );
+  }
+
+  if (prop === 'shopping_bag') {
+    return (
+      <group position={[0.32, 0.68, 0.12]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.14, 0.3, 0.24]} />
+          <meshStandardMaterial color="#facc15" roughness={0.5} />
+        </mesh>
+        <mesh position={[0, 0.19, 0]}>
+          <torusGeometry args={[0.06, 0.012, 6, 12, Math.PI]} />
+          <meshStandardMaterial color="#dc2626" />
+        </mesh>
+      </group>
+    );
+  }
+
+  if (prop === 'newspaper') {
+    return (
+      <group position={[0.22, 0.98, 0.32]} rotation={[-0.45, 0.15, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.34, 0.26, 0.02]} />
+          <meshStandardMaterial color="#f1f5f9" roughness={0.85} />
+        </mesh>
+        <mesh position={[0, 0.08, 0.012]}>
+          <boxGeometry args={[0.28, 0.04, 0.005]} />
+          <meshStandardMaterial color="#1e293b" />
+        </mesh>
+        <mesh position={[0, -0.02, 0.012]}>
+          <boxGeometry args={[0.26, 0.1, 0.005]} />
+          <meshStandardMaterial color="#64748b" />
+        </mesh>
+      </group>
+    );
+  }
+
+  if (prop === 'phone') {
+    return (
+      <group position={[0.2, 1.06, 0.3]} rotation={[-0.5, -0.2, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.09, 0.16, 0.015]} />
+          <meshStandardMaterial color="#0f172a" metalness={0.6} roughness={0.3} />
+        </mesh>
+        <mesh position={[0, 0, 0.009]}>
+          <planeGeometry args={[0.075, 0.135]} />
+          <meshStandardMaterial color="#38bdf8" emissive="#0ea5e9" emissiveIntensity={1.2} />
+        </mesh>
+      </group>
+    );
+  }
+
+  if (prop === 'cigarette') {
+    return (
+      <group position={[0.24, 1.15, 0.26]} rotation={[0.2, 0, -0.3]}>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.008, 0.008, 0.1, 6]} />
+          <meshStandardMaterial color="#f8fafc" />
+        </mesh>
+        <mesh position={[0, 0, 0.055]}>
+          <sphereGeometry args={[0.011, 6, 6]} />
+          <meshStandardMaterial color="#f97316" emissive="#ea580c" emissiveIntensity={2.2} />
+        </mesh>
+        <mesh position={[0, 0.09, 0.06]}>
+          <sphereGeometry args={[0.035, 6, 6]} />
+          <meshBasicMaterial color="#cbd5e1" transparent opacity={0.45} />
+        </mesh>
+      </group>
+    );
+  }
+
+  if (prop === 'tools') {
+    return (
+      <group position={[0.3, 0.9, 0.2]} rotation={[0.4, 0, 0.2]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.05, 0.38, 0.03]} />
+          <meshStandardMaterial color="#94a3b8" metalness={0.8} roughness={0.25} />
+        </mesh>
+        <mesh position={[0, 0.2, 0]} castShadow>
+          <boxGeometry args={[0.14, 0.07, 0.05]} />
+          <meshStandardMaterial color="#64748b" metalness={0.85} roughness={0.2} />
+        </mesh>
+      </group>
+    );
+  }
+
+  // cricket_bat
+  return (
+    <group position={[0.3, 0.72, 0.22]} rotation={[0.35, 0, -0.15]}>
+      <mesh position={[0, 0.26, 0]} castShadow>
+        <cylinderGeometry args={[0.02, 0.022, 0.28, 8]} />
+        <meshStandardMaterial color="#1e293b" roughness={0.8} />
+      </mesh>
+      <mesh position={[0, -0.08, 0]} castShadow>
+        <boxGeometry args={[0.12, 0.48, 0.045]} />
+        <meshStandardMaterial color="#eab308" roughness={0.65} />
+      </mesh>
+    </group>
+  );
+}
+
 export function AnimatedHumanNpc({
   variant = 'xbot',
   anim = 'walk',
   timeScale = 1,
   scale,
   tintColor,
+  prop = 'none',
 }: {
   variant?: HumanNpcVariant;
   anim?: HumanNpcAnim;
   timeScale?: number;
   scale?: number;
   tintColor?: string;
+  prop?: HumanNpcProp;
 }) {
   const fb = <HumanFallback color={tintColor} />;
   return (
-    <HumanErrorBoundary fallback={fb}>
-      <Suspense fallback={fb}>
-        <RiggedHumanInner
-          variant={variant}
-          anim={anim}
-          timeScale={timeScale}
-          scale={scale}
-          tintColor={tintColor}
-        />
-      </Suspense>
-    </HumanErrorBoundary>
+    <group>
+      <HumanErrorBoundary fallback={fb}>
+        <Suspense fallback={fb}>
+          <RiggedHumanInner
+            variant={variant}
+            anim={anim}
+            timeScale={timeScale}
+            scale={scale}
+            tintColor={tintColor}
+          />
+        </Suspense>
+      </HumanErrorBoundary>
+      <NpcHandProp prop={prop} />
+    </group>
   );
 }

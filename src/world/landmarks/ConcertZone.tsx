@@ -189,6 +189,7 @@ export function ConcertZone() {
             variant={i % 2 === 0 ? 'xbot' : 'soldier'}
             anim="idle"
             tintColor={DANCER_COLORS[(i + 2) % DANCER_COLORS.length]}
+            prop="cigarette"
           />
         </group>
       ))}
