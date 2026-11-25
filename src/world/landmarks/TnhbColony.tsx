@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
-import { getAwningTexture, getKolamTexture, getPlasterTexture, getSignTexture } from '../ProceduralTextures';
+import { getAwningTexture, getChennaiFacadeNormalMap, getChennaiFacadeTexture, getKolamTexture, getSignTexture } from '../ProceduralTextures';
 import { useGameStore } from '../../systems/gameStore';
 import { OnlineModel } from '../OnlineModel';
 
@@ -21,6 +21,8 @@ const CLOTH_COLORS = ['#ef4444', '#facc15', '#3b82f6', '#ec4899', '#10b981', '#f
 export function TnhbColony() {
   const kolamTex = useMemo(() => getKolamTexture(), []);
   const awningTex = useMemo(() => getAwningTexture('#dc2626', '#fef08a'), []);
+  const facadeTex = useMemo(() => getChennaiFacadeTexture(), []);
+  const facadeNormal = useMemo(() => getChennaiFacadeNormalMap(), []);
   const aavinSignTex = useMemo(() => getSignTexture('AAVIN & ANNACHI STORE', 'Besant Nagar TNHB', '#0284c7', '#fde047'), []);
   const clothesRef = useRef<THREE.Group>(null);
   const homeMarkerRef = useRef<THREE.Mesh>(null);
@@ -53,17 +55,15 @@ export function TnhbColony() {
       </mesh>
 
       {/* 4 Stacked TNHB Apartment Blocks */}
-      {BLOCK_SPECS.map((b) => {
-        const wallTex = getPlasterTexture(b.color);
-        return (
-          <group key={b.id} position={[b.x, 0, b.z]} rotation={[0, b.rotY, 0]}>
-            <RigidBody type="fixed" colliders="cuboid">
-              {/* Main 3-story structure */}
-              <mesh position={[0, 5.2, 0]} castShadow receiveShadow>
-                <boxGeometry args={[20, 10.4, 11]} />
-                <meshStandardMaterial map={wallTex} roughness={0.85} />
-              </mesh>
-            </RigidBody>
+      {BLOCK_SPECS.map((b) => (
+        <group key={b.id} position={[b.x, 0, b.z]} rotation={[0, b.rotY, 0]}>
+          <RigidBody type="fixed" colliders="cuboid">
+            {/* Main 3-story structure with realistic PBR facade */}
+            <mesh position={[0, 5.2, 0]} castShadow receiveShadow>
+              <boxGeometry args={[20, 10.4, 11]} />
+              <meshStandardMaterial map={facadeTex} normalMap={facadeNormal} color={b.color} roughness={0.78} />
+            </mesh>
+          </RigidBody>
 
             {/* Roof Parapet */}
             <mesh position={[0, 10.7, 0]} castShadow>
@@ -107,8 +107,7 @@ export function TnhbColony() {
               <meshStandardMaterial map={kolamTex} transparent alphaTest={0.05} />
             </mesh>
           </group>
-        );
-      })}
+      ))}
 
       {/* Home Base Interactive Ring (Block A Door) */}
       <mesh ref={homeMarkerRef} position={[-133, 0.08, 42]} rotation={[-Math.PI / 2, 0, 0]}>

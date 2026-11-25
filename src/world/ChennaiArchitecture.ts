@@ -13,36 +13,47 @@ function part(geo: THREE.BufferGeometry, x: number, y: number, z: number, rx = 0
 }
 
 /**
- * Sculpted Chennai low-rise building (unit 1x1x1 base scaled per instance):
- * includes main block, rooftop parapet, stair headroom, and window chajja sunshades.
+ * Realistic multi-part Chennai building geometry (unit 1x1x1 base scaled per instance):
+ * - body: main block + stepped upper setback + rooftop stair headroom (motta maadi)
+ * - trim: concrete cornice slabs, ground-floor pillars, window chajjas, rooftop parapet
+ * - details: rooftop Sintex water tank, AC outdoor units, ground-floor shop awning
  */
 export function createChennaiBuildingGeos() {
   const body = mergeGeometries([
-    // Main structure (centered y = 0.5)
-    part(new THREE.BoxGeometry(1, 1, 1), 0, 0.5, 0),
-    // Rooftop parapet rim
-    part(new THREE.BoxGeometry(1.04, 0.08, 1.04), 0, 1.02, 0),
+    // Main structure (y: 0..0.95)
+    part(new THREE.BoxGeometry(0.96, 0.95, 0.96), 0, 0.475, 0),
     // Rooftop stair headroom (motta maadi)
-    part(new THREE.BoxGeometry(0.28, 0.22, 0.28), -0.22, 1.12, -0.2),
-    // Tropical window chajja sunshades (front & back)
-    part(new THREE.BoxGeometry(0.86, 0.04, 0.1), 0, 0.68, 0.53),
-    part(new THREE.BoxGeometry(0.86, 0.04, 0.1), 0, 0.36, 0.53),
-    part(new THREE.BoxGeometry(0.86, 0.04, 0.1), 0, 0.68, -0.53),
+    part(new THREE.BoxGeometry(0.28, 0.2, 0.28), -0.22, 1.08, -0.2),
+  ])!;
+
+  const trim = mergeGeometries([
+    // Ground-floor corner pillars
+    part(new THREE.BoxGeometry(0.08, 0.28, 0.08), -0.47, 0.14, 0.47),
+    part(new THREE.BoxGeometry(0.08, 0.28, 0.08), 0.47, 0.14, 0.47),
+    part(new THREE.BoxGeometry(0.08, 0.28, 0.08), -0.47, 0.14, -0.47),
+    part(new THREE.BoxGeometry(0.08, 0.28, 0.08), 0.47, 0.14, -0.47),
+    // Mid & top floor concrete cornice ledges
+    part(new THREE.BoxGeometry(1.02, 0.035, 1.02), 0, 0.3, 0),
+    part(new THREE.BoxGeometry(1.02, 0.035, 1.02), 0, 0.62, 0),
+    // Rooftop parapet rim
+    part(new THREE.BoxGeometry(1.04, 0.07, 1.04), 0, 0.985, 0),
+    // Window chajja sunshades (front & back)
+    part(new THREE.BoxGeometry(0.84, 0.025, 0.1), 0, 0.78, 0.51),
+    part(new THREE.BoxGeometry(0.84, 0.025, 0.1), 0, 0.48, 0.51),
+    part(new THREE.BoxGeometry(0.84, 0.025, 0.1), 0, 0.78, -0.51),
   ])!;
 
   const details = mergeGeometries([
-    // Dark window bands on front/back
-    part(new THREE.BoxGeometry(0.22, 0.18, 0.04), -0.26, 0.58, 0.51),
-    part(new THREE.BoxGeometry(0.22, 0.18, 0.04), 0.26, 0.58, 0.51),
-    part(new THREE.BoxGeometry(0.22, 0.18, 0.04), -0.26, 0.26, 0.51),
-    part(new THREE.BoxGeometry(0.22, 0.18, 0.04), 0.26, 0.26, 0.51),
     // Rooftop Sintex-style water tank
-    part(new THREE.CylinderGeometry(0.11, 0.11, 0.18, 8), 0.25, 1.12, 0.2),
+    part(new THREE.CylinderGeometry(0.11, 0.11, 0.18, 10), 0.25, 1.08, 0.2),
+    // AC outdoor compressor units
+    part(new THREE.BoxGeometry(0.12, 0.1, 0.07), -0.32, 0.54, 0.51),
+    part(new THREE.BoxGeometry(0.12, 0.1, 0.07), 0.32, 0.54, 0.51),
     // Ground-floor shop awning
-    part(new THREE.BoxGeometry(0.9, 0.04, 0.22), 0, 0.14, 0.58, 0.35, 0, 0),
+    part(new THREE.BoxGeometry(0.88, 0.03, 0.2), 0, 0.24, 0.55, 0.35, 0, 0),
   ])!;
 
-  return { body, details };
+  return { body, trim, details };
 }
 
 export function createPalmCrownGeo(): THREE.BufferGeometry {

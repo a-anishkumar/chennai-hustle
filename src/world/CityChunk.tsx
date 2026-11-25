@@ -4,6 +4,7 @@ import { CuboidCollider, RigidBody } from '@react-three/rapier';
 import worldConfig from '../config/world.json';
 import { getTerrainHeight, seededRandom } from './TerrainHeight';
 import { createChennaiBuildingGeos, createPalmCrownGeo, createUtilityPoleGeo } from './ChennaiArchitecture';
+import { getChennaiFacadeNormalMap, getChennaiFacadeTexture } from './ProceduralTextures';
 
 interface CityChunkProps {
   cx: number;
@@ -127,12 +128,15 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
   }, [cx, cz, originX, originZ, isActiveDetail]);
 
   const bBodyRef = useRef<THREE.InstancedMesh>(null);
+  const bTrimRef = useRef<THREE.InstancedMesh>(null);
   const bDetailRef = useRef<THREE.InstancedMesh>(null);
   const tTrunkRef = useRef<THREE.InstancedMesh>(null);
   const tCrownRef = useRef<THREE.InstancedMesh>(null);
   const poleRef = useRef<THREE.InstancedMesh>(null);
 
   const buildingGeos = useMemo(() => createChennaiBuildingGeos(), []);
+  const facadeTex = useMemo(() => getChennaiFacadeTexture(), []);
+  const facadeNormal = useMemo(() => getChennaiFacadeNormalMap(), []);
   const palmCrownGeo = useMemo(() => createPalmCrownGeo(), []);
   const poleGeo = useMemo(() => createUtilityPoleGeo(), []);
 
@@ -140,17 +144,19 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
     const dummy = new THREE.Object3D();
     const color = new THREE.Color();
 
-    if (bBodyRef.current && bDetailRef.current) {
+    if (bBodyRef.current && bTrimRef.current && bDetailRef.current) {
       buildings.forEach((b, i) => {
         dummy.position.set(b.x, b.y, b.z);
         dummy.rotation.set(0, b.rotY, 0);
         dummy.scale.set(b.w, b.h, b.d);
         dummy.updateMatrix();
         bBodyRef.current!.setMatrixAt(i, dummy.matrix);
+        bTrimRef.current!.setMatrixAt(i, dummy.matrix);
         bDetailRef.current!.setMatrixAt(i, dummy.matrix);
         bBodyRef.current!.setColorAt(i, color.set(b.color));
       });
       bBodyRef.current.instanceMatrix.needsUpdate = true;
+      bTrimRef.current.instanceMatrix.needsUpdate = true;
       bDetailRef.current.instanceMatrix.needsUpdate = true;
       if (bBodyRef.current.instanceColor) bBodyRef.current.instanceColor.needsUpdate = true;
     }
@@ -223,10 +229,13 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
             castShadow={isActiveDetail}
             receiveShadow
           >
-            <meshStandardMaterial roughness={0.82} />
+            <meshStandardMaterial map={facadeTex} normalMap={facadeNormal} roughness={0.78} />
+          </instancedMesh>
+          <instancedMesh ref={bTrimRef} args={[buildingGeos.trim, undefined, buildings.length]} castShadow={isActiveDetail}>
+            <meshStandardMaterial color="#f1f5f9" roughness={0.85} />
           </instancedMesh>
           <instancedMesh ref={bDetailRef} args={[buildingGeos.details, undefined, buildings.length]}>
-            <meshStandardMaterial color="#1e293b" roughness={0.5} />
+            <meshStandardMaterial color="#0284c7" roughness={0.45} />
           </instancedMesh>
         </>
       )}
