@@ -1,8 +1,152 @@
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
 import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { getSignTexture } from '../ProceduralTextures';
+import { useGameStore } from '../../systems/gameStore';
+import { AnimatedHumanNpc } from '../AnimatedHumanNpc';
+
+type TeaPhase = 'closed' | 'opening' | 'preparing' | 'morning' | 'afternoon' | 'evening_rush' | 'closing';
+
+function getTeaShopPhase(h: number): {
+  phase: TeaPhase;
+  label: string;
+  customerCount: number;
+  shutterScaleY: number;
+  steamActive: boolean;
+  lightsOn: boolean;
+} {
+  if (h >= 5.5 && h < 6.0) {
+    return { phase: 'opening', label: '5:30 AM • Opening Tea Shop', customerCount: 0, shutterScaleY: 0.25, steamActive: false, lightsOn: true };
+  }
+  if (h >= 6.0 && h < 7.0) {
+    return { phase: 'preparing', label: '6:00 AM • Preparing Tea ☕', customerCount: 1, shutterScaleY: 0.08, steamActive: true, lightsOn: true };
+  }
+  if (h >= 7.0 && h < 12.0) {
+    return { phase: 'morning', label: '7:00 AM • Morning Customers', customerCount: 3, shutterScaleY: 0.05, steamActive: true, lightsOn: true };
+  }
+  if (h >= 12.0 && h < 17.0) {
+    return { phase: 'afternoon', label: '12:00 PM • Lower Activity', customerCount: 1, shutterScaleY: 0.05, steamActive: true, lightsOn: true };
+  }
+  if (h >= 17.0 && h < 22.0) {
+    return { phase: 'evening_rush', label: '5:00 PM • Evening Rush! 🔥', customerCount: 5, shutterScaleY: 0.05, steamActive: true, lightsOn: true };
+  }
+  if (h >= 22.0 && h < 22.5) {
+    return { phase: 'closing', label: '10:00 PM • Cleaning & Closing 🧹', customerCount: 0, shutterScaleY: 0.55, steamActive: false, lightsOn: true };
+  }
+  return { phase: 'closed', label: 'Closed • Opens 5:30 AM', customerCount: 0, shutterScaleY: 1.0, steamActive: false, lightsOn: false };
+}
+
+const TEA_CUSTOMERS: { pos: [number, number, number]; rotY: number; color: string; prop: 'newspaper' | 'phone' | 'shopping_bag' | 'bag' | 'cigarette' }[] = [
+  { pos: [-1.8, 0, 3.2], rotY: Math.PI, color: '#e2e8f0', prop: 'newspaper' },
+  { pos: [0.2, 0, 3.3], rotY: Math.PI, color: '#38bdf8', prop: 'phone' },
+  { pos: [1.8, 0, 3.1], rotY: Math.PI, color: '#facc15', prop: 'bag' },
+  { pos: [-2.6, 0, 3.9], rotY: Math.PI * 0.85, color: '#ec4899', prop: 'shopping_bag' },
+  { pos: [2.6, 0, 4.0], rotY: -Math.PI * 0.85, color: '#f97316', prop: 'cigarette' },
+];
+
+function AnbuTeaShop({ sign }: { sign: THREE.CanvasTexture }) {
+  const timeOfDay = useGameStore((s) => s.timeOfDay);
+  const status = getTeaShopPhase(timeOfDay);
+  const steamRef = useRef<THREE.InstancedMesh>(null);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  useFrame(({ clock }) => {
+    if (!steamRef.current) return;
+    const t = clock.getElapsedTime();
+    for (let i = 0; i < 8; i++) {
+      if (!status.steamActive) {
+        dummy.scale.set(0, 0, 0);
+      } else {
+        const cycle = (t * 0.7 + i * 0.35) % 1.4;
+        const sc = 0.08 + cycle * 0.14;
+        dummy.position.set(-1.1 + Math.sin(t * 2 + i) * 0.12, 1.45 + cycle * 1.1, 2.35);
+        dummy.scale.set(sc, sc, sc);
+      }
+      dummy.updateMatrix();
+      steamRef.current.setMatrixAt(i, dummy.matrix);
+    }
+    steamRef.current.instanceMatrix.needsUpdate = true;
+  });
+
+  return (
+    <group position={[-68, 0, -35]}>
+      <RigidBody type="fixed" colliders="cuboid">
+        <mesh position={[0, 1.6, 0]} castShadow>
+          <boxGeometry args={[6, 3.2, 4.5]} />
+          <meshStandardMaterial color="#fef9c3" />
+        </mesh>
+      </RigidBody>
+      <mesh position={[0, 3.6, 2.3]}>
+        <boxGeometry args={[5.8, 1.2, 0.2]} />
+        <meshStandardMaterial map={sign} />
+      </mesh>
+
+      {/* Rolling Shutter (opens at 5:30 AM, closes at 10:00 PM) */}
+      <mesh position={[0, 2.75 - status.shutterScaleY * 1.25, 2.28]}>
+        <boxGeometry args={[5.2, 2.5 * status.shutterScaleY, 0.12]} />
+        <meshStandardMaterial color="#64748b" metalness={0.5} roughness={0.5} />
+      </mesh>
+
+      {/* Tea Boiler Counter & Brass Samovar */}
+      <mesh position={[0, 0.55, 2.45]} castShadow>
+        <boxGeometry args={[4.6, 1.1, 0.85]} />
+        <meshStandardMaterial color="#92400e" />
+      </mesh>
+      <mesh position={[-1.1, 1.35, 2.35]} castShadow>
+        <cylinderGeometry args={[0.24, 0.28, 0.65, 10]} />
+        <meshStandardMaterial color="#eab308" metalness={0.75} roughness={0.25} />
+      </mesh>
+
+      {/* Warm Shop Light */}
+      {status.lightsOn && <pointLight position={[0, 2.6, 2.9]} color="#fde047" intensity={4} distance={10} />}
+
+      {/* Rising Tea Steam */}
+      <instancedMesh ref={steamRef} args={[undefined, undefined, 8]} frustumCulled={false}>
+        <sphereGeometry args={[1, 6, 6]} />
+        <meshBasicMaterial color="#f8fafc" transparent opacity={0.45} />
+      </instancedMesh>
+
+      {/* Tea Master (active when shop is not closed) */}
+      {status.phase !== 'closed' && (
+        <group position={[0.5, 0, 2.0]}>
+          <AnimatedHumanNpc
+            variant="soldier"
+            anim={status.phase === 'preparing' || status.phase === 'evening_rush' ? 'agree' : 'idle'}
+            prop={status.phase === 'closing' || status.phase === 'opening' ? 'tools' : 'none'}
+          />
+        </group>
+      )}
+
+      {/* Dynamic Customers Based on Time of Day */}
+      {TEA_CUSTOMERS.slice(0, status.customerCount).map((c, idx) => (
+        <group key={idx} position={c.pos} rotation={[0, c.rotY, 0]}>
+          <AnimatedHumanNpc variant="xbot" anim="idle" tintColor={c.color} prop={c.prop} />
+        </group>
+      ))}
+
+      {/* Live Daily Schedule Status Pill */}
+      <Html position={[0, 4.55, 2.3]} center zIndexRange={[1, 8]}>
+        <div
+          style={{
+            background: status.phase === 'closed' ? 'rgba(15,23,42,0.9)' : 'rgba(21,128,61,0.92)',
+            color: '#fef08a',
+            padding: '3px 8px',
+            borderRadius: 999,
+            fontSize: 10,
+            fontWeight: 700,
+            whiteSpace: 'nowrap',
+            border: '1px solid rgba(250,204,21,0.65)',
+            pointerEvents: 'none',
+          }}
+        >
+          {status.label}
+        </div>
+      </Html>
+    </group>
+  );
+}
 
 export function CivicAndShops() {
   const barberPoleRef = useRef<THREE.Mesh>(null);
@@ -38,19 +182,8 @@ export function CivicAndShops() {
 
   return (
     <group name="Civic_And_Shops">
-      {/* 1. Dedicated Tea Shop Corner (-68, 0, -35) */}
-      <group position={[-68, 0, -35]}>
-        <RigidBody type="fixed" colliders="cuboid">
-          <mesh position={[0, 1.6, 0]} castShadow>
-            <boxGeometry args={[6, 3.2, 4.5]} />
-            <meshStandardMaterial color="#fef9c3" />
-          </mesh>
-        </RigidBody>
-        <mesh position={[0, 3.6, 2.3]}>
-          <boxGeometry args={[5.8, 1.2, 0.2]} />
-          <meshStandardMaterial map={signs.tea} />
-        </mesh>
-      </group>
+      {/* 1. Dedicated Tea Shop Corner (-68, 0, -35) with 24h Daily Schedule */}
+      <AnbuTeaShop sign={signs.tea} />
 
       {/* 2. Jewellery Shop (160, 0, -145) */}
       <group position={[160, 0, -145]}>
