@@ -17,8 +17,8 @@ export function CivicAndShops() {
       bar: getSignTexture('MARINA LOUNGE BAR', 'Open Till 11 PM', '#4c1d95', '#f472b6'),
       hotel: getSignTexture('GRAND CHENNAI HOTEL', 'AC Rooms & Banquet', '#0f172a', '#38bdf8'),
       railway: getSignTexture('CHENNAI CENTRAL', 'Southern Railway Station', '#991b1b', '#fef08a'),
-      police: getSignTexture('CHENNAI POLICE', 'B1 Law & Order Station', '#1e293b', '#ef4444'),
-      post: getSignTexture('INDIA POST OFFICE', 'Speed Post & Parcels', '#dc2626', '#fde047'),
+      police: getSignTexture('GREATER CHENNAI POLICE', 'B1 Law & Order Station', '#1e3a8a', '#facc15'),
+      post: getSignTexture('CHENNAI GPO • INDIA POST', 'Rajaji Salai • Speed Post', '#b91c1c', '#fef08a'),
       court: getSignTexture('HIGH COURT CHENNAI', 'Justice & Law', '#7f1d1d', '#fde047'),
       construction: getSignTexture('UNDER CONSTRUCTION', 'Safety Helmet Zone', '#eab308', '#111827'),
     }),
@@ -158,16 +158,29 @@ export function CivicAndShops() {
         </mesh>
       </group>
 
-      {/* 7. Police Station (-240, 0, -240) */}
-      <group position={[-240, 0, -240]}>
+      {/* 7. Greater Chennai Police Station (moved to -245, 0, -90 — clear of Ripon Building) */}
+      <group position={[-245, 0, -90]}>
         <RigidBody type="fixed" colliders="cuboid">
-          <mesh position={[0, 3.2, 0]} castShadow>
+          <mesh position={[0, 3.2, 0]} castShadow receiveShadow>
             <boxGeometry args={[16, 6.4, 11]} />
-            <meshStandardMaterial color="#e2e8f0" />
+            <meshStandardMaterial color="#f5f5dc" roughness={0.75} />
           </mesh>
         </RigidBody>
+        {/* Navy Blue Police Band & Portico Pillars */}
+        <mesh position={[0, 1.8, 5.6]}>
+          <boxGeometry args={[16.1, 0.5, 0.2]} />
+          <meshStandardMaterial color="#1e3a8a" />
+        </mesh>
+        <mesh position={[-4, 1.5, 6.4]} castShadow>
+          <cylinderGeometry args={[0.25, 0.28, 3.0, 8]} />
+          <meshStandardMaterial color="#e2e8f0" />
+        </mesh>
+        <mesh position={[4, 1.5, 6.4]} castShadow>
+          <cylinderGeometry args={[0.25, 0.28, 3.0, 8]} />
+          <meshStandardMaterial color="#e2e8f0" />
+        </mesh>
         <mesh position={[0, 5.4, 5.6]}>
-          <boxGeometry args={[13, 2.0, 0.3]} />
+          <boxGeometry args={[13.5, 2.0, 0.3]} />
           <meshStandardMaterial map={signs.police} />
         </mesh>
         <mesh ref={policeLightRef} position={[0, 6.8, 4]}>
@@ -176,21 +189,30 @@ export function CivicAndShops() {
         </mesh>
       </group>
 
-      {/* 8. Post Office (-110, 0, -160) */}
-      <group position={[-110, 0, -160]}>
+      {/* 8. Chennai GPO Post Office (-100, 0, -155, Indo-Saracenic Red Brick & White Trim) */}
+      <group position={[-100, 0, -155]}>
         <RigidBody type="fixed" colliders="cuboid">
-          <mesh position={[0, 3.0, 0]} castShadow>
-            <boxGeometry args={[13, 6, 9]} />
-            <meshStandardMaterial color="#fecaca" />
+          <mesh position={[0, 3.6, 0]} castShadow receiveShadow>
+            <boxGeometry args={[16, 7.2, 10]} />
+            <meshStandardMaterial color="#991b1b" roughness={0.8} />
           </mesh>
         </RigidBody>
-        <mesh position={[0, 5.0, 4.6]}>
-          <boxGeometry args={[11, 1.8, 0.25]} />
+        {/* Heritage White Cornice & Clock Pediment */}
+        <mesh position={[0, 7.4, 0]}>
+          <boxGeometry args={[16.4, 0.5, 10.4]} />
+          <meshStandardMaterial color="#f8fafc" />
+        </mesh>
+        <mesh position={[0, 8.6, 4.5]} castShadow>
+          <cylinderGeometry args={[1.6, 2.0, 2.4, 12]} />
+          <meshStandardMaterial color="#f8fafc" />
+        </mesh>
+        <mesh position={[0, 5.4, 5.1]}>
+          <boxGeometry args={[12.5, 2.0, 0.25]} />
           <meshStandardMaterial map={signs.post} />
         </mesh>
-        {/* Classic Red Post Box */}
-        <mesh position={[7.5, 0.85, 4.5]} castShadow>
-          <cylinderGeometry args={[0.35, 0.35, 1.7, 10]} />
+        {/* Classic Red India Post Letter Box */}
+        <mesh position={[9.2, 0.9, 4.2]} castShadow>
+          <cylinderGeometry args={[0.38, 0.38, 1.8, 12]} />
           <meshStandardMaterial color="#dc2626" />
         </mesh>
       </group>

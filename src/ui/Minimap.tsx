@@ -1,3 +1,4 @@
+import { Maximize2 } from 'lucide-react';
 import { useGameStore } from '../systems/gameStore';
 import worldConfig from '../config/world.json';
 
@@ -8,6 +9,7 @@ export function Minimap() {
   const playerPos = useGameStore((s) => s.playerPos);
   const playerRotY = useGameStore((s) => s.playerRotY);
   const activeJob = useGameStore((s) => s.activeJob);
+  const toggleFullMap = useGameStore((s) => s.toggleFullMap);
 
   const [px, , pz] = playerPos;
 
@@ -33,6 +35,7 @@ export function Minimap() {
     <div
       className="hud-pill"
       style={{
+        position: 'relative',
         width: MAP_SIZE + 8,
         height: MAP_SIZE + 8,
         padding: 4,
@@ -41,6 +44,29 @@ export function Minimap() {
         pointerEvents: 'auto',
       }}
     >
+      <button
+        onClick={() => toggleFullMap()}
+        title="Expand Full Map [M]"
+        data-testid="expand-minimap-btn"
+        style={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          zIndex: 2,
+          background: 'rgba(15,23,42,0.85)',
+          border: '1px solid rgba(255,255,255,0.2)',
+          borderRadius: 6,
+          color: '#fde047',
+          width: 24,
+          height: 24,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+        }}
+      >
+        <Maximize2 size={12} />
+      </button>
       <svg width={MAP_SIZE} height={MAP_SIZE} style={{ background: '#0f172a', borderRadius: 12, display: 'block' }}>
         {/* Canal */}
         <rect x={0} y={canalY - 8} width={MAP_SIZE} height={16} fill="#0e7490" opacity={0.7} />

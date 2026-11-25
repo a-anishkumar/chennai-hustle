@@ -17,19 +17,25 @@ const HALF_WORLD = worldConfig.worldSize / 2; // 2000
 const CHENNAI_PALETTE = ['#fde68a', '#fda4af', '#7dd3fc', '#6ee7b7', '#fdba74', '#fef3c7', '#f9a8d4'];
 
 function isInsideReservedZone(wx: number, wz: number): boolean {
-  // TNHB Colony + Road Loop area
-  if (wx > -215 && wx < 65 && wz > -145 && wz < 160) return true;
+  // Core civic, commercial & TNHB district
+  if (wx > -360 && wx < 300 && wz > -265 && wz < 175) return true;
   // Canal corridor
-  if (Math.abs(wz - worldConfig.canalZ) < 38) return true;
+  if (Math.abs(wz - worldConfig.canalZ) < 40) return true;
+  // Railway & Metro corridor
+  if (Math.abs(wz + 196) < 28) return true;
+  // Airport runway & terminal
+  if (wx > -1020 && wx < -680 && wz > 330 && wz < 490) return true;
   // Ocean / Beach coast
   if (wx > worldConfig.coastStartX - 60) return true;
   // Arterial road corridors
-  if (Math.abs(wz + 120) < 16 || Math.abs(wx - 480) < 16 || Math.abs(wx - 40) < 16) return true;
-  // Other landmarks
+  if (Math.abs(wz + 120) < 16 || Math.abs(wx - 480) < 16 || Math.abs(wx - 40) < 16 || Math.abs(wx + 190) < 16) {
+    return true;
+  }
+  // Landmarks (generous 78m clearance)
   for (const lm of worldConfig.landmarks) {
     const dx = wx - lm.x;
     const dz = wz - lm.z;
-    if (dx * dx + dz * dz < 68 * 68) return true;
+    if (dx * dx + dz * dz < 78 * 78) return true;
   }
   return false;
 }

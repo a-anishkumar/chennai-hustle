@@ -10,7 +10,7 @@ export function ExtraChennaiLandmarks() {
 
   const signs = useMemo(
     () => ({
-      hospital: getSignTexture('CHENNAI HOSPITAL', '24x7 Emergency & Trauma', '#f8fafc', '#dc2626'),
+      hospital: getSignTexture('RAJIV GANDHI GOVT HOSPITAL', '24x7 Emergency • Chennai', '#f8fafc', '#dc2626'),
       fire: getSignTexture('FIRE & RESCUE', 'Chennai Fire Station', '#991b1b', '#fde047'),
       amusement: getSignTexture('ECR FUN WORLD', 'Ferris Wheel & Rides', '#7c3aed', '#fde047'),
       mechanic: getSignTexture('TTF VASAN MECHANIC SHOP', 'Superbike & Scooter Service', '#111827', '#f97316'),
@@ -32,25 +32,35 @@ export function ExtraChennaiLandmarks() {
 
   return (
     <group name="Extra_Chennai_Landmarks">
-      {/* 1. Chennai Hospital (260, 0, 120) */}
+      {/* 1. Rajiv Gandhi Govt Hospital (260, 0, 120) with Helipad & Ambulance Bay */}
       <group position={[260, 0, 120]}>
         <RigidBody type="fixed" colliders="cuboid">
           <mesh position={[0, 7, 0]} castShadow receiveShadow>
-            <boxGeometry args={[28, 14, 18]} />
+            <boxGeometry args={[30, 14, 18]} />
             <meshStandardMaterial color="#f8fafc" roughness={0.4} />
           </mesh>
+          {/* Emergency Ambulance Bay Canopy */}
+          <mesh position={[0, 3.8, 12]} castShadow>
+            <boxGeometry args={[14, 0.6, 7]} />
+            <meshStandardMaterial color="#e2e8f0" />
+          </mesh>
         </RigidBody>
+        {/* Rooftop Helipad */}
+        <mesh position={[0, 14.08, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[3.5, 4.2, 24]} />
+          <meshBasicMaterial color="#facc15" />
+        </mesh>
         {/* Red Medical Cross */}
-        <mesh position={[0, 11, 9.2]}>
+        <mesh position={[0, 11.2, 9.2]}>
           <boxGeometry args={[4.5, 1.4, 0.2]} />
           <meshStandardMaterial color="#dc2626" />
         </mesh>
-        <mesh position={[0, 11, 9.2]}>
+        <mesh position={[0, 11.2, 9.2]}>
           <boxGeometry args={[1.4, 4.5, 0.2]} />
           <meshStandardMaterial color="#dc2626" />
         </mesh>
-        <mesh position={[0, 6, 9.2]}>
-          <boxGeometry args={[18, 2.8, 0.25]} />
+        <mesh position={[0, 6.2, 9.2]}>
+          <boxGeometry args={[20, 2.8, 0.25]} />
           <meshStandardMaterial map={signs.hospital} />
         </mesh>
       </group>

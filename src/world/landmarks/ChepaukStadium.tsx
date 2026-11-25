@@ -147,36 +147,40 @@ export function ChepaukStadium() {
         </Html>
       </group>
 
-      {/* 2. Petrol Bunk (-175, 0, -90) */}
-      <group position={[-175, 0, -90]}>
-        <mesh position={[0, 4.8, 0]} castShadow>
-          <boxGeometry args={[14, 0.8, 10]} />
-          <meshStandardMaterial color="#dc2626" />
-        </mesh>
+      {/* 2. Petrol Bunk (-215, 0, -85 — west side of West Road, zero overlap) */}
+      <group position={[-215, 0, -85]}>
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[0, 4.8, 0]} castShadow>
+            <boxGeometry args={[14, 0.8, 10]} />
+            <meshStandardMaterial color="#dc2626" />
+          </mesh>
+          {[-4, 4].map((px, i) => (
+            <mesh key={`col_${i}`} position={[px, 2.4, -3]} castShadow>
+              <cylinderGeometry args={[0.28, 0.28, 4.8, 8]} />
+              <meshStandardMaterial color="#cbd5e1" />
+            </mesh>
+          ))}
+        </RigidBody>
         <mesh position={[0, 5.8, 5.1]}>
           <boxGeometry args={[12, 1.8, 0.25]} />
           <meshStandardMaterial map={signs.petrol} />
         </mesh>
         {[-4, 4].map((px, i) => (
-          <group key={i} position={[px, 0, 0]}>
-            <mesh position={[0, 2.4, -3]} castShadow>
-              <cylinderGeometry args={[0.25, 0.25, 4.8, 8]} />
-              <meshStandardMaterial color="#cbd5e1" />
-            </mesh>
-            <mesh position={[0, 1.0, 0]} castShadow>
-              <boxGeometry args={[1.0, 2.0, 0.8]} />
-              <meshStandardMaterial color="#facc15" />
-            </mesh>
-          </group>
+          <mesh key={i} position={[px, 1.0, 0]} castShadow>
+            <boxGeometry args={[1.0, 2.0, 0.8]} />
+            <meshStandardMaterial color="#facc15" />
+          </mesh>
         ))}
       </group>
 
-      {/* 3. EV Bike Charging Station (-105, 0, -95) */}
-      <group position={[-105, 0, -95]}>
-        <mesh position={[0, 3.6, 0]} castShadow>
-          <boxGeometry args={[10, 0.4, 6]} />
-          <meshStandardMaterial color="#16a34a" />
-        </mesh>
+      {/* 3. EV Bike Charging Station (-140, 0, -95 — clear of stalls) */}
+      <group position={[-140, 0, -95]}>
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[0, 3.6, 0]} castShadow>
+            <boxGeometry args={[10, 0.4, 6]} />
+            <meshStandardMaterial color="#16a34a" />
+          </mesh>
+        </RigidBody>
         <mesh position={[0, 4.2, 3.1]}>
           <boxGeometry args={[9, 1.4, 0.2]} />
           <meshStandardMaterial map={signs.ev} />

@@ -148,20 +148,49 @@ export function RoadLoop() {
       </mesh>
       <RoadSegment x={40} z={180} width={13} length={60} wet={wet} />
 
-      {/* Arterial Roads Connecting All 10 Landmarks */}
-      {/* East Arterial: Road Loop -> Mall / Marina Beach & Lighthouse */}
-      <RoadSegment x={740} z={-120} width={12} length={1420} rotY={Math.PI / 2} />
-      <RoadSegment x={1420} z={120} width={12} length={520} />
-      {/* West Arterial: Road Loop -> Kaveri Theatre */}
-      <RoadSegment x={-340} z={-120} width={12} length={310} rotY={Math.PI / 2} />
-      <RoadSegment x={-480} z={-210} width={12} length={220} />
+      {/* Arterial Roads & Extra Canal Bridges Connecting All Landmarks */}
+      {/* West Canal Bridge (-190, 180) + Road to School, Museum & Airport */}
+      <RigidBody type="fixed" colliders="cuboid">
+        <mesh position={[-190, 0.2, 180]} receiveShadow castShadow>
+          <boxGeometry args={[15, 0.4, 58]} />
+          <meshStandardMaterial color="#475569" roughness={0.9} />
+        </mesh>
+      </RigidBody>
+      <RoadSegment x={-190} z={180} width={13} length={60} wet={wet} />
+      <RoadSegment x={-190} z={230} width={12} length={80} wet={wet} />
+      <RoadSegment x={-520} z={260} width={12} length={680} rotY={Math.PI / 2} wet={wet} />
+      <RoadSegment x={-850} z={340} width={12} length={180} wet={wet} />
+
+      {/* East Canal Bridge at Chepauk (920, 180) & Marina Coastal Bridge (1420, 180) */}
+      {[920, 1420].map((bx) => (
+        <group key={`bridge_${bx}`}>
+          <RigidBody type="fixed" colliders="cuboid">
+            <mesh position={[bx, 0.2, 180]} receiveShadow castShadow>
+              <boxGeometry args={[14, 0.4, 58]} />
+              <meshStandardMaterial color="#475569" roughness={0.9} />
+            </mesh>
+          </RigidBody>
+          <RoadSegment x={bx} z={180} width={12} length={60} wet={wet} />
+        </group>
+      ))}
+
+      {/* East Arterial: Road Loop -> Concert, Hospital, Chepauk, Marina Beach & Lighthouse */}
+      <RoadSegment x={740} z={-120} width={12} length={1420} rotY={Math.PI / 2} wet={wet} />
+      <RoadSegment x={160} z={-40} width={11} length={170} wet={wet} />
+      <RoadSegment x={260} z={10} width={11} length={260} wet={wet} />
+      <RoadSegment x={920} z={30} width={12} length={310} wet={wet} />
+      <RoadSegment x={1420} z={120} width={12} length={520} wet={wet} />
+      {/* West Arterial: Road Loop -> Central Station, Fire Station & Kaveri Theatre */}
+      <RoadSegment x={-340} z={-120} width={12} length={310} rotY={Math.PI / 2} wet={wet} />
+      <RoadSegment x={-480} z={-210} width={12} length={220} wet={wet} />
       {/* North Arterial: Mall / Loop -> North Harbour */}
-      <RoadSegment x={480} z={-740} width={12} length={1240} />
-      <RoadSegment x={715} z={-1350} width={12} length={480} rotY={Math.PI / 2} />
-      {/* South Arterial: Canal Bridge -> Temple & Fan House */}
-      <RoadSegment x={40} z={530} width={12} length={680} />
-      <RoadSegment x={330} z={520} width={12} length={580} rotY={Math.PI / 2} />
-      <RoadSegment x={210} z={860} width={12} length={350} rotY={Math.PI / 2} />
+      <RoadSegment x={480} z={-740} width={12} length={1240} wet={wet} />
+      <RoadSegment x={715} z={-1350} width={12} length={480} rotY={Math.PI / 2} wet={wet} />
+      {/* South Arterial: Canal Bridge -> Temple, Amusement Park & Fan House */}
+      <RoadSegment x={40} z={530} width={12} length={680} wet={wet} />
+      <RoadSegment x={610} z={520} width={12} length={1140} rotY={Math.PI / 2} wet={wet} />
+      <RoadSegment x={1180} z={570} width={12} length={120} wet={wet} />
+      <RoadSegment x={210} z={860} width={12} length={350} rotY={Math.PI / 2} wet={wet} />
 
       {/* Potholes */}
       {POTHOLE_POSITIONS.map(([px, pz], idx) => (
