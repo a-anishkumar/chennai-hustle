@@ -176,20 +176,53 @@ export function PlayerController() {
     const speedMult = (isSprinting ? 1.32 : 1.0) * rainPenalty;
     const targetSpeed = isMoving ? vSpec.maxSpeed * speedMult : 0;
 
-    // Smooth horizontal velocity (reduced traction in rain)
+    // Vehicle-distinct acceleration, braking inertia, turning & banking behavior
     const tractionFactor = state.weather === 'monsoon' || state.weather === 'flood' ? 0.55 : 1.0;
-    const lerpFactor = Math.min(1, dt * (isMoving ? vSpec.accel * 0.45 * tractionFactor : 10 * tractionFactor));
+    const decelRate = state.currentVehicle === 'cab' ? 4.5 : state.currentVehicle === 'boat' ? 2.8 : 10;
+    const lerpFactor = Math.min(1, dt * (isMoving ? vSpec.accel * 0.45 * tractionFactor : decelRate * tractionFactor));
     const vx = THREE.MathUtils.lerp(vel.x, _move.x * targetSpeed, lerpFactor);
     const vz = THREE.MathUtils.lerp(vel.z, _move.z * targetSpeed, lerpFactor);
     rb.setLinvel({ x: vx, y: vel.y, z: vz }, true);
 
-    // Rotate character/cycle toward movement direction
-    if (meshGroupRef.current && isMoving) {
-      const targetRot = Math.atan2(_move.x, _move.z);
-      let diff = targetRot - meshGroupRef.current.rotation.y;
-      while (diff > Math.PI) diff -= Math.PI * 2;
-      while (diff < -Math.PI) diff += Math.PI * 2;
-      meshGroupRef.current.rotation.y += diff * Math.min(1, dt * 10);
+    // Distinct turning rate & banking/bobbing per vehicle
+    if (meshGroupRef.current) {
+      if (isMoving) {
+        const targetRot = Math.atan2(_move.x, _move.z);
+        let diff = targetRot - meshGroupRef.current.rotation.y;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        const turnRate =
+          state.currentVehicle === 'foot'
+            ? 14
+            : state.currentVehicle === 'cab'
+            ? 5.5
+            : state.currentVehicle === 'boat'
+            ? 4.2
+            : 9.5;
+        meshGroupRef.current.rotation.y += diff * Math.min(1, dt * turnRate);
+
+        const leanFactor =
+          state.currentVehicle === 'bike'
+            ? 0.35
+            : state.currentVehicle === 'cycle'
+            ? 0.25
+            : state.currentVehicle === 'auto'
+            ? -0.1
+            : 0;
+        meshGroupRef.current.rotation.z = THREE.MathUtils.lerp(
+          meshGroupRef.current.rotation.z,
+          THREE.MathUtils.clamp(diff * leanFactor, -0.24, 0.24),
+          dt * 8
+        );
+      } else {
+        meshGroupRef.current.rotation.z = THREE.MathUtils.lerp(meshGroupRef.current.rotation.z, 0, dt * 8);
+      }
+
+      if (state.currentVehicle === 'boat') {
+        meshGroupRef.current.rotation.x = Math.sin(animPhase.current * 0.5 + performance.now() * 0.0025) * 0.04;
+      } else {
+        meshGroupRef.current.rotation.x = 0;
+      }
     }
 
     // Limb & wheel animations

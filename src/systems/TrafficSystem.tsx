@@ -25,6 +25,8 @@ interface TrafficAgent {
   x: number;
   z: number;
   rotY: number;
+  busStopTimer: number;
+  weavePhase: number;
 }
 
 const MIN_X = -190;
@@ -38,9 +40,13 @@ const PERIMETER = 2 * (SEG_W + SEG_H);
 const MILK_TRUCK_URL =
   'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb';
 
-function sampleLoop(progress: number, lane: 1 | -1): { x: number; z: number; rotY: number; nearSignal: boolean; isNS: boolean } {
+function sampleLoop(
+  progress: number,
+  lane: 1 | -1,
+  laneOffsetMag = 3.2
+): { x: number; z: number; rotY: number; nearSignal: boolean; isNS: boolean } {
   const p = ((progress % PERIMETER) + PERIMETER) % PERIMETER;
-  const offset = lane * 3.2;
+  const offset = lane * laneOffsetMag;
 
   if (p < SEG_W) {
     const t = p;
@@ -67,12 +73,16 @@ const SIGNAL_CORNERS: [number, number][] = [
 export function TrafficSystem() {
   const autoBodyRef = useRef<THREE.InstancedMesh>(null);
   const autoTrimRef = useRef<THREE.InstancedMesh>(null);
+  const autoLightsRef = useRef<THREE.InstancedMesh>(null);
   const busBodyRef = useRef<THREE.InstancedMesh>(null);
   const busTrimRef = useRef<THREE.InstancedMesh>(null);
+  const busLightsRef = useRef<THREE.InstancedMesh>(null);
   const bikeBodyRef = useRef<THREE.InstancedMesh>(null);
   const bikeTrimRef = useRef<THREE.InstancedMesh>(null);
+  const bikeLightsRef = useRef<THREE.InstancedMesh>(null);
   const carBodyRef = useRef<THREE.InstancedMesh>(null);
   const carTrimRef = useRef<THREE.InstancedMesh>(null);
+  const carLightsRef = useRef<THREE.InstancedMesh>(null);
   const heroTruckRef = useRef<THREE.Group>(null);
   const heroProgressRef = useRef(120);
 
@@ -95,9 +105,9 @@ export function TrafficSystem() {
   if (!agentsRef.current) {
     const list: TrafficAgent[] = [];
     const specs: { kind: VehicleKind; count: number; speed: number; colors: string[] }[] = [
-      { kind: 'auto', count: 10, speed: 12, colors: ['#facc15'] },
-      { kind: 'bus', count: 4, speed: 10, colors: ['#dc2626', '#2563eb'] },
-      { kind: 'bike', count: 8, speed: 16, colors: ['#38bdf8', '#f97316', '#10b981'] },
+      { kind: 'auto', count: 10, speed: 13, colors: ['#facc15'] },
+      { kind: 'bus', count: 4, speed: 9.5, colors: ['#dc2626', '#2563eb'] },
+      { kind: 'bike', count: 8, speed: 18, colors: ['#38bdf8', '#f97316', '#10b981'] },
       { kind: 'car', count: 6, speed: 14, colors: ['#f8fafc', '#94a3b8', '#e2e8f0'] },
     ];
     let idx = 0;
@@ -112,11 +122,14 @@ export function TrafficSystem() {
           progress,
           speed: sp.speed,
           baseSpeed: sp.speed + (idx % 3),
-          violator: idx % 7 === 0,
+          // Distinct signal obedience: autos jump lights often, cars obey strictly
+          violator: sp.kind === 'auto' ? idx % 3 === 0 : sp.kind === 'bike' ? idx % 5 === 0 : false,
           color: sp.colors[i % sp.colors.length],
           x: sample.x,
           z: sample.z,
           rotY: sample.rotY,
+          busStopTimer: 0,
+          weavePhase: idx * 1.1,
         });
         idx++;
       }
@@ -163,7 +176,6 @@ export function TrafficSystem() {
       if (honkTimer.current <= 0) setHonkBubble(null);
     }
 
-    // Move hero online GLB delivery truck along the loop
     if (heroTruckRef.current) {
       heroProgressRef.current += 9.5 * dt;
       const hs = sampleLoop(heroProgressRef.current, 1);
@@ -179,11 +191,30 @@ export function TrafficSystem() {
 
     for (let i = 0; i < agents.length; i++) {
       const a = agents[i];
-      const s = sampleLoop(a.progress, a.lane);
+
+      // Distinct vehicle-specific lane & weaving behavior
+      a.weavePhase += dt * (a.kind === 'auto' ? 2.4 : a.kind === 'bike' ? 3.2 : 0);
+      const laneMag =
+        a.kind === 'bike'
+          ? 4.3 + Math.sin(a.weavePhase) * 0.45 // Bikes hug outer edge & weave
+          : a.kind === 'auto'
+          ? 3.0 + Math.sin(a.weavePhase) * 0.75 // Autos weave unpredictably
+          : 3.2; // Cars & Buses hold steady center lane
+
+      const s = sampleLoop(a.progress, a.lane, laneMag);
+
+      // MTC Buses pause at Nethaji Nagar Bus Stop (-190, z ~ 18)
+      if (a.kind === 'bus') {
+        if (a.busStopTimer > 0) {
+          a.busStopTimer -= dt;
+        } else if (Math.abs(s.x - -190) < 10 && Math.abs(s.z - 18) < 4 && a.speed > 2) {
+          a.busStopTimer = 3.0;
+        }
+      }
 
       const floodStalled = state.waterLevel > 0.25 && a.z > 105;
       const isRed = s.nearSignal && (s.isNS ? !currentNsGreen : currentNsGreen);
-      let blocked = floodStalled || (isRed && !a.violator);
+      let blocked = floodStalled || a.busStopTimer > 0 || (isRed && !a.violator);
 
       const dxP = a.x - px;
       const dzP = a.z - pz;
@@ -196,7 +227,14 @@ export function TrafficSystem() {
           setHonkBubble({
             x: a.x,
             z: a.z,
-            text: a.kind === 'bus' ? 'PAAM! PAAM!' : 'BEEP! Side please!',
+            text:
+              a.kind === 'bus'
+                ? 'PAAM! PAAM!'
+                : a.kind === 'auto'
+                ? 'SIDE! Auto varudhu!'
+                : a.kind === 'bike'
+                ? 'BEEP BEEP!'
+                : 'Honk! Clear the road!',
           });
         }
       }
@@ -205,9 +243,11 @@ export function TrafficSystem() {
         for (let j = 0; j < agents.length; j++) {
           if (i === j || agents[j].lane !== a.lane) continue;
           const b = agents[j];
+          // Bikes can squeeze past unless directly in front
+          const minGap = a.kind === 'bike' ? 6.5 : a.kind === 'bus' ? 14 : 11;
           let dProg = (b.progress - a.progress) * a.lane;
           if (dProg < 0) dProg += PERIMETER;
-          if (dProg > 0 && dProg < 11) {
+          if (dProg > 0 && dProg < minGap) {
             blocked = true;
             break;
           }
@@ -215,75 +255,106 @@ export function TrafficSystem() {
       }
 
       const targetSpd = blocked ? 0 : a.baseSpeed;
-      a.speed = THREE.MathUtils.lerp(a.speed, targetSpd, dt * 6);
+      const accelRate = a.kind === 'bike' ? 9 : a.kind === 'auto' ? 7 : a.kind === 'bus' ? 3.5 : 5.5;
+      a.speed = THREE.MathUtils.lerp(a.speed, targetSpd, dt * accelRate);
       a.progress += a.lane * a.speed * dt;
 
-      const next = sampleLoop(a.progress, a.lane);
+      const next = sampleLoop(a.progress, a.lane, laneMag);
       a.x = next.x;
       a.z = next.z;
       a.rotY = a.lane === 1 ? next.rotY : next.rotY + Math.PI;
 
+      const leanZ = a.kind === 'bike' ? Math.cos(a.weavePhase) * 0.08 : a.kind === 'auto' ? Math.cos(a.weavePhase) * 0.03 : 0;
       dummy.position.set(a.x, 0, a.z);
-      dummy.rotation.set(0, a.rotY, 0);
+      dummy.rotation.set(0, a.rotY, leanZ);
       dummy.scale.set(1, 1, 1);
       dummy.updateMatrix();
 
       if (a.kind === 'auto') {
         autoBodyRef.current?.setMatrixAt(autoI, dummy.matrix);
         autoTrimRef.current?.setMatrixAt(autoI, dummy.matrix);
+        autoLightsRef.current?.setMatrixAt(autoI, dummy.matrix);
         autoI++;
       } else if (a.kind === 'bus') {
         busBodyRef.current?.setMatrixAt(busI, dummy.matrix);
         busTrimRef.current?.setMatrixAt(busI, dummy.matrix);
+        busLightsRef.current?.setMatrixAt(busI, dummy.matrix);
         busI++;
       } else if (a.kind === 'bike') {
         bikeBodyRef.current?.setMatrixAt(bikeI, dummy.matrix);
         bikeTrimRef.current?.setMatrixAt(bikeI, dummy.matrix);
+        bikeLightsRef.current?.setMatrixAt(bikeI, dummy.matrix);
         bikeI++;
       } else if (a.kind === 'car') {
         carBodyRef.current?.setMatrixAt(carI, dummy.matrix);
         carTrimRef.current?.setMatrixAt(carI, dummy.matrix);
+        carLightsRef.current?.setMatrixAt(carI, dummy.matrix);
         carI++;
       }
     }
 
-    [autoBodyRef, autoTrimRef, busBodyRef, busTrimRef, bikeBodyRef, bikeTrimRef, carBodyRef, carTrimRef].forEach((r) => {
+    [
+      autoBodyRef,
+      autoTrimRef,
+      autoLightsRef,
+      busBodyRef,
+      busTrimRef,
+      busLightsRef,
+      bikeBodyRef,
+      bikeTrimRef,
+      bikeLightsRef,
+      carBodyRef,
+      carTrimRef,
+      carLightsRef,
+    ].forEach((r) => {
       if (r.current) r.current.instanceMatrix.needsUpdate = true;
     });
   });
 
   return (
     <group name="Traffic_System">
-      {/* 10 Auto-Rickshaws (Yellow body + Black canopy & 3 wheels) */}
+      {/* 10 Auto-Rickshaws */}
       <instancedMesh ref={autoBodyRef} args={[geos.auto.body, undefined, 10]} castShadow frustumCulled={false}>
-        <meshStandardMaterial roughness={0.5} />
+        <meshStandardMaterial roughness={0.45} />
       </instancedMesh>
       <instancedMesh ref={autoTrimRef} args={[geos.auto.trim, undefined, 10]} castShadow frustumCulled={false}>
         <meshStandardMaterial color="#1e293b" roughness={0.8} />
       </instancedMesh>
+      <instancedMesh ref={autoLightsRef} args={[geos.auto.lights, undefined, 10]} frustumCulled={false}>
+        <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.5} />
+      </instancedMesh>
 
-      {/* 4 MTC Buses (Red/Blue body + Dark windows & 4 wheels) */}
+      {/* 4 MTC Buses */}
       <instancedMesh ref={busBodyRef} args={[geos.bus.body, undefined, 4]} castShadow frustumCulled={false}>
-        <meshStandardMaterial roughness={0.55} />
+        <meshStandardMaterial roughness={0.5} />
       </instancedMesh>
       <instancedMesh ref={busTrimRef} args={[geos.bus.trim, undefined, 4]} castShadow frustumCulled={false}>
         <meshStandardMaterial color="#0f172a" roughness={0.6} />
       </instancedMesh>
+      <instancedMesh ref={busLightsRef} args={[geos.bus.lights, undefined, 4]} frustumCulled={false}>
+        <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.5} />
+      </instancedMesh>
 
-      {/* 8 Scooters/Bikes (Colored body + Handlebars & 2 wheels) */}
+      {/* 8 Scooters/Bikes */}
       <instancedMesh ref={bikeBodyRef} args={[geos.bike.body, undefined, 8]} castShadow frustumCulled={false}>
-        <meshStandardMaterial roughness={0.45} />
+        <meshStandardMaterial roughness={0.4} metalness={0.2} />
       </instancedMesh>
       <instancedMesh ref={bikeTrimRef} args={[geos.bike.trim, undefined, 8]} castShadow frustumCulled={false}>
         <meshStandardMaterial color="#0f172a" roughness={0.7} />
       </instancedMesh>
+      <instancedMesh ref={bikeLightsRef} args={[geos.bike.lights, undefined, 8]} frustumCulled={false}>
+        <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.5} />
+      </instancedMesh>
 
-      {/* 6 Sedan Cars (Colored sculpted body + Dark glass & 4 wheels) */}
+      {/* 6 Sedan Cars */}
       <instancedMesh ref={carBodyRef} args={[geos.car.body, undefined, 6]} castShadow frustumCulled={false}>
-        <meshStandardMaterial roughness={0.35} metalness={0.25} />
+        <meshStandardMaterial roughness={0.3} metalness={0.35} />
       </instancedMesh>
       <instancedMesh ref={carTrimRef} args={[geos.car.trim, undefined, 6]} castShadow frustumCulled={false}>
-        <meshStandardMaterial color="#0f172a" roughness={0.5} />
+        <meshStandardMaterial color="#0f172a" roughness={0.45} />
+      </instancedMesh>
+      <instancedMesh ref={carLightsRef} args={[geos.car.lights, undefined, 6]} frustumCulled={false}>
+        <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.5} />
       </instancedMesh>
 
       {/* Online CC0 Delivery Truck Driving on Loop */}
