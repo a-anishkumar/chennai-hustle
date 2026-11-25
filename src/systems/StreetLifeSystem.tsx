@@ -4,6 +4,7 @@ import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGameStore } from './gameStore';
 import { FlyingBird, RoamingAnimal, type AnimalSpecies } from '../world/AnimatedAnimal';
+import { AnimatedHumanNpc } from '../world/AnimatedHumanNpc';
 
 const COW_SPOTS: { x: number; z: number; rotY: number; species: 'cow' | 'bull' }[] = [
   { x: -155, z: 108, rotY: 0.4, species: 'cow' },
@@ -133,15 +134,16 @@ export function StreetLifeSystem() {
       {/* Alley Gang Fight Event (-210, 0, 110) */}
       <group position={[-210, 0, 110]}>
         {[-1.8, -0.9, 0.9, 1.8].map((gx, i) => (
-          <group key={i} position={[gx, 0, (i % 2) * 0.4]}>
-            <mesh position={[0, 0.75, 0]} castShadow>
-              <boxGeometry args={[0.5, 1.1, 0.32]} />
-              <meshStandardMaterial color={i < 2 ? '#dc2626' : '#2563eb'} />
-            </mesh>
-            <mesh position={[0, 1.5, 0]} castShadow>
-              <sphereGeometry args={[0.2, 8, 8]} />
-              <meshStandardMaterial color="#8d5524" />
-            </mesh>
+          <group
+            key={i}
+            position={[gx, 0, (i % 2) * 0.4]}
+            rotation={[0, i < 2 ? Math.PI / 2 : -Math.PI / 2, 0]}
+          >
+            <AnimatedHumanNpc
+              variant={i % 2 === 0 ? 'xbot' : 'soldier'}
+              anim={i < 2 ? 'run' : 'agree'}
+              tintColor={i < 2 ? '#dc2626' : '#2563eb'}
+            />
           </group>
         ))}
         <Html position={[0, 2.4, 0]} center zIndexRange={[1, 8]}>
@@ -174,19 +176,17 @@ export function StreetLifeSystem() {
         ))}
         {/* Young Cricketers */}
         {[
-          [0, 0, -2.5, '#38bdf8'],
-          [0.8, 0, 3.2, '#f97316'],
-          [-2.8, 0, 0.5, '#22c55e'],
-        ].map(([kx, , kz, col], idx) => (
-          <group key={idx} position={[Number(kx), 0, Number(kz)]}>
-            <mesh position={[0, 0.55, 0]} castShadow>
-              <boxGeometry args={[0.38, 0.8, 0.24]} />
-              <meshStandardMaterial color={String(col)} />
-            </mesh>
-            <mesh position={[0, 1.1, 0]} castShadow>
-              <sphereGeometry args={[0.16, 8, 8]} />
-              <meshStandardMaterial color="#8d5524" />
-            </mesh>
+          [0, 0, -2.5, '#38bdf8', Math.PI],
+          [0.8, 0, 3.2, '#f97316', 0],
+          [-2.8, 0, 0.5, '#22c55e', Math.PI / 2],
+        ].map(([kx, , kz, col, rot], idx) => (
+          <group key={idx} position={[Number(kx), 0, Number(kz)]} rotation={[0, Number(rot), 0]}>
+            <AnimatedHumanNpc
+              variant="xbot"
+              anim={idx === 1 ? 'run' : 'idle'}
+              scale={0.78}
+              tintColor={String(col)}
+            />
           </group>
         ))}
       </group>

@@ -1,4 +1,5 @@
 import { useMemo, useRef } from 'react';
+import { AnimatedHumanNpc } from '../AnimatedHumanNpc';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import { RigidBody } from '@react-three/rapier';
@@ -122,14 +123,9 @@ export function ConcertZone() {
         <boxGeometry args={[4.5, 1.1, 1.6]} />
         <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={0.5} />
       </mesh>
-      <mesh position={[0, 3.2, -2.5]} castShadow>
-        <boxGeometry args={[0.55, 1.1, 0.35]} />
-        <meshStandardMaterial color="#facc15" />
-      </mesh>
-      <mesh position={[0, 4.0, -2.5]} castShadow>
-        <sphereGeometry args={[0.22, 10, 10]} />
-        <meshStandardMaterial color="#8d5524" />
-      </mesh>
+      <group position={[0, 2.0, -2.5]}>
+        <AnimatedHumanNpc variant="michelle" anim="dance" tintColor="#facc15" />
+      </group>
 
       {/* Spinning Disco Ball & Dynamic Neon Lights */}
       <mesh ref={discoBallRef} position={[0, 8.2, 2]}>
@@ -188,15 +184,12 @@ export function ConcertZone() {
 
       {/* Smoking Corner People + Rising Smoke Puffs */}
       {[0, 1, 2].map((i) => (
-        <group key={`smoker_${i}`} position={[16 + i * 2.2, 0, 12 + (i % 2) * 1.5]}>
-          <mesh position={[0, 0.75, 0]} castShadow>
-            <boxGeometry args={[0.48, 1.1, 0.3]} />
-            <meshStandardMaterial color={DANCER_COLORS[(i + 2) % DANCER_COLORS.length]} />
-          </mesh>
-          <mesh position={[0, 1.48, 0]} castShadow>
-            <sphereGeometry args={[0.19, 8, 8]} />
-            <meshStandardMaterial color="#8d5524" />
-          </mesh>
+        <group key={`smoker_${i}`} position={[16 + i * 2.2, 0, 12 + (i % 2) * 1.5]} rotation={[0, -Math.PI / 4, 0]}>
+          <AnimatedHumanNpc
+            variant={i % 2 === 0 ? 'xbot' : 'soldier'}
+            anim="idle"
+            tintColor={DANCER_COLORS[(i + 2) % DANCER_COLORS.length]}
+          />
         </group>
       ))}
       <instancedMesh ref={smokeRef} args={[undefined, undefined, SMOKE_COUNT]} frustumCulled={false}>

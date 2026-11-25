@@ -1,16 +1,22 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import dialogues from '../config/dialogues.json';
 import { useGameStore } from './gameStore';
-import { AnimatedPlayerMesh } from '../world/AnimatedPlayerMesh';
+import {
+  AnimatedHumanNpc,
+  type HumanNpcAnim,
+  type HumanNpcVariant,
+} from '../world/AnimatedHumanNpc';
 
 type NpcRole = 'office' | 'student' | 'vendor' | 'fan' | 'fisherman' | 'influencer' | 'beggar';
 type NpcAction = 'walking' | 'idle_chatting' | 'waving_auto' | 'checking_phone' | 'fleeing_rain';
 
 interface NpcAgent {
+  id: number;
   role: NpcRole;
+  variant: HumanNpcVariant;
   action: NpcAction;
   actionTimer: number;
   homeX: number;
@@ -35,6 +41,16 @@ const ROLE_COLORS: Record<NpcRole, string> = {
   beggar: '#78716c',
 };
 
+const ROLE_VARIANTS: Record<NpcRole, HumanNpcVariant> = {
+  office: 'cesium',
+  student: 'xbot',
+  vendor: 'soldier',
+  fan: 'xbot',
+  fisherman: 'cesium',
+  influencer: 'michelle',
+  beggar: 'xbot',
+};
+
 const INFLUENCER_LINES = [
   'Guys! Welcome back to my Chennai street vlog — like & subscribe!',
   'Indha tea kadai aesthetic vera level reels-ku! #ChennaiVibes',
@@ -55,13 +71,19 @@ const ACTION_LABELS: Record<NpcAction, string> = {
 };
 
 const ROLES: NpcRole[] = ['office', 'student', 'vendor', 'fan', 'fisherman', 'influencer', 'beggar'];
-const NPC_COUNT = 49;
+const NPC_COUNT = 24;
+
+function mapActionToAnim(action: NpcAction, variant: HumanNpcVariant): HumanNpcAnim {
+  if (variant === 'michelle') return 'dance';
+  if (action === 'fleeing_rain') return 'run';
+  if (action === 'walking') return 'walk';
+  if (action === 'waving_auto' || action === 'idle_chatting') return 'agree';
+  return 'idle';
+}
 
 export function NpcSystem() {
-  const bodyRef = useRef<THREE.InstancedMesh>(null);
-  const headRef = useRef<THREE.InstancedMesh>(null);
-  const heroNpc1Ref = useRef<THREE.Group>(null);
-  const heroNpc2Ref = useRef<THREE.Group>(null);
+  const npcGroupRefs = useRef<(THREE.Group | null)[]>([]);
+  const [npcAnims, setNpcAnims] = useState<HumanNpcAnim[]>(() => Array(NPC_COUNT).fill('walk'));
   const [nearbyLine, setNearbyLine] = useState<{ x: number; z: number; text: string } | null>(null);
   const checkTimer = useRef(0);
 
@@ -82,16 +104,18 @@ export function NpcSystem() {
       const angle = (i * 1.7) % (Math.PI * 2);
       const radius = 5 + (i % 6) * 2.5;
       list.push({
+        id: i,
         role,
+        variant: ROLE_VARIANTS[role],
         action: 'walking',
         actionTimer: 2 + (i % 5),
         homeX: hub[0] + ((i * 13) % 14) - 7,
         homeZ: hub[1] + ((i * 17) % 14) - 7,
-        x: hub[0],
-        z: hub[1],
+        x: hub[0] + Math.cos(angle) * radius,
+        z: hub[1] + Math.sin(angle) * radius,
         rotY: 0,
         angle,
-        speed: role === 'vendor' || role === 'beggar' ? 0.18 : 0.75 + (i % 4) * 0.22,
+        speed: role === 'vendor' || role === 'beggar' ? 0.25 : 0.85 + (i % 4) * 0.2,
         radius,
         color: ROLE_COLORS[role],
         line:
@@ -105,15 +129,6 @@ export function NpcSystem() {
     npcsRef.current = list;
   }
 
-  useEffect(() => {
-    if (!bodyRef.current || !npcsRef.current) return;
-    const col = new THREE.Color();
-    npcsRef.current.forEach((n, i) => bodyRef.current!.setColorAt(i, col.set(n.color)));
-    if (bodyRef.current.instanceColor) bodyRef.current.instanceColor.needsUpdate = true;
-  }, []);
-
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-
   useFrame(({ clock }, delta) => {
     const dt = Math.min(delta, 0.05);
     const state = useGameStore.getState();
@@ -122,32 +137,19 @@ export function NpcSystem() {
 
     const t = clock.getElapsedTime();
     const isRaining = state.weather === 'monsoon' || state.weather === 'flood';
-
-    // Animate 2 skeletal GLB pedestrians strolling in TNHB & Road Loop
-    if (heroNpc1Ref.current) {
-      const a1 = t * 0.25;
-      heroNpc1Ref.current.position.set(-120 + Math.cos(a1) * 14, 0, 60 + Math.sin(a1) * 14);
-      heroNpc1Ref.current.rotation.y = -a1;
-    }
-    if (heroNpc2Ref.current) {
-      const a2 = t * 0.2 + 2.1;
-      heroNpc2Ref.current.position.set(-178, 0, 18 + Math.sin(a2) * 16);
-      heroNpc2Ref.current.rotation.y = Math.cos(a2) > 0 ? 0 : Math.PI;
-    }
-
     const [px, , pz] = state.playerPos;
     let closestDist2 = 64;
     let closestNpc: NpcAgent | null = null;
+    let animsChanged = false;
 
     for (let i = 0; i < npcs.length; i++) {
       const n = npcs[i];
 
-      // Random AI action state machine
       n.actionTimer -= dt;
       if (isRaining && n.role !== 'beggar' && n.role !== 'vendor') {
         n.action = 'fleeing_rain';
       } else if (n.actionTimer <= 0) {
-        n.actionTimer = 3 + ((i * 7 + Math.floor(t)) % 5);
+        n.actionTimer = 4 + ((i * 7 + Math.floor(t)) % 5);
         const actions: NpcAction[] = ['walking', 'walking', 'idle_chatting', 'waving_auto', 'checking_phone'];
         n.action = actions[(i + Math.floor(t)) % actions.length];
       }
@@ -167,23 +169,20 @@ export function NpcSystem() {
       const dz = n.z - pz;
       const d2 = dx * dx + dz * dz;
 
-      // Turn to face player when nearby
-      const targetRot = d2 < 36 ? Math.atan2(px - n.x, pz - n.z) : -n.angle;
-      n.rotY = targetRot;
+      // Face walking tangent or turn to face player when nearby
+      const tangentRot = Math.atan2(-Math.sin(n.angle), Math.cos(n.angle));
+      n.rotY = d2 < 36 ? Math.atan2(px - n.x, pz - n.z) : tangentRot;
 
-      // Subtle bounce when walking or waving
-      const bob = moveMult > 0 ? Math.abs(Math.sin(t * 7 + i)) * 0.08 : 0;
+      const grp = npcGroupRefs.current[i];
+      if (grp) {
+        grp.position.set(n.x, 0, n.z);
+        grp.rotation.y = n.rotY;
+      }
 
-      dummy.position.set(n.x, 0.75 + bob, n.z);
-      dummy.rotation.set(0, n.rotY, n.action === 'waving_auto' ? Math.sin(t * 8) * 0.08 : 0);
-      dummy.scale.set(1, 1, 1);
-      dummy.updateMatrix();
-      if (bodyRef.current) bodyRef.current.setMatrixAt(i, dummy.matrix);
-
-      dummy.position.set(n.x, 1.48 + bob, n.z);
-      dummy.rotation.set(0, n.rotY, 0);
-      dummy.updateMatrix();
-      if (headRef.current) headRef.current.setMatrixAt(i, dummy.matrix);
+      const desiredAnim = mapActionToAnim(n.action, n.variant);
+      if (npcAnims[i] !== desiredAnim) {
+        animsChanged = true;
+      }
 
       if (d2 < closestDist2) {
         closestDist2 = d2;
@@ -191,8 +190,9 @@ export function NpcSystem() {
       }
     }
 
-    if (bodyRef.current) bodyRef.current.instanceMatrix.needsUpdate = true;
-    if (headRef.current) headRef.current.instanceMatrix.needsUpdate = true;
+    if (animsChanged) {
+      setNpcAnims(npcs.map((n) => mapActionToAnim(n.action, n.variant)));
+    }
 
     checkTimer.current += dt;
     if (checkTimer.current > 0.35) {
@@ -216,22 +216,23 @@ export function NpcSystem() {
 
   return (
     <group name="NPC_Crowd">
-      <instancedMesh ref={bodyRef} args={[undefined, undefined, NPC_COUNT]} castShadow frustumCulled={false}>
-        <boxGeometry args={[0.52, 1.15, 0.34]} />
-        <meshStandardMaterial roughness={0.75} />
-      </instancedMesh>
-      <instancedMesh ref={headRef} args={[undefined, undefined, NPC_COUNT]} castShadow frustumCulled={false}>
-        <sphereGeometry args={[0.21, 10, 10]} />
-        <meshStandardMaterial color="#8d5524" roughness={0.65} />
-      </instancedMesh>
-
-      {/* Skeletal Animated Online GLB Pedestrians */}
-      <group ref={heroNpc1Ref}>
-        <AnimatedPlayerMesh isMoving isSprinting={false} fallback={null} />
-      </group>
-      <group ref={heroNpc2Ref}>
-        <AnimatedPlayerMesh isMoving isSprinting={false} fallback={null} />
-      </group>
+      {npcsRef.current.map((n, i) => (
+        <group
+          key={n.id}
+          ref={(el) => {
+            npcGroupRefs.current[i] = el;
+          }}
+          position={[n.x, 0, n.z]}
+          rotation={[0, n.rotY, 0]}
+        >
+          <AnimatedHumanNpc
+            variant={n.variant}
+            anim={npcAnims[i]}
+            timeScale={0.9 + (i % 3) * 0.1}
+            tintColor={n.color}
+          />
+        </group>
+      ))}
 
       {nearbyLine && (
         <Html position={[nearbyLine.x, 2.25, nearbyLine.z]} center zIndexRange={[1, 8]}>
