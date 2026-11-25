@@ -77,49 +77,67 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
     const tList: { x: number; y: number; z: number; scale: number }[] = [];
     const pList: { x: number; y: number; z: number }[] = [];
 
-    // Align Chennai buildings into neat neighborhood blocks away from internal cross-streets (lx=0, lz=0)
-    const bCount = isActiveDetail ? 24 : 10;
-    for (let i = 0; i < bCount; i++) {
-      const lx = (rand() - 0.5) * (CHUNK_SIZE - 26);
-      const lz = (rand() - 0.5) * (CHUNK_SIZE - 26);
-      if (Math.abs(lx) < 14 || Math.abs(lz) < 14) continue; // Keep chunk cross-streets clear
-      const wx = originX + lx;
-      const wz = originZ + lz;
-      if (isInsideReservedZone(wx, wz)) continue;
-      const h = 6.5 + rand() * 13;
-      const w = 9 + rand() * 9;
-      const d = 9 + rand() * 9;
-      const ty = getTerrainHeight(wx, wz);
-      bList.push({
-        x: lx,
-        y: ty,
-        z: lz,
-        w,
-        h,
-        d,
-        rotY: (Math.floor(rand() * 4) * Math.PI) / 2,
-        color: CHENNAI_PALETTE[Math.floor(rand() * CHENNAI_PALETTE.length)],
-      });
+    // Structured 4-quadrant city block layout facing the internal cross-streets (lx=0, lz=0)
+    const lotOffsets = [-92, -58, -26, 26, 58, 92];
+    for (const lx of lotOffsets) {
+      for (const lz of lotOffsets) {
+        // Leave inner courtyard parks in center of each quadrant (-58,-58 etc.)
+        if (Math.abs(lx) === 58 && Math.abs(lz) === 58) continue;
+        // Skip occasional lot for breathing room / variety
+        if (rand() < 0.14) continue;
+
+        const wx = originX + lx;
+        const wz = originZ + lz;
+        if (isInsideReservedZone(wx, wz)) continue;
+
+        const h = 7.5 + rand() * 12;
+        const w = 16 + rand() * 5;
+        const d = 16 + rand() * 5;
+        const ty = getTerrainHeight(wx, wz);
+
+        // Face the nearest street cleanly
+        let rotY = 0;
+        if (Math.abs(lx) === 26) rotY = lx < 0 ? Math.PI / 2 : -Math.PI / 2;
+        else if (Math.abs(lz) === 26) rotY = lz < 0 ? 0 : Math.PI;
+        else rotY = lx < 0 ? Math.PI / 2 : -Math.PI / 2;
+
+        bList.push({
+          x: lx,
+          y: ty,
+          z: lz,
+          w,
+          h,
+          d,
+          rotY,
+          color: CHENNAI_PALETTE[Math.floor(rand() * CHENNAI_PALETTE.length)],
+        });
+      }
     }
 
-    // Coconut palms & avenue trees
-    const tCount = isActiveDetail ? 22 : 8;
-    for (let i = 0; i < tCount; i++) {
-      const lx = (rand() - 0.5) * (CHUNK_SIZE - 14);
-      const lz = (rand() - 0.5) * (CHUNK_SIZE - 14);
-      const wx = originX + lx;
-      const wz = originZ + lz;
-      if (Math.abs(wz - worldConfig.canalZ) < 28 || wx > worldConfig.coastStartX + 10) continue;
-      if (wx > -175 && wx < -65 && wz > 20 && wz < 105) continue;
-      const ty = getTerrainHeight(wx, wz);
-      tList.push({ x: lx, y: ty, z: lz, scale: 0.85 + rand() * 0.65 });
+    // Avenue Coconut Palms planted in neat boulevard rows along the streets & parks
+    for (let k = -105; k <= 105; k += 35) {
+      for (const side of [-10, 10]) {
+        const spots: [number, number][] = [
+          [side, k],
+          [k, side],
+        ];
+        for (const [tx, tz] of spots) {
+          if (Math.abs(tx) < 12 && Math.abs(tz) < 12) continue;
+          const wx = originX + tx;
+          const wz = originZ + tz;
+          if (Math.abs(wz - worldConfig.canalZ) < 28 || wx > worldConfig.coastStartX + 10) continue;
+          if (wx > -185 && wx < -55 && wz > 15 && wz < 115) continue;
+          const ty = getTerrainHeight(wx, wz);
+          tList.push({ x: tx, y: ty, z: tz, scale: 0.9 + (Math.abs(k) % 3) * 0.12 });
+        }
+      }
     }
 
-    // Utility poles along neighborhood cross-streets
+    // Utility poles evenly spaced along street curbs
     if (isActiveDetail && originX < worldConfig.coastStartX - 80) {
       for (let k = -90; k <= 90; k += 45) {
-        if (!isInsideReservedZone(originX + 7, originZ + k)) {
-          pList.push({ x: 7, y: getTerrainHeight(originX + 7, originZ + k), z: k });
+        if (!isInsideReservedZone(originX + 8, originZ + k)) {
+          pList.push({ x: 8, y: getTerrainHeight(originX + 8, originZ + k), z: k });
         }
       }
     }
