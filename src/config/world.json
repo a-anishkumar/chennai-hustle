@@ -8,15 +8,15 @@
   "canalWidth": 48,
   "coastStartX": 1450,
   "landmarks": [
-    { "id": "tnhb", "name": "Nethaji Nagar TNHB Colony", "x": -120, "z": 60, "type": "housing" },
-    { "id": "teaKadai", "name": "Anbu Tea Kadai", "x": -40, "z": -35, "type": "teashop" },
-    { "id": "marina", "name": "Marina / Besant Beach", "x": 1520, "z": 120, "type": "beach" },
+    { "id": "tnhb", "name": "Besant Nagar TNHB Housing Board", "x": -120, "z": 60, "type": "housing" },
+    { "id": "teaKadai", "name": "Hotel Saravana Bhavan & Tea Kadai", "x": -40, "z": -35, "type": "teashop" },
+    { "id": "marina", "name": "Marina & Elliot's Beach", "x": 1520, "z": 120, "type": "beach" },
     { "id": "lighthouse", "name": "Chennai Lighthouse", "x": 1420, "z": 360, "type": "lighthouse" },
-    { "id": "harbour", "name": "North Harbour & Fish Market", "x": 950, "z": -1350, "type": "harbour" },
-    { "id": "mall", "name": "Bayfront City Mall & Dash10", "x": 480, "z": -260, "type": "mall" },
-    { "id": "cinema", "name": "Kaveri Theatre (FDFS)", "x": -480, "z": -320, "type": "cinema" },
-    { "id": "temple", "name": "Mylapore Kovil & Tank", "x": 620, "z": 520, "type": "temple" },
-    { "id": "fanHouse", "name": "Superstar Fan House", "x": 380, "z": 860, "type": "fanhouse" },
-    { "id": "busHub", "name": "Central Flyover & Bus Hub", "x": 0, "z": -180, "type": "transit" }
+    { "id": "harbour", "name": "Chennai Port & Kasimedu Harbour", "x": 950, "z": -1350, "type": "harbour" },
+    { "id": "mall", "name": "Express Avenue Mall & Saravana Stores", "x": 480, "z": -260, "type": "mall" },
+    { "id": "cinema", "name": "Sathyam / Kaveri Theatre (FDFS)", "x": -480, "z": -320, "type": "cinema" },
+    { "id": "temple", "name": "Mylapore Kapaleeshwarar Kovil", "x": 620, "z": 520, "type": "temple" },
+    { "id": "fanHouse", "name": "Poes Garden Superstar House", "x": 380, "z": 860, "type": "fanhouse" },
+    { "id": "busHub", "name": "Koyambedu Flyover & Metro Hub", "x": 0, "z": -180, "type": "transit" }
   ]
 }

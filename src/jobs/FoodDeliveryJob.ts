@@ -12,9 +12,9 @@ export interface FoodOrderOffer {
 }
 
 const RESTAURANTS: { name: string; item: string; pos: [number, number, number] }[] = [
-  { name: 'Anbu Tea & Snacks', item: 'Hot Masala Vadai & Filter Coffee', pos: [-40, 0, -35] },
-  { name: 'Madras Biryani Corner', item: 'Chicken Dum Biryani Pack', pos: [-185, 0, -60] },
-  { name: 'Saravana Tiffin Stall', item: 'Ghee Roast & Sambar', pos: [40, 0, -40] },
+  { name: 'Hotel Saravana Bhavan', item: 'Ghee Roast & Filter Coffee', pos: [-40, 0, -35] },
+  { name: 'Buhari Hotel (Mount Road)', item: 'Chicken 65 & Mutton Biryani', pos: [-175, 0, -60] },
+  { name: 'Murugan Idli Shop', item: 'Soft Idli & Podi Pack', pos: [55, 0, -40] },
 ];
 
 const DROPOFFS: { name: string; pos: [number, number, number] }[] = [

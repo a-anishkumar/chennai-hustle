@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
-import { getAwningTexture, getKolamTexture, getPlasterTexture } from '../ProceduralTextures';
+import { getAwningTexture, getKolamTexture, getPlasterTexture, getSignTexture } from '../ProceduralTextures';
 import { useGameStore } from '../../systems/gameStore';
 import { OnlineModel } from '../OnlineModel';
 
@@ -21,6 +21,7 @@ const CLOTH_COLORS = ['#ef4444', '#facc15', '#3b82f6', '#ec4899', '#10b981', '#f
 export function TnhbColony() {
   const kolamTex = useMemo(() => getKolamTexture(), []);
   const awningTex = useMemo(() => getAwningTexture('#dc2626', '#fef08a'), []);
+  const aavinSignTex = useMemo(() => getSignTexture('AAVIN & ANNACHI STORE', 'Besant Nagar TNHB', '#0284c7', '#fde047'), []);
   const clothesRef = useRef<THREE.Group>(null);
   const homeMarkerRef = useRef<THREE.Mesh>(null);
 
@@ -141,6 +142,11 @@ export function TnhbColony() {
         <mesh position={[0, 2.8, -3.2]} rotation={[0.35, 0, 0]} castShadow>
           <boxGeometry args={[7.2, 0.12, 2.2]} />
           <meshStandardMaterial map={awningTex} />
+        </mesh>
+        {/* Shop Signboard */}
+        <mesh position={[0, 4.1, -2.5]}>
+          <boxGeometry args={[6.8, 1.3, 0.2]} />
+          <meshStandardMaterial map={aavinSignTex} />
         </mesh>
         {/* Shop Counter */}
         <mesh position={[0, 0.6, -2.8]} castShadow>

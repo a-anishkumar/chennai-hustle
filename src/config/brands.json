@@ -9,7 +9,7 @@
     "foodDelivery": {
       "id": "foodZip",
       "name": "FoodZip",
-      "tagline": "Hot & Fresh to Your Gate",
+      "tagline": "Hot & Fresh from Chennai's Iconic Hotels",
       "color": "#ef4444"
     },
     "quickCommerce": {
@@ -40,11 +40,19 @@
   "landmarks": {
     "superstarName": "Superstar Vikramaditya",
     "superstarTitle": "Thalaivar",
-    "cinemaName": "Kaveri Theatre",
-    "mallName": "Bayfront City Mall",
-    "templeName": "Kapaleeshwarar-Style Kovil",
-    "teaShopName": "Anbu Tea Kadai",
-    "housingColonyName": "Nethaji Nagar TNHB Colony"
+    "cinemaName": "Sathyam / Kaveri Theatre",
+    "mallName": "Express Avenue Mall",
+    "megaStoreName": "Saravana Stores (T. Nagar)",
+    "templeName": "Kapaleeshwarar Kovil (Mylapore)",
+    "teaShopName": "Anbu Tea Kadai & Aavin",
+    "housingColonyName": "Besant Nagar TNHB Housing Board",
+    "beachName": "Marina & Elliot's Beach",
+    "hotels": [
+      { "name": "Hotel Saravana Bhavan", "specialty": "Ghee Roast & Filter Coffee", "color": "#16a34a" },
+      { "name": "Buhari Hotel (Mount Road)", "specialty": "Chicken 65 & Mutton Biryani", "color": "#dc2626" },
+      { "name": "Murugan Idli Shop", "specialty": "Soft Idli & Podi", "color": "#ea580c" },
+      { "name": "Ratna Cafe (Triplicane)", "specialty": "Triplicane Sambar Idli", "color": "#0284c7" }
+    ]
   },
   "campaigns": {
     "parties": [

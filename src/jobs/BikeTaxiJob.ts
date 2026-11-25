@@ -13,10 +13,10 @@ export interface BikeTaxiOffer {
 }
 
 const LOCATIONS: { name: string; pos: [number, number, number] }[] = [
-  { name: 'Nethaji Nagar Bus Stop', pos: [-180, 0, 18] },
-  { name: 'Anbu Tea Kadai', pos: [-40, 0, -35] },
-  { name: 'North Loop Junction', pos: [-75, 0, -120] },
-  { name: 'Canal Bridge East', pos: [40, 0, 165] },
+  { name: 'Besant Nagar Bus Stop', pos: [-180, 0, 18] },
+  { name: 'Hotel Saravana Bhavan', pos: [-40, 0, -35] },
+  { name: 'Express Avenue Mall', pos: [480, 0, -230] },
+  { name: 'Marina & Elliot Beach', pos: [1450, 0, 120] },
   { name: 'TNHB Main Gate', pos: [-120, 0, 105] },
 ];
 

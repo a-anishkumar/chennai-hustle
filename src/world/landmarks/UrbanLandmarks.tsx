@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
-import { getAwningTexture } from '../ProceduralTextures';
+import { getAwningTexture, getSignTexture } from '../ProceduralTextures';
 import { OnlineModel } from '../OnlineModel';
 
 const DUCK_URL =
@@ -10,6 +10,11 @@ const DUCK_URL =
 export function UrbanLandmarks() {
   const teaAwning = useMemo(() => getAwningTexture('#16a34a', '#f8fafc'), []);
   const cinemaBanner = useMemo(() => getAwningTexture('#f59e0b', '#7c2d12'), []);
+  const mallSign = useMemo(() => getSignTexture('EXPRESS AVENUE MALL', 'Royapettah • Shopping & Food Court', '#1e293b', '#facc15'), []);
+  const saravanaStoresSign = useMemo(() => getSignTexture('SARAVANA STORES', 'T. Nagar Mega Mart', '#b91c1c', '#fde047'), []);
+  const hsbSign = useMemo(() => getSignTexture('HOTEL SARAVANA BHAVAN', 'Ghee Roast • Filter Coffee', '#15803d', '#fef08a'), []);
+  const buhariSign = useMemo(() => getSignTexture('BUHARI HOTEL', 'Mount Road • Chicken 65 & Biryani', '#991b1b', '#fde047'), []);
+  const muruganSign = useMemo(() => getSignTexture('MURUGAN IDLI SHOP', 'Soft Idli • 4 Chutneys', '#ea580c', '#ffffff'), []);
 
   return (
     <group name="Urban_Landmarks">
@@ -26,11 +31,24 @@ export function UrbanLandmarks() {
           <boxGeometry args={[26, 15, 0.4]} />
           <meshStandardMaterial color="#38bdf8" roughness={0.15} metalness={0.6} transparent opacity={0.75} />
         </mesh>
-        {/* Mall Sign */}
-        <mesh position={[0, 19.2, 16]}>
-          <boxGeometry args={[22, 2.6, 1]} />
-          <meshStandardMaterial color="#f59e0b" emissive="#d97706" emissiveIntensity={0.6} />
+        {/* Express Avenue Mall Sign */}
+        <mesh position={[0, 19.6, 18.2]}>
+          <boxGeometry args={[28, 4.2, 0.6]} />
+          <meshStandardMaterial map={mallSign} />
         </mesh>
+        {/* Saravana Stores Mega Mart Wing */}
+        <group position={[-42, 0, 2]}>
+          <RigidBody type="fixed" colliders="cuboid">
+            <mesh position={[0, 7.5, 0]} castShadow>
+              <boxGeometry args={[26, 15, 24]} />
+              <meshStandardMaterial color="#dc2626" roughness={0.5} />
+            </mesh>
+          </RigidBody>
+          <mesh position={[0, 13.5, 12.2]}>
+            <boxGeometry args={[22, 3.6, 0.5]} />
+            <meshStandardMaterial map={saravanaStoresSign} />
+          </mesh>
+        </group>
         {/* Interior Escalator Ramp Visual */}
         <mesh position={[0, 4.5, 19.5]} rotation={[-0.4, 0, 0]}>
           <boxGeometry args={[4, 0.5, 14]} />
@@ -131,27 +149,58 @@ export function UrbanLandmarks() {
         </mesh>
       </group>
 
-      {/* 9. Anbu Tea Kadai Corner (-40, 0, -35) */}
+      {/* 9. Hotel Saravana Bhavan & Tea Kadai Corner (-40, 0, -35) */}
       <group position={[-40, 0, -35]}>
         <RigidBody type="fixed" colliders="cuboid">
-          <mesh position={[0, 1.6, 0]} castShadow>
-            <boxGeometry args={[6.5, 3.2, 4.5]} />
+          <mesh position={[0, 2.4, 0]} castShadow>
+            <boxGeometry args={[10, 4.8, 6]} />
             <meshStandardMaterial color="#fef3c7" />
           </mesh>
         </RigidBody>
-        <mesh position={[0, 2.8, 2.8]} rotation={[-0.35, 0, 0]} castShadow>
-          <boxGeometry args={[6.8, 0.12, 2.2]} />
+        <mesh position={[0, 5.2, 3.1]}>
+          <boxGeometry args={[9.6, 1.8, 0.3]} />
+          <meshStandardMaterial map={hsbSign} />
+        </mesh>
+        <mesh position={[0, 3.0, 3.8]} rotation={[-0.35, 0, 0]} castShadow>
+          <boxGeometry args={[9.8, 0.12, 2.2]} />
           <meshStandardMaterial map={teaAwning} />
         </mesh>
         {/* Tea Samovar */}
-        <mesh position={[-1.8, 1.5, 2.5]}>
+        <mesh position={[-2.2, 1.5, 3.4]}>
           <cylinderGeometry args={[0.35, 0.4, 0.9, 10]} />
           <meshStandardMaterial color="#cbd5e1" metalness={0.8} roughness={0.2} />
         </mesh>
         {/* Tea Helper Ring */}
-        <mesh position={[0, 0.08, 4.2]} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh position={[0, 0.08, 5.0]} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[1.5, 2.0, 20]} />
           <meshBasicMaterial color="#10b981" side={THREE.DoubleSide} />
+        </mesh>
+      </group>
+
+      {/* Iconic Chennai Hotels along Main Road Loop: Buhari Hotel & Murugan Idli Shop */}
+      <group position={[-175, 0, -60]}>
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[0, 2.6, 0]} castShadow>
+            <boxGeometry args={[11, 5.2, 7]} />
+            <meshStandardMaterial color="#fee2e2" />
+          </mesh>
+        </RigidBody>
+        <mesh position={[5.6, 4.8, 0]} rotation={[0, Math.PI / 2, 0]}>
+          <boxGeometry args={[9, 2.0, 0.3]} />
+          <meshStandardMaterial map={buhariSign} />
+        </mesh>
+      </group>
+
+      <group position={[55, 0, -40]}>
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[0, 2.4, 0]} castShadow>
+            <boxGeometry args={[10, 4.8, 7]} />
+            <meshStandardMaterial color="#ffedd5" />
+          </mesh>
+        </RigidBody>
+        <mesh position={[-5.1, 4.5, 0]} rotation={[0, -Math.PI / 2, 0]}>
+          <boxGeometry args={[8.5, 1.8, 0.3]} />
+          <meshStandardMaterial map={muruganSign} />
         </mesh>
       </group>
 

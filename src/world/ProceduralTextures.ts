@@ -146,3 +146,30 @@ export function getAsphaltNormalMap(): THREE.CanvasTexture {
   cache.asphaltNormal = tex;
   return tex;
 }
+
+export function getSignTexture(title: string, subtitle = '', bg = '#1e293b', fg = '#fde047'): THREE.CanvasTexture {
+  const key = `sign_${title}_${bg}`;
+  if (cache[key]) return cache[key];
+  const [canvas, ctx] = makeCanvas(512, 128);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 512, 128);
+  ctx.strokeStyle = fg;
+  ctx.lineWidth = 6;
+  ctx.strokeRect(4, 4, 504, 120);
+
+  ctx.fillStyle = fg;
+  ctx.font = 'bold 34px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(title.slice(0, 26), 256, subtitle ? 58 : 74);
+
+  if (subtitle) {
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '600 20px sans-serif';
+    ctx.fillText(subtitle.slice(0, 38), 256, 98);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  cache[key] = tex;
+  return tex;
+}
