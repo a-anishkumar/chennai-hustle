@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { RigidBody } from '@react-three/rapier';
 import { getAsphaltTexture } from './ProceduralTextures';
 import { useGameStore } from '../systems/gameStore';
-import { isNightHour } from '../systems/DayNightLighting';
+import { isNightHour } from '../systems/timeUtils';
 
 interface RoadSegmentProps {
   x: number;
@@ -83,6 +83,21 @@ export function RoadLoop() {
         </mesh>
       </RigidBody>
       <RoadSegment x={40} z={180} width={13} length={60} />
+
+      {/* Arterial Roads Connecting All 10 Landmarks */}
+      {/* East Arterial: Road Loop -> Mall / Marina Beach & Lighthouse */}
+      <RoadSegment x={740} z={-120} width={12} length={1420} rotY={Math.PI / 2} />
+      <RoadSegment x={1420} z={120} width={12} length={520} />
+      {/* West Arterial: Road Loop -> Kaveri Theatre */}
+      <RoadSegment x={-340} z={-120} width={12} length={310} rotY={Math.PI / 2} />
+      <RoadSegment x={-480} z={-210} width={12} length={220} />
+      {/* North Arterial: Mall / Loop -> North Harbour */}
+      <RoadSegment x={480} z={-740} width={12} length={1240} />
+      <RoadSegment x={715} z={-1350} width={12} length={480} rotY={Math.PI / 2} />
+      {/* South Arterial: Canal Bridge -> Temple & Fan House */}
+      <RoadSegment x={40} z={530} width={12} length={680} />
+      <RoadSegment x={330} z={520} width={12} length={580} rotY={Math.PI / 2} />
+      <RoadSegment x={210} z={860} width={12} length={350} rotY={Math.PI / 2} />
 
       {/* Potholes */}
       {POTHOLE_POSITIONS.map(([px, pz], idx) => (

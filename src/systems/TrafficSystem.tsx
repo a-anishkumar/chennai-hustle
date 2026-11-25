@@ -94,7 +94,8 @@ export function TrafficSystem() {
   const honkTimer = useRef(0);
   const signalTimer = useRef(0);
 
-  const agents = useMemo<TrafficAgent[]>(() => {
+  const agentsRef = useRef<TrafficAgent[] | null>(null);
+  if (!agentsRef.current) {
     const list: TrafficAgent[] = [];
     const specs: { kind: VehicleKind; count: number; speed: number; colors: string[] }[] = [
       { kind: 'auto', count: 10, speed: 12, colors: ['#facc15'] },
@@ -123,11 +124,13 @@ export function TrafficSystem() {
         idx++;
       }
     }
-    return list;
-  }, []);
+    agentsRef.current = list;
+  }
 
   // Apply instance colors once
   useEffect(() => {
+    const agents = agentsRef.current;
+    if (!agents) return;
     const col = new THREE.Color();
     const groups: Record<VehicleKind, TrafficAgent[]> = { auto: [], bus: [], bike: [], car: [] };
     agents.forEach((a) => groups[a.kind].push(a));
@@ -141,14 +144,15 @@ export function TrafficSystem() {
     applyColors(busRef.current, groups.bus);
     applyColors(bikeRef.current, groups.bike);
     applyColors(carRef.current, groups.car);
-  }, [agents]);
+  }, []);
 
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05);
     const state = useGameStore.getState();
-    if (!state.isStarted || state.isPaused) return;
+    const agents = agentsRef.current;
+    if (!state.isStarted || state.isPaused || !agents) return;
 
     // Traffic signal cycle (every 10s)
     signalTimer.current += dt;
@@ -291,18 +295,19 @@ export function TrafficSystem() {
 
       {/* Honk Bubble */}
       {honkBubble && (
-        <Html position={[honkBubble.x, 3.2, honkBubble.z]} center distanceFactor={18}>
+        <Html position={[honkBubble.x, 3.2, honkBubble.z]} center zIndexRange={[1, 8]}>
           <div
             style={{
               background: '#fef08a',
               color: '#0f172a',
-              padding: '4px 10px',
+              padding: '3px 9px',
               borderRadius: 999,
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: 800,
               whiteSpace: 'nowrap',
               boxShadow: '0 4px 12px rgba(0,0,0,0.35)',
               border: '2px solid #eab308',
+              pointerEvents: 'none',
             }}
           >
             {honkBubble.text}

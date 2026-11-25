@@ -10,7 +10,8 @@ export function WeatherSystem() {
   const weather = useGameStore((s) => s.weather);
   const isRaining = weather === 'monsoon' || weather === 'flood';
 
-  const drops = useMemo(() => {
+  const dropsRef = useRef<{ ox: number; oy: number; oz: number; speed: number }[] | null>(null);
+  if (!dropsRef.current) {
     const list: { ox: number; oy: number; oz: number; speed: number }[] = [];
     for (let i = 0; i < RAIN_COUNT; i++) {
       list.push({
@@ -20,15 +21,16 @@ export function WeatherSystem() {
         speed: 22 + (i % 7) * 2.5,
       });
     }
-    return list;
-  }, []);
+    dropsRef.current = list;
+  }
 
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
   useFrame((_, delta) => {
-    if (!isRaining || !rainRef.current) return;
+    if (!isRaining || !rainRef.current || !dropsRef.current) return;
     const dt = Math.min(delta, 0.05);
     const [px, , pz] = useGameStore.getState().playerPos;
+    const drops = dropsRef.current;
 
     for (let i = 0; i < RAIN_COUNT; i++) {
       const d = drops[i];

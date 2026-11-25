@@ -2,6 +2,10 @@ import { useMemo } from 'react';
 import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { getAwningTexture } from '../ProceduralTextures';
+import { OnlineModel } from '../OnlineModel';
+
+const DUCK_URL =
+  'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Duck/glTF-Binary/Duck.glb';
 
 export function UrbanLandmarks() {
   const teaAwning = useMemo(() => getAwningTexture('#16a34a', '#f8fafc'), []);
@@ -96,6 +100,7 @@ export function UrbanLandmarks() {
           <planeGeometry args={[24, 20]} />
           <meshStandardMaterial color="#0d9488" roughness={0.2} metalness={0.3} />
         </mesh>
+        <OnlineModel url={DUCK_URL} position={[2, 0.1, -4]} scale={0.9} />
         {/* Flower Stall */}
         <mesh position={[18, 1.2, 12]} castShadow>
           <boxGeometry args={[4.5, 2.4, 3.5]} />

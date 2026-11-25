@@ -4,6 +4,10 @@ import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { getAwningTexture, getKolamTexture, getPlasterTexture } from '../ProceduralTextures';
 import { useGameStore } from '../../systems/gameStore';
+import { OnlineModel } from '../OnlineModel';
+
+const MILK_TRUCK_URL =
+  'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb';
 
 const BLOCK_SPECS = [
   { id: 'A', x: -146, z: 42, rotY: 0, color: '#f59e0b', label: 'Block A (Home)' },
@@ -143,6 +147,19 @@ export function TnhbColony() {
           <boxGeometry args={[5.5, 1.2, 0.8]} />
           <meshStandardMaterial color="#b45309" />
         </mesh>
+        {/* Online CC0 Milk & Provision Delivery Van */}
+        <OnlineModel
+          url={MILK_TRUCK_URL}
+          position={[9.5, 0, -2]}
+          rotation={[0, -Math.PI / 2, 0]}
+          scale={1.15}
+          fallback={
+            <mesh position={[9.5, 1.1, -2]} castShadow>
+              <boxGeometry args={[2.2, 2.0, 4.4]} />
+              <meshStandardMaterial color="#f8fafc" />
+            </mesh>
+          }
+        />
       </group>
     </group>
   );

@@ -1,16 +1,14 @@
 import { useRef } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from './gameStore';
-
-export function isNightHour(hour: number): boolean {
-  return hour >= 18.25 || hour < 5.75;
-}
 
 const SKY_NIGHT = new THREE.Color('#091124');
 const SKY_DAWN = new THREE.Color('#f97316');
 const SKY_DAY = new THREE.Color('#60a5fa');
 const SKY_DUSK = new THREE.Color('#e11d48');
+const SKY_MONSOON = new THREE.Color('#334155');
+const SKY_HUMID = new THREE.Color('#94a3b8');
 
 const SUN_DAY = new THREE.Color('#fff7ed');
 const SUN_GOLDEN = new THREE.Color('#fb923c');
@@ -19,7 +17,8 @@ const SUN_NIGHT = new THREE.Color('#93c5fd');
 export function DayNightLighting() {
   const dirLightRef = useRef<THREE.DirectionalLight>(null);
   const hemiLightRef = useRef<THREE.HemisphereLight>(null);
-  const { scene } = useThree();
+  const bgRef = useRef<THREE.Color>(null);
+  const fogRef = useRef<THREE.FogExp2>(null);
   const quality = useGameStore((s) => s.quality);
 
   const shadowMapSize = quality === 'high' ? 2048 : quality === 'medium' ? 1024 : 512;
@@ -30,12 +29,10 @@ export function DayNightLighting() {
     state.advanceTime(dt);
 
     const h = state.timeOfDay;
-    // Sun angle: 6:00 = 0 rad (east), 12:00 = PI/2 (zenith), 18:00 = PI (west)
     const sunAngle = ((h - 6) / 24) * Math.PI * 2;
     const sunY = Math.sin(sunAngle);
     const sunX = Math.cos(sunAngle);
 
-    // Compute sky color
     const skyCol = new THREE.Color();
     if (h >= 5.5 && h < 7.5) {
       const t = (h - 5.5) / 2;
@@ -54,18 +51,25 @@ export function DayNightLighting() {
       skyCol.copy(SKY_NIGHT);
     }
 
-    const SKY_MONSOON = new THREE.Color('#334155');
     if (state.weather === 'monsoon' || state.weather === 'flood') {
       skyCol.lerp(SKY_MONSOON, state.weather === 'flood' ? 0.78 : 0.55);
     } else if (state.weather === 'humid') {
-      skyCol.lerp(new THREE.Color('#94a3b8'), 0.28);
+      skyCol.lerp(SKY_HUMID, 0.28);
     }
 
-    scene.background = skyCol;
-    if (scene.fog instanceof THREE.FogExp2) {
-      scene.fog.color.copy(skyCol);
-      scene.fog.density =
-        state.weather === 'flood' ? 0.0055 : state.weather === 'monsoon' ? 0.0042 : state.weather === 'humid' ? 0.0028 : 0.0022;
+    if (bgRef.current) {
+      bgRef.current.copy(skyCol);
+    }
+    if (fogRef.current) {
+      fogRef.current.color.copy(skyCol);
+      fogRef.current.density =
+        state.weather === 'flood'
+          ? 0.0055
+          : state.weather === 'monsoon'
+          ? 0.0042
+          : state.weather === 'humid'
+          ? 0.0028
+          : 0.0022;
     }
 
     const [px, , pz] = state.playerPos;
@@ -80,7 +84,6 @@ export function DayNightLighting() {
         const golden = 1 - THREE.MathUtils.clamp(sunY * 2.5, 0, 1);
         dl.color.lerpColors(SUN_DAY, SUN_GOLDEN, golden);
       } else {
-        // Moonlight
         dl.position.set(px - sunX * dist, 75, pz - 45);
         dl.intensity = 0.42;
         dl.color.copy(SUN_NIGHT);
@@ -98,7 +101,8 @@ export function DayNightLighting() {
 
   return (
     <>
-      <fogExp2 attach="fog" args={['#60a5fa', 0.0022]} />
+      <color ref={bgRef} attach="background" args={['#60a5fa']} />
+      <fogExp2 ref={fogRef} attach="fog" args={['#60a5fa', 0.0022]} />
       <hemisphereLight ref={hemiLightRef} args={['#93c5fd', '#78350f', 0.75]} />
       <directionalLight
         ref={dirLightRef}

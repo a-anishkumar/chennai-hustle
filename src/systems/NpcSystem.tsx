@@ -37,7 +37,8 @@ export function NpcSystem() {
   const [nearbyLine, setNearbyLine] = useState<{ x: number; z: number; text: string } | null>(null);
   const checkTimer = useRef(0);
 
-  const npcs = useMemo<NpcAgent[]>(() => {
+  const npcsRef = useRef<NpcAgent[] | null>(null);
+  if (!npcsRef.current) {
     const list: NpcAgent[] = [];
     const hubs: [number, number][] = [
       [-120, 60],  // TNHB Courtyard
@@ -65,22 +66,23 @@ export function NpcSystem() {
         line: dialogues.streetChatter[i % dialogues.streetChatter.length],
       });
     }
-    return list;
-  }, []);
+    npcsRef.current = list;
+  }
 
   useEffect(() => {
-    if (!bodyRef.current) return;
+    if (!bodyRef.current || !npcsRef.current) return;
     const col = new THREE.Color();
-    npcs.forEach((n, i) => bodyRef.current!.setColorAt(i, col.set(n.color)));
+    npcsRef.current.forEach((n, i) => bodyRef.current!.setColorAt(i, col.set(n.color)));
     if (bodyRef.current.instanceColor) bodyRef.current.instanceColor.needsUpdate = true;
-  }, [npcs]);
+  }, []);
 
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05);
     const state = useGameStore.getState();
-    if (!state.isStarted || state.isPaused) return;
+    const npcs = npcsRef.current;
+    if (!state.isStarted || state.isPaused || !npcs) return;
 
     const [px, , pz] = state.playerPos;
     let closestDist2 = 64; // 8m radius
@@ -146,19 +148,20 @@ export function NpcSystem() {
       </instancedMesh>
 
       {nearbyLine && (
-        <Html position={[nearbyLine.x, 2.25, nearbyLine.z]} center distanceFactor={16}>
+        <Html position={[nearbyLine.x, 2.25, nearbyLine.z]} center zIndexRange={[1, 8]}>
           <div
             style={{
               background: 'rgba(15, 23, 42, 0.9)',
               color: '#f8fafc',
-              padding: '5px 10px',
-              borderRadius: 10,
-              fontSize: 12,
+              padding: '4px 9px',
+              borderRadius: 8,
+              fontSize: 11,
               fontWeight: 500,
-              maxWidth: 200,
+              maxWidth: 180,
               textAlign: 'center',
               border: '1px solid rgba(251, 191, 36, 0.6)',
               boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+              pointerEvents: 'none',
             }}
           >
             “{nearbyLine.text}”

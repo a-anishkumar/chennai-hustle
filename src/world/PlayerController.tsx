@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { CapsuleCollider, RapierRigidBody, RigidBody, useRapier } from '@react-three/rapier';
 import * as THREE from 'three';
@@ -26,7 +26,7 @@ export function PlayerController() {
   const { rapier, world } = useRapier();
 
   const currentVehicle = useGameStore((s) => s.currentVehicle);
-  const initialPos = useRef(useGameStore.getState().playerPos);
+  const [initialPos] = useState(() => useGameStore.getState().playerPos);
 
   // Input state
   const keys = useRef<Record<string, boolean>>({});
@@ -124,6 +124,18 @@ export function PlayerController() {
     if (pos.y < minSurfaceY - 0.1) {
       rb.setTranslation({ x: pos.x, y: minSurfaceY + 0.05, z: pos.z }, true);
       rb.setLinvel({ x: vel.x, y: 0, z: vel.z }, true);
+    }
+
+    // Clamp inside 4km x 4km world bounds
+    if (Math.abs(pos.x) > 1950 || Math.abs(pos.z) > 1950) {
+      rb.setTranslation(
+        {
+          x: THREE.MathUtils.clamp(pos.x, -1950, 1950),
+          y: pos.y,
+          z: THREE.MathUtils.clamp(pos.z, -1950, 1950),
+        },
+        true
+      );
     }
 
     // Camera-relative movement axes
@@ -244,7 +256,7 @@ export function PlayerController() {
   return (
     <RigidBody
       ref={rbRef}
-      position={initialPos.current}
+      position={initialPos}
       colliders={false}
       mass={1}
       type="dynamic"
@@ -351,17 +363,33 @@ export function PlayerController() {
         {/* Namma Auto-Rickshaw */}
         {isAuto && (
           <group name="Namma_Auto" position={[0, 0.1, 0]}>
-            <mesh position={[0, 0.55, 0]} castShadow>
-              <boxGeometry args={[1.4, 0.85, 2.3]} />
-              <meshStandardMaterial color="#facc15" roughness={0.5} />
+            <mesh position={[0, 0.52, 0]} castShadow>
+              <boxGeometry args={[1.4, 0.72, 2.3]} />
+              <meshStandardMaterial color="#facc15" roughness={0.45} />
             </mesh>
-            <mesh position={[0, 1.35, -0.15]} castShadow>
-              <boxGeometry args={[1.38, 0.78, 1.9]} />
+            <mesh position={[0, 1.32, -0.15]} castShadow>
+              <boxGeometry args={[1.38, 0.72, 1.85]} />
               <meshStandardMaterial color="#1e293b" roughness={0.7} />
             </mesh>
-            <mesh position={[0, 0.6, 1.18]}>
+            {/* Windshield */}
+            <mesh position={[0, 1.05, 0.92]} rotation={[-0.25, 0, 0]}>
+              <boxGeometry args={[1.1, 0.55, 0.08]} />
+              <meshStandardMaterial color="#bae6fd" transparent opacity={0.65} />
+            </mesh>
+            {/* 3 Wheels */}
+            {[
+              [0, 0.24, 0.92],
+              [-0.68, 0.24, -0.78],
+              [0.68, 0.24, -0.78],
+            ].map(([wx, wy, wz], idx) => (
+              <mesh key={idx} position={[wx, wy, wz]} rotation={[0, Math.PI / 2, 0]} castShadow>
+                <torusGeometry args={[0.22, 0.08, 8, 12]} />
+                <meshStandardMaterial color="#0f172a" />
+              </mesh>
+            ))}
+            <mesh position={[0, 0.62, 1.18]}>
               <sphereGeometry args={[0.14, 8, 8]} />
-              <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.4} />
+              <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.5} />
             </mesh>
           </group>
         )}
@@ -370,17 +398,29 @@ export function PlayerController() {
         {isCab && (
           <group name="City_Cab" position={[0, 0.1, 0]}>
             <mesh position={[0, 0.52, 0]} castShadow>
-              <boxGeometry args={[1.8, 0.72, 3.8]} />
+              <boxGeometry args={[1.8, 0.68, 3.8]} />
               <meshStandardMaterial color="#f8fafc" roughness={0.35} metalness={0.25} />
             </mesh>
-            <mesh position={[0, 1.08, -0.15]} castShadow>
-              <boxGeometry args={[1.55, 0.58, 2.0]} />
+            <mesh position={[0, 1.06, -0.15]} castShadow>
+              <boxGeometry args={[1.55, 0.56, 2.0]} />
               <meshStandardMaterial color="#0284c7" roughness={0.3} />
             </mesh>
-            <mesh position={[0, 1.46, 0.1]}>
+            <mesh position={[0, 1.44, 0.1]}>
               <boxGeometry args={[0.6, 0.2, 0.25]} />
-              <meshStandardMaterial color="#facc15" emissive="#eab308" emissiveIntensity={0.8} />
+              <meshStandardMaterial color="#facc15" emissive="#eab308" emissiveIntensity={0.9} />
             </mesh>
+            {/* 4 Wheels */}
+            {[
+              [-0.9, 0.28, 1.15],
+              [0.9, 0.28, 1.15],
+              [-0.9, 0.28, -1.15],
+              [0.9, 0.28, -1.15],
+            ].map(([wx, wy, wz], idx) => (
+              <mesh key={idx} position={[wx, wy, wz]} rotation={[0, Math.PI / 2, 0]} castShadow>
+                <torusGeometry args={[0.26, 0.09, 8, 12]} />
+                <meshStandardMaterial color="#0f172a" />
+              </mesh>
+            ))}
           </group>
         )}
 
@@ -388,10 +428,14 @@ export function PlayerController() {
         {isBoat && (
           <group name="Rescue_Boat" position={[0, 0.1, 0]}>
             <mesh position={[0, 0.35, 0]} castShadow>
-              <boxGeometry args={[1.6, 0.55, 3.6]} />
-              <meshStandardMaterial color="#ea580c" roughness={0.6} />
+              <boxGeometry args={[1.6, 0.55, 3.4]} />
+              <meshStandardMaterial color="#ea580c" roughness={0.5} />
             </mesh>
-            <mesh position={[0, 0.65, -0.8]} castShadow>
+            <mesh position={[0, 0.35, 1.95]} rotation={[0, Math.PI / 4, 0]} castShadow>
+              <boxGeometry args={[1.15, 0.55, 1.15]} />
+              <meshStandardMaterial color="#ea580c" roughness={0.5} />
+            </mesh>
+            <mesh position={[0, 0.68, -0.85]} castShadow>
               <boxGeometry args={[1.2, 0.35, 0.8]} />
               <meshStandardMaterial color="#f8fafc" />
             </mesh>

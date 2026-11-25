@@ -3,7 +3,7 @@ import { Award, Bike, Clock, CloudRain, Footprints, Home, LifeBuoy, MapPin, Navi
 import { useGameStore } from '../systems/gameStore';
 import type { QualityLevel } from '../systems/SaveSystem';
 import { audioManager } from '../audio/AudioManager';
-import { useStoryProgression } from '../systems/StoryEvents';
+import { useStoryProgression } from '../systems/storyUtils';
 import { Minimap } from './Minimap';
 
 function formatClock(hour: number): string {
