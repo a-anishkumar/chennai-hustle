@@ -88,7 +88,21 @@ export function TrafficSystem() {
   const policeRef = useRef<THREE.Group>(null);
   const ambulanceRef = useRef<THREE.Group>(null);
   const taxiRef = useRef<THREE.Group>(null);
-  const specialProgRef = useRef({ police: 320, ambulance: 610, taxi: 820 });
+  const waterTruckRef = useRef<THREE.Group>(null);
+  const trashTruckRef = useRef<THREE.Group>(null);
+  const r15Ref = useRef<THREE.Group>(null);
+  const ktmRef = useRef<THREE.Group>(null);
+  const dukeRef = useRef<THREE.Group>(null);
+  const specialProgRef = useRef({
+    police: 320,
+    ambulance: 610,
+    taxi: 820,
+    water: 180,
+    trash: 460,
+    r15: 90,
+    ktm: 260,
+    duke: 540,
+  });
 
   const [nsGreen, setNsGreen] = useState(true);
   const [honkBubble, setHonkBubble] = useState<{ x: number; z: number; text: string } | null>(null);
@@ -187,25 +201,30 @@ export function TrafficSystem() {
       heroTruckRef.current.rotation.y = hs.rotY - Math.PI / 2;
     }
 
-    // Police Patrol, 108 Ambulance & Yellow Taxi driving on road loop
+    // Police, Ambulance, Taxi, Water Truck, Trash Truck, R15, KTM & Duke
     specialProgRef.current.police += 16 * dt;
     specialProgRef.current.ambulance += 17.5 * dt;
     specialProgRef.current.taxi -= 13.5 * dt;
-    if (policeRef.current) {
-      const ps = sampleLoop(specialProgRef.current.police, 1);
-      policeRef.current.position.set(ps.x, 0, ps.z);
-      policeRef.current.rotation.y = ps.rotY;
-    }
-    if (ambulanceRef.current) {
-      const am = sampleLoop(specialProgRef.current.ambulance, 1);
-      ambulanceRef.current.position.set(am.x, 0, am.z);
-      ambulanceRef.current.rotation.y = am.rotY;
-    }
-    if (taxiRef.current) {
-      const tx = sampleLoop(specialProgRef.current.taxi, -1);
-      taxiRef.current.position.set(tx.x, 0, tx.z);
-      taxiRef.current.rotation.y = tx.rotY + Math.PI;
-    }
+    specialProgRef.current.water += 10.5 * dt;
+    specialProgRef.current.trash -= 9.5 * dt;
+    specialProgRef.current.r15 += 22 * dt;
+    specialProgRef.current.ktm -= 21 * dt;
+    specialProgRef.current.duke += 20.5 * dt;
+
+    const placeSpecial = (ref: React.RefObject<THREE.Group | null>, prog: number, lane: 1 | -1) => {
+      if (!ref.current) return;
+      const s = sampleLoop(prog, lane, lane === 1 ? 3.2 : 3.8);
+      ref.current.position.set(s.x, 0, s.z);
+      ref.current.rotation.y = lane === 1 ? s.rotY : s.rotY + Math.PI;
+    };
+    placeSpecial(policeRef, specialProgRef.current.police, 1);
+    placeSpecial(ambulanceRef, specialProgRef.current.ambulance, 1);
+    placeSpecial(taxiRef, specialProgRef.current.taxi, -1);
+    placeSpecial(waterTruckRef, specialProgRef.current.water, 1);
+    placeSpecial(trashTruckRef, specialProgRef.current.trash, -1);
+    placeSpecial(r15Ref, specialProgRef.current.r15, 1);
+    placeSpecial(ktmRef, specialProgRef.current.ktm, -1);
+    placeSpecial(dukeRef, specialProgRef.current.duke, 1);
 
     const [px, , pz] = state.playerPos;
     let autoI = 0;
@@ -431,6 +450,60 @@ export function TrafficSystem() {
         <mesh position={[0, 1.36, 0]}>
           <boxGeometry args={[0.6, 0.18, 0.24]} />
           <meshStandardMaterial color="#fef08a" emissive="#eab308" emissiveIntensity={1.2} />
+        </mesh>
+      </group>
+
+      {/* Metro Water Tanker Truck */}
+      <group ref={waterTruckRef}>
+        <mesh position={[0, 1.0, 1.8]} castShadow>
+          <boxGeometry args={[2.1, 1.6, 1.8]} />
+          <meshStandardMaterial color="#0284c7" />
+        </mesh>
+        <mesh position={[0, 1.3, -0.8]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+          <cylinderGeometry args={[1.05, 1.05, 3.8, 12]} />
+          <meshStandardMaterial color="#e0f2fe" />
+        </mesh>
+      </group>
+
+      {/* Chennai Corporation Trash Truck */}
+      <group ref={trashTruckRef}>
+        <mesh position={[0, 1.0, 1.8]} castShadow>
+          <boxGeometry args={[2.1, 1.6, 1.8]} />
+          <meshStandardMaterial color="#16a34a" />
+        </mesh>
+        <mesh position={[0, 1.25, -0.8]} castShadow>
+          <boxGeometry args={[2.2, 1.9, 3.8]} />
+          <meshStandardMaterial color="#eab308" />
+        </mesh>
+      </group>
+
+      {/* R15 Blue Sportbike */}
+      <group ref={r15Ref}>
+        <mesh geometry={geos.bike.body} castShadow>
+          <meshStandardMaterial color="#1d4ed8" metalness={0.4} roughness={0.3} />
+        </mesh>
+        <mesh geometry={geos.bike.trim}>
+          <meshStandardMaterial color="#0f172a" />
+        </mesh>
+      </group>
+
+      {/* KTM RC Orange/Black Sportbike */}
+      <group ref={ktmRef}>
+        <mesh geometry={geos.bike.body} castShadow>
+          <meshStandardMaterial color="#f97316" metalness={0.35} roughness={0.3} />
+        </mesh>
+        <mesh geometry={geos.bike.trim}>
+          <meshStandardMaterial color="#111827" />
+        </mesh>
+      </group>
+
+      {/* KTM Duke Naked Sportbike */}
+      <group ref={dukeRef}>
+        <mesh geometry={geos.bike.body} castShadow>
+          <meshStandardMaterial color="#fb923c" roughness={0.35} />
+        </mesh>
+        <mesh geometry={geos.bike.trim}>
+          <meshStandardMaterial color="#f8fafc" />
         </mesh>
       </group>
 

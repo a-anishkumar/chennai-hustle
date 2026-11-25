@@ -32,6 +32,8 @@
     { "id": "oyo", "name": "OYO Rooms Chennai", "x": 80, "z": -35, "type": "hotel" },
     { "id": "napier", "name": "Napier Chess Bridge (Cooum)", "x": 40, "z": 180, "type": "transit" },
     { "id": "ripon", "name": "Ripon Building (Chennai Corp)", "x": -245, "z": -225, "type": "civic" },
-    { "id": "concert", "name": "Sai Abhyankar Live & DJ Disco", "x": 160, "z": 20, "type": "entertainment" }
+    { "id": "concert", "name": "Sai Abhyankar Live & DJ Disco", "x": 160, "z": 20, "type": "entertainment" },
+    { "id": "chepauk", "name": "Chepauk Cricket Stadium (CSK)", "x": 920, "z": 120, "type": "entertainment" },
+    { "id": "petrol", "name": "Chennai Petrol Bunk & EV Station", "x": -175, "z": -90, "type": "transit" }
   ]
 }

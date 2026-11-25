@@ -22,6 +22,7 @@ import { MoreChennaiLandmarks } from './world/landmarks/MoreChennaiLandmarks';
 import { ExtraChennaiLandmarks } from './world/landmarks/ExtraChennaiLandmarks';
 import { ChennaiStreetBusinesses } from './world/landmarks/ChennaiStreetBusinesses';
 import { ConcertZone } from './world/landmarks/ConcertZone';
+import { ChepaukStadium } from './world/landmarks/ChepaukStadium';
 import { PosterBoardWorld } from './world/PosterBoardWorld';
 import { RoadLoop } from './world/RoadLoop';
 import { JobMarkers } from './world/JobMarkers';
@@ -84,6 +85,7 @@ export function App() {
             <ExtraChennaiLandmarks />
             <ChennaiStreetBusinesses />
             <ConcertZone />
+            <ChepaukStadium />
             <PosterBoardWorld />
             <RoadLoop />
             <TrafficSystem />
