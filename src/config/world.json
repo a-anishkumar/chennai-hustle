@@ -31,6 +31,7 @@
     { "id": "mechanic", "name": "TTF Vasan Mechanic Shop", "x": -155, "z": -35, "type": "shop" },
     { "id": "oyo", "name": "OYO Rooms Chennai", "x": 80, "z": -35, "type": "hotel" },
     { "id": "napier", "name": "Napier Chess Bridge (Cooum)", "x": 40, "z": 180, "type": "transit" },
-    { "id": "ripon", "name": "Ripon Building (Chennai Corp)", "x": -245, "z": -225, "type": "civic" }
+    { "id": "ripon", "name": "Ripon Building (Chennai Corp)", "x": -245, "z": -225, "type": "civic" },
+    { "id": "concert", "name": "Sai Abhyankar Live & DJ Disco", "x": 160, "z": 20, "type": "entertainment" }
   ]
 }
