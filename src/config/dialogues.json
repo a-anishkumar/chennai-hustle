@@ -1,0 +1,23 @@
+{
+  "streetChatter": [
+    "Enna pa, traffic romba jam-aa irukku!",
+    "Oru strong filter coffee kudicha dhaan velai odum.",
+    "Mazhai vara maari irukku, seekiram veetuku poganum.",
+    "Superstar padam FDFS ticket kedaikuma?",
+    "Anna, Marina-la kaathu semmaiya adikkudhu!",
+    "Bus eppo varum nu yaarukkum theriyadhu pa.",
+    "Inniku surge price romba jaasthi!",
+    "Kolam super-aa potturukkanga indha block-la."
+  ],
+  "teaShopGossip": [
+    "Canal side-la thanni konjam konjamaa yerudhu, paathu irunga.",
+    "Harbour-la night shift-ku nalla sambalam tharaanga aam.",
+    "Kaveri Theatre munnadi periya cut-out vachirukkaanga!",
+    "Lighthouse mela erinaa full Chennai-yum theriyum pa."
+  ],
+  "autoBargaining": {
+    "greedy": "Meter-aa? Adhellam illa thambi, minimum 150 dhaan!",
+    "fair": "Sari pa, meter mela 20 rooba extra kuduthudren.",
+    "hurry": "Seekiram po pa! Signal-la nikkadha, double tharen!"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "apps": {
+    "bikeTaxi": {
+      "id": "rideNow",
+      "name": "RideNow",
+      "tagline": "Fast Two-Wheeler Rides",
+      "color": "#f59e0b"
+    },
+    "foodDelivery": {
+      "id": "foodZip",
+      "name": "FoodZip",
+      "tagline": "Hot & Fresh to Your Gate",
+      "color": "#ef4444"
+    },
+    "quickCommerce": {
+      "id": "dash10",
+      "name": "Dash10",
+      "tagline": "Groceries in 10 Mins",
+      "color": "#8b5cf6"
+    },
+    "autoApp": {
+      "id": "meterPlus",
+      "name": "MeterPlus",
+      "tagline": "Namma Auto Network",
+      "color": "#eab308"
+    },
+    "cabApp": {
+      "id": "cityCab",
+      "name": "CityCab",
+      "tagline": "Airport & Outstation",
+      "color": "#0ea5e9"
+    },
+    "upiWallet": {
+      "id": "chennaiPay",
+      "name": "ChennaiPay",
+      "tagline": "Instant UPI Wallet",
+      "color": "#10b981"
+    }
+  },
+  "landmarks": {
+    "superstarName": "Superstar Vikramaditya",
+    "superstarTitle": "Thalaivar",
+    "cinemaName": "Kaveri Theatre",
+    "mallName": "Bayfront City Mall",
+    "templeName": "Kapaleeshwarar-Style Kovil",
+    "teaShopName": "Anbu Tea Kadai",
+    "housingColonyName": "Nethaji Nagar TNHB Colony"
+  },
+  "campaigns": {
+    "parties": [
+      { "id": "sunRise", "name": "Makkal Munnetra Kazhagam", "color": "#dc2626", "accent": "#111827", "slogan": "Nalaiya Chennai, Namma Chennai!" },
+      { "id": "oceanWave", "name": "Kadalora Jananayaga Peravai", "color": "#16a34a", "accent": "#facc15", "slogan": "Neerum Nalamum!" }
+    ],
+    "films": [
+      { "id": "mass1", "name": "SUPERSTAR: STORM", "color": "#f59e0b", "accent": "#7c2d12", "slogan": "FDFS 4 AM — THALAIVAR ARRIVES!" },
+      { "id": "mass2", "name": "METRO KING", "color": "#2563eb", "accent": "#fde047", "slogan": "100 DAYS BLOCKBUSTER!" }
+    ]
+  }
+}

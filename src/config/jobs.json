@@ -1,0 +1,101 @@
+{
+  "jobs": {
+    "bikeTaxi": {
+      "id": "bikeTaxi",
+      "title": "Bike Taxi",
+      "brandKey": "bikeTaxi",
+      "requiredVehicle": "bike",
+      "basePay": 45,
+      "perKmPay": 18,
+      "staminaCost": 8,
+      "fuelCost": 6,
+      "minReputation": 0
+    },
+    "foodDelivery": {
+      "id": "foodDelivery",
+      "title": "Food Delivery",
+      "brandKey": "foodDelivery",
+      "requiredVehicle": "cycle",
+      "basePay": 35,
+      "perKmPay": 15,
+      "rainBonusMultiplier": 1.45,
+      "staminaCost": 12,
+      "fuelCost": 4,
+      "minReputation": 0
+    },
+    "quickCommerce": {
+      "id": "quickCommerce",
+      "title": "10-Min Delivery",
+      "brandKey": "quickCommerce",
+      "requiredVehicle": "cycle",
+      "basePay": 55,
+      "timeLimitSec": 180,
+      "staminaCost": 14,
+      "fuelCost": 5,
+      "minReputation": 10
+    },
+    "autoDriver": {
+      "id": "autoDriver",
+      "title": "Auto-Rickshaw",
+      "brandKey": "autoApp",
+      "requiredVehicle": "auto",
+      "basePay": 70,
+      "perKmPay": 24,
+      "staminaCost": 10,
+      "fuelCost": 10,
+      "minReputation": 25
+    },
+    "taxiCab": {
+      "id": "taxiCab",
+      "title": "City Cab",
+      "brandKey": "cabApp",
+      "requiredVehicle": "cab",
+      "basePay": 160,
+      "perKmPay": 32,
+      "nightBonusMultiplier": 1.35,
+      "staminaCost": 8,
+      "fuelCost": 14,
+      "minReputation": 50
+    },
+    "posterPasting": {
+      "id": "posterPasting",
+      "title": "Night Poster Pasting",
+      "brandKey": null,
+      "requiredVehicle": "foot",
+      "basePay": 120,
+      "perPosterPay": 35,
+      "nightOnly": true,
+      "staminaCost": 18,
+      "minReputation": 0
+    },
+    "teaShopHelper": {
+      "id": "teaShopHelper",
+      "title": "Tea Kadai Helper",
+      "brandKey": null,
+      "requiredVehicle": "foot",
+      "basePay": 65,
+      "tipMax": 35,
+      "staminaCost": 12,
+      "minReputation": 0
+    },
+    "harbourLabour": {
+      "id": "harbourLabour",
+      "title": "Harbour Night Shift",
+      "brandKey": null,
+      "requiredVehicle": "foot",
+      "basePay": 150,
+      "crateBonus": 25,
+      "nightOnly": true,
+      "staminaCost": 28,
+      "minReputation": 5
+    }
+  },
+  "vehicles": {
+    "foot": { "name": "On Foot", "price": 0, "maxSpeed": 7.5, "accel": 22, "turnSpeed": 8 },
+    "cycle": { "name": "Borrowed Cycle", "price": 0, "maxSpeed": 15, "accel": 16, "turnSpeed": 4.2 },
+    "bike": { "name": "125cc Scooter", "price": 1200, "maxSpeed": 27, "accel": 24, "turnSpeed": 3.8 },
+    "auto": { "name": "Namma Auto", "price": 3500, "maxSpeed": 24, "accel": 19, "turnSpeed": 3.4 },
+    "cab": { "name": "City Sedan Cab", "price": 8500, "maxSpeed": 33, "accel": 25, "turnSpeed": 3.1 },
+    "boat": { "name": "Rescue Boat", "price": 0, "maxSpeed": 18, "accel": 14, "turnSpeed": 2.6 }
+  }
+}
