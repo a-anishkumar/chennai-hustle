@@ -3,6 +3,10 @@ import { useFrame } from '@react-three/fiber';
 import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { getSignTexture } from '../ProceduralTextures';
+import { OnlineModel } from '../OnlineModel';
+
+const FOX_URL =
+  'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Fox/glTF-Binary/Fox.glb';
 
 export function MoreChennaiLandmarks() {
   const trainRef = useRef<THREE.Group>(null);
@@ -198,6 +202,8 @@ export function MoreChennaiLandmarks() {
           <boxGeometry args={[10, 1.8, 0.25]} />
           <meshStandardMaterial map={signs.park} />
         </mesh>
+        {/* Online CC0 Fox Model in Semmozhi Park */}
+        <OnlineModel url={FOX_URL} position={[8, 0, -6]} scale={0.03} rotation={[0, 0.8, 0]} />
       </group>
 
       {/* 6. Chennai High School (-260, 0, 140) */}

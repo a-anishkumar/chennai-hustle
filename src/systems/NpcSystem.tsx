@@ -4,15 +4,20 @@ import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import dialogues from '../config/dialogues.json';
 import { useGameStore } from './gameStore';
+import { AnimatedPlayerMesh } from '../world/AnimatedPlayerMesh';
 
 type NpcRole = 'office' | 'student' | 'vendor' | 'fan' | 'fisherman' | 'influencer' | 'beggar';
+type NpcAction = 'walking' | 'idle_chatting' | 'waving_auto' | 'checking_phone' | 'fleeing_rain';
 
 interface NpcAgent {
   role: NpcRole;
+  action: NpcAction;
+  actionTimer: number;
   homeX: number;
   homeZ: number;
   x: number;
   z: number;
+  rotY: number;
   angle: number;
   speed: number;
   radius: number;
@@ -41,12 +46,22 @@ const BEGGAR_LINES = [
   'Thanni irundhaa kudunga thambi, romba veyil.',
 ];
 
+const ACTION_LABELS: Record<NpcAction, string> = {
+  walking: '',
+  idle_chatting: '💬 Chatting',
+  waving_auto: '✋ Hailing Auto',
+  checking_phone: '📱 Checking Phone',
+  fleeing_rain: '☔ Running from Rain!',
+};
+
 const ROLES: NpcRole[] = ['office', 'student', 'vendor', 'fan', 'fisherman', 'influencer', 'beggar'];
 const NPC_COUNT = 49;
 
 export function NpcSystem() {
   const bodyRef = useRef<THREE.InstancedMesh>(null);
   const headRef = useRef<THREE.InstancedMesh>(null);
+  const heroNpc1Ref = useRef<THREE.Group>(null);
+  const heroNpc2Ref = useRef<THREE.Group>(null);
   const [nearbyLine, setNearbyLine] = useState<{ x: number; z: number; text: string } | null>(null);
   const checkTimer = useRef(0);
 
@@ -68,12 +83,15 @@ export function NpcSystem() {
       const radius = 5 + (i % 6) * 2.5;
       list.push({
         role,
+        action: 'walking',
+        actionTimer: 2 + (i % 5),
         homeX: hub[0] + ((i * 13) % 14) - 7,
         homeZ: hub[1] + ((i * 17) % 14) - 7,
         x: hub[0],
         z: hub[1],
+        rotY: 0,
         angle,
-        speed: role === 'vendor' ? 0.25 : 0.7 + (i % 4) * 0.2,
+        speed: role === 'vendor' || role === 'beggar' ? 0.18 : 0.75 + (i % 4) * 0.22,
         radius,
         color: ROLE_COLORS[role],
         line:
@@ -96,37 +114,77 @@ export function NpcSystem() {
 
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
-  useFrame((_, delta) => {
+  useFrame(({ clock }, delta) => {
     const dt = Math.min(delta, 0.05);
     const state = useGameStore.getState();
     const npcs = npcsRef.current;
     if (!state.isStarted || state.isPaused || !npcs) return;
 
+    const t = clock.getElapsedTime();
+    const isRaining = state.weather === 'monsoon' || state.weather === 'flood';
+
+    // Animate 2 skeletal GLB pedestrians strolling in TNHB & Road Loop
+    if (heroNpc1Ref.current) {
+      const a1 = t * 0.25;
+      heroNpc1Ref.current.position.set(-120 + Math.cos(a1) * 14, 0, 60 + Math.sin(a1) * 14);
+      heroNpc1Ref.current.rotation.y = -a1;
+    }
+    if (heroNpc2Ref.current) {
+      const a2 = t * 0.2 + 2.1;
+      heroNpc2Ref.current.position.set(-178, 0, 18 + Math.sin(a2) * 16);
+      heroNpc2Ref.current.rotation.y = Math.cos(a2) > 0 ? 0 : Math.PI;
+    }
+
     const [px, , pz] = state.playerPos;
-    let closestDist2 = 64; // 8m radius
+    let closestDist2 = 64;
     let closestNpc: NpcAgent | null = null;
 
     for (let i = 0; i < npcs.length; i++) {
       const n = npcs[i];
-      n.angle += (n.speed / n.radius) * dt;
+
+      // Random AI action state machine
+      n.actionTimer -= dt;
+      if (isRaining && n.role !== 'beggar' && n.role !== 'vendor') {
+        n.action = 'fleeing_rain';
+      } else if (n.actionTimer <= 0) {
+        n.actionTimer = 3 + ((i * 7 + Math.floor(t)) % 5);
+        const actions: NpcAction[] = ['walking', 'walking', 'idle_chatting', 'waving_auto', 'checking_phone'];
+        n.action = actions[(i + Math.floor(t)) % actions.length];
+      }
+
+      const moveMult =
+        n.action === 'fleeing_rain'
+          ? 1.9
+          : n.action === 'walking'
+          ? 1.0
+          : 0.0;
+
+      n.angle += ((n.speed * moveMult) / n.radius) * dt;
       n.x = n.homeX + Math.cos(n.angle) * n.radius;
       n.z = n.homeZ + Math.sin(n.angle) * n.radius;
-
-      // Body
-      dummy.position.set(n.x, 0.75, n.z);
-      dummy.rotation.set(0, -n.angle, 0);
-      dummy.scale.set(1, 1, 1);
-      dummy.updateMatrix();
-      if (bodyRef.current) bodyRef.current.setMatrixAt(i, dummy.matrix);
-
-      // Head
-      dummy.position.set(n.x, 1.48, n.z);
-      dummy.updateMatrix();
-      if (headRef.current) headRef.current.setMatrixAt(i, dummy.matrix);
 
       const dx = n.x - px;
       const dz = n.z - pz;
       const d2 = dx * dx + dz * dz;
+
+      // Turn to face player when nearby
+      const targetRot = d2 < 36 ? Math.atan2(px - n.x, pz - n.z) : -n.angle;
+      n.rotY = targetRot;
+
+      // Subtle bounce when walking or waving
+      const bob = moveMult > 0 ? Math.abs(Math.sin(t * 7 + i)) * 0.08 : 0;
+
+      dummy.position.set(n.x, 0.75 + bob, n.z);
+      dummy.rotation.set(0, n.rotY, n.action === 'waving_auto' ? Math.sin(t * 8) * 0.08 : 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      if (bodyRef.current) bodyRef.current.setMatrixAt(i, dummy.matrix);
+
+      dummy.position.set(n.x, 1.48 + bob, n.z);
+      dummy.rotation.set(0, n.rotY, 0);
+      dummy.updateMatrix();
+      if (headRef.current) headRef.current.setMatrixAt(i, dummy.matrix);
+
       if (d2 < closestDist2) {
         closestDist2 = d2;
         closestNpc = n;
@@ -140,12 +198,14 @@ export function NpcSystem() {
     if (checkTimer.current > 0.35) {
       checkTimer.current = 0;
       if (closestNpc) {
-        // React to nearby player-pasted posters if any
         const nearPoster = state.pastedPosters.find(
           (p) => (p.x - closestNpc!.x) ** 2 + (p.z - closestNpc!.z) ** 2 < 225
         );
+        const actionTag = ACTION_LABELS[closestNpc.action];
         const text = nearPoster
           ? `Adhu ${nearPoster.campaignName} poster thaane? Semma! (${nearPoster.slogan})`
+          : actionTag
+          ? `[${actionTag}] ${closestNpc.line}`
           : closestNpc.line;
         setNearbyLine({ x: closestNpc.x, z: closestNpc.z, text });
       } else if (nearbyLine) {
@@ -165,6 +225,14 @@ export function NpcSystem() {
         <meshStandardMaterial color="#8d5524" roughness={0.65} />
       </instancedMesh>
 
+      {/* Skeletal Animated Online GLB Pedestrians */}
+      <group ref={heroNpc1Ref}>
+        <AnimatedPlayerMesh isMoving isSprinting={false} fallback={null} />
+      </group>
+      <group ref={heroNpc2Ref}>
+        <AnimatedPlayerMesh isMoving isSprinting={false} fallback={null} />
+      </group>
+
       {nearbyLine && (
         <Html position={[nearbyLine.x, 2.25, nearbyLine.z]} center zIndexRange={[1, 8]}>
           <div
@@ -175,7 +243,7 @@ export function NpcSystem() {
               borderRadius: 8,
               fontSize: 11,
               fontWeight: 500,
-              maxWidth: 180,
+              maxWidth: 190,
               textAlign: 'center',
               border: '1px solid rgba(251, 191, 36, 0.6)',
               boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
