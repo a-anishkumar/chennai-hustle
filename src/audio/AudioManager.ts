@@ -103,27 +103,62 @@ function makeThunderSfx(): Howl {
   return new Howl({ src: [encodeWavDataUri(data, sr)], volume: 0.45 });
 }
 
+function makeWaveLoop(): Howl {
+  const sr = 16000;
+  const len = sr * 3;
+  const data = new Float32Array(len);
+  let last = 0;
+  for (let i = 0; i < len; i++) {
+    const t = i / sr;
+    const swell = 0.35 + 0.65 * Math.pow(Math.sin((Math.PI * t) / 3), 2);
+    const white = Math.random() * 2 - 1;
+    last = (last + 0.04 * white) / 1.04;
+    data[i] = last * 0.7 * swell;
+  }
+  return new Howl({ src: [encodeWavDataUri(data, sr)], loop: true, volume: 0.0 });
+}
+
 class ChennaiAudioManager {
   private initialized = false;
   private muted = false;
   private rainLoop: Howl | null = null;
+  private waveLoop: Howl | null = null;
   private hornSfx: Howl | null = null;
   private cashSfx: Howl | null = null;
   private bellSfx: Howl | null = null;
   private thunderSfx: Howl | null = null;
+  private lastBellAt = 0;
 
   init() {
     if (this.initialized) return;
     this.initialized = true;
     try {
       this.rainLoop = makeRainLoop();
+      this.waveLoop = makeWaveLoop();
       this.hornSfx = makeHornSfx();
       this.cashSfx = makeCashChime();
       this.bellSfx = makeTempleBell();
       this.thunderSfx = makeThunderSfx();
       this.rainLoop.play();
+      this.waveLoop.play();
     } catch {
       // Ignore audio errors in headless environments
+    }
+  }
+
+  updateSpatialAmbience(px: number, pz: number) {
+    if (!this.initialized || this.muted) return;
+    // Marina Beach ocean surf proximity (x > 1150)
+    if (this.waveLoop) {
+      const waveVol = Math.max(0, Math.min(0.35, (px - 1150) / 350));
+      this.waveLoop.volume(waveVol);
+    }
+    // Kapaleeshwarar Kovil temple bell proximity (620, 520)
+    const distTempleSq = (px - 620) ** 2 + (pz - 520) ** 2;
+    const now = performance.now();
+    if (distTempleSq < 1600 && now - this.lastBellAt > 14000) {
+      this.lastBellAt = now;
+      this.bellSfx?.play();
     }
   }
 

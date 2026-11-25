@@ -308,8 +308,10 @@ export function TrafficSystem() {
       a.rotY = a.lane === 1 ? next.rotY : next.rotY + Math.PI;
 
       const leanZ = a.kind === 'bike' ? Math.cos(a.weavePhase) * 0.08 : a.kind === 'auto' ? Math.cos(a.weavePhase) * 0.03 : 0;
-      dummy.position.set(a.x, 0, a.z);
-      dummy.rotation.set(0, a.rotY, leanZ);
+      const suspY = a.speed > 1 ? Math.abs(Math.sin(a.progress * 0.55)) * 0.03 : 0;
+      const brakePitch = blocked && a.speed > 0.5 ? 0.035 : 0;
+      dummy.position.set(a.x, suspY, a.z);
+      dummy.rotation.set(brakePitch, a.rotY, leanZ);
       dummy.scale.set(1, 1, 1);
       dummy.updateMatrix();
 
@@ -356,6 +358,42 @@ export function TrafficSystem() {
 
   return (
     <group name="Traffic_System">
+      {/* Live 4-Corner Intersection Traffic Signals */}
+      {SIGNAL_CORNERS.map(([sx, sz], idx) => {
+        const isNsCorner = idx === 1 || idx === 3;
+        const green = isNsCorner ? nsGreen : !nsGreen;
+        return (
+          <group key={`sig_${idx}`} position={[sx, 0, sz]}>
+            <mesh position={[0, 2.6, 0]} castShadow>
+              <cylinderGeometry args={[0.1, 0.14, 5.2, 8]} />
+              <meshStandardMaterial color="#334155" metalness={0.5} roughness={0.5} />
+            </mesh>
+            <mesh position={[0, 5.2, 0]} castShadow>
+              <boxGeometry args={[0.55, 1.4, 0.45]} />
+              <meshStandardMaterial color="#0f172a" roughness={0.4} />
+            </mesh>
+            {/* Red Light */}
+            <mesh position={[0, 5.55, 0.24]}>
+              <sphereGeometry args={[0.15, 8, 8]} />
+              <meshStandardMaterial
+                color={green ? '#450a0a' : '#ef4444'}
+                emissive={green ? '#000000' : '#ef4444'}
+                emissiveIntensity={green ? 0 : 2.6}
+              />
+            </mesh>
+            {/* Green Light */}
+            <mesh position={[0, 4.9, 0.24]}>
+              <sphereGeometry args={[0.15, 8, 8]} />
+              <meshStandardMaterial
+                color={green ? '#22c55e' : '#052e16'}
+                emissive={green ? '#22c55e' : '#000000'}
+                emissiveIntensity={green ? 2.6 : 0}
+              />
+            </mesh>
+          </group>
+        );
+      })}
+
       {/* 10 Auto-Rickshaws */}
       <instancedMesh ref={autoBodyRef} args={[geos.auto.body, undefined, 10]} castShadow frustumCulled={false}>
         <meshStandardMaterial roughness={0.45} />

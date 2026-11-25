@@ -200,6 +200,53 @@ export function RoadLoop() {
         </mesh>
       ))}
 
+      {/* Yellow & Black Chennai Speed Breakers */}
+      {[
+        [-190, 4, 0],
+        [-190, 34, 0],
+        [40, 144, 0],
+        [-75, -120, Math.PI / 2],
+        [260, 95, 0],
+      ].map(([sx, sz, srot], idx) => (
+        <group key={`sb_${idx}`} position={[sx, 0.055, sz]} rotation={[0, srot, 0]}>
+          {[-4.5, -2.7, -0.9, 0.9, 2.7, 4.5].map((ox, bi) => (
+            <mesh key={bi} position={[ox, 0, 0]} castShadow>
+              <boxGeometry args={[1.6, 0.08, 0.65]} />
+              <meshStandardMaterial color={bi % 2 === 0 ? '#facc15' : '#0f172a'} roughness={0.7} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+
+      {/* Overhead TANGEDCO Electrical Cables & Pole Transformers */}
+      {[
+        [-182, 0, 160, 0],
+        [32, 0, 160, 0],
+        [-75, -112, 180, Math.PI / 2],
+        [-75, 132, 180, Math.PI / 2],
+      ].map(([cx, cz, len, rot], idx) => (
+        <group key={`cable_${idx}`} position={[cx, 5.8, cz]} rotation={[0, rot, 0]}>
+          <mesh position={[-0.18, 0, 0]}>
+            <boxGeometry args={[0.035, 0.035, len]} />
+            <meshBasicMaterial color="#0f172a" />
+          </mesh>
+          <mesh position={[0.18, -0.1, 0]}>
+            <boxGeometry args={[0.035, 0.035, len]} />
+            <meshBasicMaterial color="#0f172a" />
+          </mesh>
+        </group>
+      ))}
+      {[
+        [-181.2, 3.6, -80],
+        [31.2, 3.6, 80],
+        [-130, 3.6, -111.2],
+      ].map(([tx, ty, tz], idx) => (
+        <mesh key={`xfmr_${idx}`} position={[tx, ty, tz]} castShadow>
+          <boxGeometry args={[0.85, 1.15, 0.75]} />
+          <meshStandardMaterial color="#475569" metalness={0.55} roughness={0.45} />
+        </mesh>
+      ))}
+
       {/* Nethaji Nagar Bus Stop Shelter */}
       <group position={[-180, 0, 18]}>
         <RigidBody type="fixed" colliders="cuboid">

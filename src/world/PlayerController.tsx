@@ -7,12 +7,15 @@ import { virtualInput } from '../systems/virtualInput';
 import jobsConfig from '../config/jobs.json';
 import { getTerrainHeight } from './TerrainHeight';
 import { AnimatedPlayerMesh } from './AnimatedPlayerMesh';
+import { AnimatedHumanNpc } from './AnimatedHumanNpc';
+import { isNightHour } from '../systems/timeUtils';
 
 const _fwd = new THREE.Vector3();
 const _right = new THREE.Vector3();
 const _move = new THREE.Vector3();
 const _camTarget = new THREE.Vector3();
 const _camDesired = new THREE.Vector3();
+const _camFinal = new THREE.Vector3();
 const _rayDir = new THREE.Vector3();
 
 export function PlayerController() {
@@ -27,7 +30,10 @@ export function PlayerController() {
   const { rapier, world } = useRapier();
 
   const currentVehicle = useGameStore((s) => s.currentVehicle);
+  const timeOfDay = useGameStore((s) => s.timeOfDay);
+  const night = isNightHour(timeOfDay);
   const [initialPos] = useState(() => useGameStore.getState().playerPos);
+  const firstPersonRef = useRef(false);
 
   // Input state
   const keys = useRef<Record<string, boolean>>({});
@@ -50,6 +56,8 @@ export function PlayerController() {
 
       if (code === 'KeyB') {
         useGameStore.getState().toggleVehicleCycle();
+      } else if (code === 'KeyV') {
+        firstPersonRef.current = !firstPersonRef.current;
       } else if (code === 'KeyP') {
         useGameStore.getState().togglePhone();
       } else if (code === 'KeyM') {
@@ -184,7 +192,16 @@ export function PlayerController() {
     const lerpFactor = Math.min(1, dt * (isMoving ? vSpec.accel * 0.45 * tractionFactor : decelRate * tractionFactor));
     const vx = THREE.MathUtils.lerp(vel.x, _move.x * targetSpeed, lerpFactor);
     const vz = THREE.MathUtils.lerp(vel.z, _move.z * targetSpeed, lerpFactor);
-    rb.setLinvel({ x: vx, y: vel.y, z: vz }, true);
+    let vy = vel.y;
+    if (
+      keys.current['Space'] &&
+      state.currentVehicle === 'foot' &&
+      Math.abs(vel.y) < 0.3 &&
+      pos.y <= minSurfaceY + 0.35
+    ) {
+      vy = 7.2;
+    }
+    rb.setLinvel({ x: vx, y: vy, z: vz }, true);
 
     // Distinct turning rate & banking/bobbing per vehicle
     if (meshGroupRef.current) {
@@ -244,33 +261,44 @@ export function PlayerController() {
       rightLegRef.current.rotation.x *= 0.85;
     }
 
-    // Third-person camera with Rapier raycast collision
-    _camTarget.set(pos.x, pos.y + 1.5, pos.z);
-    const cosP = Math.cos(camPitch.current);
-    const sinP = Math.sin(camPitch.current);
-    _camDesired.set(
-      pos.x + Math.sin(camYaw.current) * cosP * camDist.current,
-      pos.y + 1.5 + sinP * camDist.current,
-      pos.z + Math.cos(camYaw.current) * cosP * camDist.current
-    );
+    if (firstPersonRef.current) {
+      _camFinal.set(pos.x, pos.y + 1.68, pos.z);
+      _camTarget.set(
+        pos.x - Math.sin(camYaw.current) * 8,
+        pos.y + 1.68 - Math.sin(camPitch.current) * 4,
+        pos.z - Math.cos(camYaw.current) * 8
+      );
+      camera.position.lerp(_camFinal, Math.min(1, dt * 18));
+      camera.lookAt(_camTarget);
+    } else {
+      // Third-person camera with Rapier raycast collision
+      _camTarget.set(pos.x, pos.y + 1.5, pos.z);
+      const cosP = Math.cos(camPitch.current);
+      const sinP = Math.sin(camPitch.current);
+      _camDesired.set(
+        pos.x + Math.sin(camYaw.current) * cosP * camDist.current,
+        pos.y + 1.5 + sinP * camDist.current,
+        pos.z + Math.cos(camYaw.current) * cosP * camDist.current
+      );
 
-    _rayDir.subVectors(_camDesired, _camTarget);
-    const rayLen = _rayDir.length();
-    _rayDir.normalize();
+      _rayDir.subVectors(_camDesired, _camTarget);
+      const rayLen = _rayDir.length();
+      _rayDir.normalize();
 
-    let finalDist = rayLen;
-    const ray = new rapier.Ray(
-      { x: _camTarget.x, y: _camTarget.y, z: _camTarget.z },
-      { x: _rayDir.x, y: _rayDir.y, z: _rayDir.z }
-    );
-    const hit = world.castRay(ray, rayLen, true, undefined, undefined, undefined, rb);
-    if (hit && hit.timeOfImpact < rayLen && hit.timeOfImpact > 1.2) {
-      finalDist = Math.max(1.8, hit.timeOfImpact - 0.45);
+      let finalDist = rayLen;
+      const ray = new rapier.Ray(
+        { x: _camTarget.x, y: _camTarget.y, z: _camTarget.z },
+        { x: _rayDir.x, y: _rayDir.y, z: _rayDir.z }
+      );
+      const hit = world.castRay(ray, rayLen, true, undefined, undefined, undefined, rb);
+      if (hit && hit.timeOfImpact < rayLen && hit.timeOfImpact > 1.2) {
+        finalDist = Math.max(1.8, hit.timeOfImpact - 0.45);
+      }
+
+      _camFinal.copy(_camTarget).addScaledVector(_rayDir, finalDist);
+      camera.position.lerp(_camFinal, Math.min(1, dt * 14));
+      camera.lookAt(_camTarget);
     }
-
-    const finalCamPos = _camTarget.clone().addScaledVector(_rayDir, finalDist);
-    camera.position.lerp(finalCamPos, Math.min(1, dt * 14));
-    camera.lookAt(_camTarget);
 
     // Throttled store sync (~8 Hz)
     syncTimer.current += dt;
@@ -333,31 +361,11 @@ export function PlayerController() {
             }
           />
         ) : (
-          <group position={[0, isCycle || isBike ? 0.35 : 0, 0]}>
-            <mesh position={[0, 1.05, 0]} castShadow>
-              <boxGeometry args={[0.52, 0.68, 0.32]} />
-              <meshStandardMaterial color="#f97316" roughness={0.7} />
-            </mesh>
-            <mesh position={[0, 1.08, -0.22]} castShadow>
-              <boxGeometry args={[0.38, 0.48, 0.16]} />
-              <meshStandardMaterial color="#1e293b" roughness={0.8} />
-            </mesh>
-            <mesh position={[0, 1.58, 0]} castShadow>
-              <sphereGeometry args={[0.21, 12, 12]} />
-              <meshStandardMaterial color="#8d5524" roughness={0.6} />
-            </mesh>
-            <mesh position={[0, 1.66, -0.02]} castShadow>
-              <sphereGeometry args={[0.215, 10, 10, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
-              <meshStandardMaterial color="#0f172a" roughness={0.9} />
-            </mesh>
-            <mesh ref={leftLegRef} position={[-0.14, 0.42, 0]} castShadow>
-              <boxGeometry args={[0.18, 0.65, 0.2]} />
-              <meshStandardMaterial color="#1e3a8a" roughness={0.8} />
-            </mesh>
-            <mesh ref={rightLegRef} position={[0.14, 0.42, 0]} castShadow>
-              <boxGeometry args={[0.18, 0.65, 0.2]} />
-              <meshStandardMaterial color="#1e3a8a" roughness={0.8} />
-            </mesh>
+          <group position={[0, isCycle || isBike ? 0.35 : 0.15, 0]}>
+            <AnimatedHumanNpc variant="xbot" anim="idle" tintColor="#f97316" prop="bag" />
+            {night && (
+              <pointLight position={[0, 1.0, 2.2]} color="#fef08a" intensity={10} distance={22} decay={2} />
+            )}
           </group>
         )}
 

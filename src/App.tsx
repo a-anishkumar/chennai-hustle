@@ -60,15 +60,15 @@ export function App() {
           antialias: quality !== 'low',
           powerPreference: 'high-performance',
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.06,
+          toneMappingExposure: 0.98,
         }}
       >
         <Suspense fallback={null}>
           {quality !== 'low' && (
-            <Environment resolution={64} frames={1} environmentIntensity={0.4}>
-              <Lightformer intensity={2.2} position={[0, 10, 0]} scale={[20, 20, 1]} rotation={[Math.PI / 2, 0, 0]} color="#fff7ed" />
-              <Lightformer intensity={1.2} position={[10, 4, 10]} scale={[10, 5, 1]} color="#93c5fd" />
-              <Lightformer intensity={0.8} position={[-10, 3, -10]} scale={[10, 5, 1]} color="#fde047" />
+            <Environment resolution={128} frames={1} environmentIntensity={0.48}>
+              <Lightformer intensity={2.0} position={[0, 12, 0]} scale={[24, 24, 1]} rotation={[Math.PI / 2, 0, 0]} color="#fff7ed" />
+              <Lightformer intensity={1.35} position={[12, 5, 10]} scale={[12, 6, 1]} color="#93c5fd" />
+              <Lightformer intensity={0.95} position={[-12, 4, -10]} scale={[12, 6, 1]} color="#fde047" />
             </Environment>
           )}
           <DayNightLighting />

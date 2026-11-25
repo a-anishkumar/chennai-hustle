@@ -12,28 +12,55 @@ function makeCanvas(w: number, h: number): [HTMLCanvasElement, CanvasRenderingCo
 
 export function getAsphaltTexture(): THREE.CanvasTexture {
   if (cache.asphalt) return cache.asphalt;
-  const [canvas, ctx] = makeCanvas(256, 256);
-  ctx.fillStyle = '#2b2f36';
-  ctx.fillRect(0, 0, 256, 256);
+  const [canvas, ctx] = makeCanvas(512, 512);
+  ctx.fillStyle = '#262a30';
+  ctx.fillRect(0, 0, 512, 512);
 
-  for (let i = 0; i < 1800; i++) {
-    const x = (i * 73) % 256;
-    const y = (i * 137) % 256;
-    ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.08)';
+  // Subtle worn tire tracks along both lanes
+  ctx.fillStyle = 'rgba(15, 18, 22, 0.28)';
+  ctx.fillRect(80, 0, 64, 512);
+  ctx.fillRect(160, 0, 64, 512);
+  ctx.fillRect(288, 0, 64, 512);
+  ctx.fillRect(368, 0, 64, 512);
+
+  // Aggregate mineral grit
+  for (let i = 0; i < 6500; i++) {
+    const x = (i * 131) % 512;
+    const y = (i * 257) % 512;
+    ctx.fillStyle = i % 3 === 0 ? 'rgba(255,255,255,0.045)' : 'rgba(0,0,0,0.11)';
     ctx.fillRect(x, y, 2, 2);
   }
 
-  ctx.fillStyle = '#facc15';
-  ctx.fillRect(124, 16, 8, 96);
-  ctx.fillRect(124, 144, 8, 96);
+  // Weathered tar cracks
+  ctx.strokeStyle = 'rgba(10, 12, 15, 0.55)';
+  ctx.lineWidth = 1.5;
+  for (let c = 0; c < 6; c++) {
+    ctx.beginPath();
+    let cx = (c * 97 + 40) % 480;
+    let cy = (c * 149) % 450;
+    ctx.moveTo(cx, cy);
+    for (let s = 0; s < 5; s++) {
+      cx += ((c + s) % 2 === 0 ? 18 : -16);
+      cy += 16;
+      ctx.lineTo(cx, cy);
+    }
+    ctx.stroke();
+  }
 
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.fillRect(8, 0, 4, 256);
-  ctx.fillRect(244, 0, 4, 256);
+  // Center dashed yellow divider
+  ctx.fillStyle = '#facc15';
+  ctx.fillRect(250, 20, 12, 196);
+  ctx.fillRect(250, 276, 12, 196);
+
+  // Crisp white shoulder lines
+  ctx.fillStyle = 'rgba(248, 250, 252, 0.68)';
+  ctx.fillRect(14, 0, 7, 512);
+  ctx.fillRect(491, 0, 7, 512);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 8;
   tex.colorSpace = THREE.SRGBColorSpace;
   cache.asphalt = tex;
   return tex;
@@ -102,17 +129,25 @@ export function getAwningTexture(primary = '#dc2626', secondary = '#f8fafc'): TH
 export function getPlasterTexture(hexColor: string): THREE.CanvasTexture {
   const key = `plaster_${hexColor}`;
   if (cache[key]) return cache[key];
-  const [canvas, ctx] = makeCanvas(128, 128);
+  const [canvas, ctx] = makeCanvas(256, 256);
   ctx.fillStyle = hexColor;
-  ctx.fillRect(0, 0, 128, 128);
+  ctx.fillRect(0, 0, 256, 256);
 
-  const grad = ctx.createLinearGradient(0, 0, 0, 128);
-  grad.addColorStop(0, 'rgba(0,0,0,0.08)');
-  grad.addColorStop(0.2, 'rgba(0,0,0,0)');
-  grad.addColorStop(0.8, 'rgba(0,0,0,0)');
-  grad.addColorStop(1, 'rgba(20,30,20,0.18)');
+  // Subtle stucco grain & monsoon dampness weathering
+  for (let i = 0; i < 2400; i++) {
+    const x = (i * 67) % 256;
+    const y = (i * 113) % 256;
+    ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.045)';
+    ctx.fillRect(x, y, 2, 2);
+  }
+
+  const grad = ctx.createLinearGradient(0, 0, 0, 256);
+  grad.addColorStop(0, 'rgba(0,0,0,0.12)');
+  grad.addColorStop(0.18, 'rgba(0,0,0,0)');
+  grad.addColorStop(0.78, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, 'rgba(22,34,22,0.24)');
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 128, 128);
+  ctx.fillRect(0, 0, 256, 256);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -122,14 +157,14 @@ export function getPlasterTexture(hexColor: string): THREE.CanvasTexture {
 
 export function getAsphaltNormalMap(): THREE.CanvasTexture {
   if (cache.asphaltNormal) return cache.asphaltNormal;
-  const [canvas, ctx] = makeCanvas(128, 128);
+  const [canvas, ctx] = makeCanvas(256, 256);
   ctx.fillStyle = 'rgb(128, 128, 255)';
-  ctx.fillRect(0, 0, 128, 128);
-  for (let i = 0; i < 1200; i++) {
-    const x = (i * 53) % 128;
-    const y = (i * 97) % 128;
-    const nx = 110 + ((i * 17) % 36);
-    const ny = 110 + ((i * 29) % 36);
+  ctx.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 4200; i++) {
+    const x = (i * 53) % 256;
+    const y = (i * 97) % 256;
+    const nx = 108 + ((i * 17) % 40);
+    const ny = 108 + ((i * 29) % 40);
     ctx.fillStyle = `rgb(${nx}, ${ny}, 245)`;
     ctx.fillRect(x, y, 2, 2);
   }

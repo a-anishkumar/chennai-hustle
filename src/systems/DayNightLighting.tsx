@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from './gameStore';
+import { audioManager } from '../audio/AudioManager';
 
 const SKY_NIGHT = new THREE.Color('#091124');
 const SKY_DAWN = new THREE.Color('#f97316');
@@ -13,6 +14,7 @@ const SKY_HUMID = new THREE.Color('#94a3b8');
 const SUN_DAY = new THREE.Color('#fff7ed');
 const SUN_GOLDEN = new THREE.Color('#fb923c');
 const SUN_NIGHT = new THREE.Color('#93c5fd');
+const _skyCol = new THREE.Color();
 
 export function DayNightLighting() {
   const dirLightRef = useRef<THREE.DirectionalLight>(null);
@@ -35,7 +37,7 @@ export function DayNightLighting() {
     const sunY = Math.sin(sunAngle);
     const sunX = Math.cos(sunAngle);
 
-    const skyCol = new THREE.Color();
+    const skyCol = _skyCol;
     if (h >= 5.5 && h < 7.5) {
       const t = (h - 5.5) / 2;
       skyCol.lerpColors(SKY_NIGHT, SKY_DAWN, Math.min(1, t * 1.4));
@@ -75,6 +77,7 @@ export function DayNightLighting() {
     }
 
     const [px, , pz] = state.playerPos;
+    audioManager.updateSpatialAmbience(px, pz);
 
     if (dirLightRef.current) {
       const dl = dirLightRef.current;

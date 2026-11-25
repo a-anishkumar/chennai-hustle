@@ -94,6 +94,8 @@ function mapActionToAnim(action: NpcAction, variant: HumanNpcVariant): HumanNpcA
 }
 
 export function NpcSystem() {
+  const quality = useGameStore((s) => s.quality);
+  const activeNpcLimit = quality === 'low' ? 12 : quality === 'medium' ? 18 : NPC_COUNT;
   const npcGroupRefs = useRef<(THREE.Group | null)[]>([]);
   const [npcAnims, setNpcAnims] = useState<HumanNpcAnim[]>(() => Array(NPC_COUNT).fill('walk'));
   const [nearbyLine, setNearbyLine] = useState<{ x: number; z: number; text: string } | null>(null);
@@ -156,7 +158,7 @@ export function NpcSystem() {
     let closestNpc: NpcAgent | null = null;
     let animsChanged = false;
 
-    for (let i = 0; i < npcs.length; i++) {
+    for (let i = 0; i < activeNpcLimit; i++) {
       const n = npcs[i];
 
       n.actionTimer -= dt;
@@ -189,8 +191,11 @@ export function NpcSystem() {
 
       const grp = npcGroupRefs.current[i];
       if (grp) {
-        grp.position.set(n.x, 0, n.z);
-        grp.rotation.y = n.rotY;
+        grp.visible = d2 < 22500; // Frustum/distance cull beyond 150m
+        if (grp.visible) {
+          grp.position.set(n.x, 0, n.z);
+          grp.rotation.y = n.rotY;
+        }
       }
 
       const desiredAnim = mapActionToAnim(n.action, n.variant);
@@ -230,7 +235,7 @@ export function NpcSystem() {
 
   return (
     <group name="NPC_Crowd">
-      {npcsRef.current.map((n, i) => (
+      {npcsRef.current.slice(0, activeNpcLimit).map((n, i) => (
         <group
           key={n.id}
           ref={(el) => {
@@ -238,6 +243,7 @@ export function NpcSystem() {
           }}
           position={[n.x, 0, n.z]}
           rotation={[0, n.rotY, 0]}
+          scale={[1, 0.96 + (i % 5) * 0.025, 1]}
         >
           <AnimatedHumanNpc
             variant={n.variant}
