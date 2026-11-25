@@ -6,6 +6,7 @@ import { useGameStore } from '../systems/gameStore';
 import { virtualInput } from '../systems/virtualInput';
 import jobsConfig from '../config/jobs.json';
 import { getTerrainHeight } from './TerrainHeight';
+import { AnimatedPlayerMesh } from './AnimatedPlayerMesh';
 
 const _fwd = new THREE.Vector3();
 const _right = new THREE.Vector3();
@@ -37,6 +38,8 @@ export function PlayerController() {
   const lastMouse = useRef({ x: 0, y: 0 });
   const syncTimer = useRef(0);
   const animPhase = useRef(0);
+  const [movingAnim, setMovingAnim] = useState(false);
+  const [sprintAnim, setSprintAnim] = useState(false);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -241,6 +244,8 @@ export function PlayerController() {
       syncTimer.current = 0;
       const rotY = meshGroupRef.current ? meshGroupRef.current.rotation.y : 0;
       state.updatePlayerTransform([pos.x, pos.y, pos.z], rotY);
+      setMovingAnim(horizSpeed > 0.6);
+      setSprintAnim(Boolean(isSprinting));
       if (state.activeJob) {
         state.tickActiveJob(elapsed);
       }
@@ -266,38 +271,60 @@ export function PlayerController() {
       <CapsuleCollider args={[0.55, 0.38]} position={[0, 0.95, 0]} />
 
       <group ref={meshGroupRef}>
-        {/* Player Character */}
-        <group position={[0, isCycle || isBike ? 0.35 : 0, 0]}>
-          {/* Torso (vibrant Chennai casual shirt) */}
-          <mesh position={[0, 1.05, 0]} castShadow>
-            <boxGeometry args={[0.52, 0.68, 0.32]} />
-            <meshStandardMaterial color="#f97316" roughness={0.7} />
-          </mesh>
-          {/* Backpack */}
-          <mesh position={[0, 1.08, -0.22]} castShadow>
-            <boxGeometry args={[0.38, 0.48, 0.16]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.8} />
-          </mesh>
-          {/* Head */}
-          <mesh position={[0, 1.58, 0]} castShadow>
-            <sphereGeometry args={[0.21, 12, 12]} />
-            <meshStandardMaterial color="#8d5524" roughness={0.6} />
-          </mesh>
-          {/* Hair */}
-          <mesh position={[0, 1.66, -0.02]} castShadow>
-            <sphereGeometry args={[0.215, 10, 10, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
-            <meshStandardMaterial color="#0f172a" roughness={0.9} />
-          </mesh>
-          {/* Left & Right Legs */}
-          <mesh ref={leftLegRef} position={[-0.14, 0.42, 0]} castShadow>
-            <boxGeometry args={[0.18, 0.65, 0.2]} />
-            <meshStandardMaterial color="#1e3a8a" roughness={0.8} />
-          </mesh>
-          <mesh ref={rightLegRef} position={[0.14, 0.42, 0]} castShadow>
-            <boxGeometry args={[0.18, 0.65, 0.2]} />
-            <meshStandardMaterial color="#1e3a8a" roughness={0.8} />
-          </mesh>
-        </group>
+        {/* Player Character: Skeletal Animated GLB on foot, or Rider Rig on vehicles */}
+        {currentVehicle === 'foot' ? (
+          <AnimatedPlayerMesh
+            isMoving={movingAnim}
+            isSprinting={sprintAnim}
+            fallback={
+              <group>
+                <mesh position={[0, 1.05, 0]} castShadow>
+                  <boxGeometry args={[0.52, 0.68, 0.32]} />
+                  <meshStandardMaterial color="#f97316" roughness={0.7} />
+                </mesh>
+                <mesh position={[0, 1.58, 0]} castShadow>
+                  <sphereGeometry args={[0.21, 12, 12]} />
+                  <meshStandardMaterial color="#8d5524" roughness={0.6} />
+                </mesh>
+                <mesh ref={leftLegRef} position={[-0.14, 0.42, 0]} castShadow>
+                  <boxGeometry args={[0.18, 0.65, 0.2]} />
+                  <meshStandardMaterial color="#1e3a8a" roughness={0.8} />
+                </mesh>
+                <mesh ref={rightLegRef} position={[0.14, 0.42, 0]} castShadow>
+                  <boxGeometry args={[0.18, 0.65, 0.2]} />
+                  <meshStandardMaterial color="#1e3a8a" roughness={0.8} />
+                </mesh>
+              </group>
+            }
+          />
+        ) : (
+          <group position={[0, isCycle || isBike ? 0.35 : 0, 0]}>
+            <mesh position={[0, 1.05, 0]} castShadow>
+              <boxGeometry args={[0.52, 0.68, 0.32]} />
+              <meshStandardMaterial color="#f97316" roughness={0.7} />
+            </mesh>
+            <mesh position={[0, 1.08, -0.22]} castShadow>
+              <boxGeometry args={[0.38, 0.48, 0.16]} />
+              <meshStandardMaterial color="#1e293b" roughness={0.8} />
+            </mesh>
+            <mesh position={[0, 1.58, 0]} castShadow>
+              <sphereGeometry args={[0.21, 12, 12]} />
+              <meshStandardMaterial color="#8d5524" roughness={0.6} />
+            </mesh>
+            <mesh position={[0, 1.66, -0.02]} castShadow>
+              <sphereGeometry args={[0.215, 10, 10, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
+              <meshStandardMaterial color="#0f172a" roughness={0.9} />
+            </mesh>
+            <mesh ref={leftLegRef} position={[-0.14, 0.42, 0]} castShadow>
+              <boxGeometry args={[0.18, 0.65, 0.2]} />
+              <meshStandardMaterial color="#1e3a8a" roughness={0.8} />
+            </mesh>
+            <mesh ref={rightLegRef} position={[0.14, 0.42, 0]} castShadow>
+              <boxGeometry args={[0.18, 0.65, 0.2]} />
+              <meshStandardMaterial color="#1e3a8a" roughness={0.8} />
+            </mesh>
+          </group>
+        )}
 
         {/* Borrowed Bicycle */}
         {isCycle && (

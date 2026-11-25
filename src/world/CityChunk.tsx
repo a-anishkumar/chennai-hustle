@@ -1,8 +1,22 @@
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { CuboidCollider, RigidBody } from '@react-three/rapier';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import worldConfig from '../config/world.json';
 import { getTerrainHeight, seededRandom } from './TerrainHeight';
+
+function createPalmCrownGeo(): THREE.BufferGeometry {
+  const parts: THREE.BufferGeometry[] = [];
+  for (let i = 0; i < 6; i++) {
+    const ang = (i / 6) * Math.PI * 2;
+    const frond = new THREE.BoxGeometry(0.65, 0.14, 2.8);
+    frond.translate(0, 0, 1.3);
+    frond.rotateX(0.32);
+    frond.rotateY(ang);
+    parts.push(frond);
+  }
+  return mergeGeometries(parts)!;
+}
 
 interface CityChunkProps {
   cx: number;
@@ -147,6 +161,8 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
     }
   }, [buildings, trees]);
 
+  const palmCrownGeo = useMemo(() => createPalmCrownGeo(), []);
+
   return (
     <group position={[originX, 0, originZ]}>
       {isActiveDetail ? (
@@ -180,9 +196,8 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
             <cylinderGeometry args={[0.25, 0.4, 4.4, 6]} />
             <meshStandardMaterial color="#78350f" roughness={0.9} />
           </instancedMesh>
-          <instancedMesh ref={tCrownRef} args={[undefined, undefined, trees.length]} castShadow={isActiveDetail}>
-            <dodecahedronGeometry args={[2.1, 0]} />
-            <meshStandardMaterial color="#15803d" roughness={0.8} />
+          <instancedMesh ref={tCrownRef} args={[palmCrownGeo, undefined, trees.length]} castShadow={isActiveDetail}>
+            <meshStandardMaterial color="#15803d" roughness={0.75} />
           </instancedMesh>
         </>
       )}

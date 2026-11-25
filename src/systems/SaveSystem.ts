@@ -67,6 +67,12 @@ const SAVE_KEY = 'chennai_hustle_save_v1';
 export function writeSaveData(data: SaveData): boolean {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    // Best-effort sync to Node.js + Express backend if running
+    fetch('/api/save/default', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }).catch(() => {});
     return true;
   } catch (err) {
     console.warn('Failed to save to localStorage:', err);

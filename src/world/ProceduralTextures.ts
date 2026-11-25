@@ -126,3 +126,23 @@ export function getPlasterTexture(hexColor: string): THREE.CanvasTexture {
   cache[key] = tex;
   return tex;
 }
+
+export function getAsphaltNormalMap(): THREE.CanvasTexture {
+  if (cache.asphaltNormal) return cache.asphaltNormal;
+  const [canvas, ctx] = makeCanvas(128, 128);
+  ctx.fillStyle = 'rgb(128, 128, 255)';
+  ctx.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 1200; i++) {
+    const x = (i * 53) % 128;
+    const y = (i * 97) % 128;
+    const nx = 110 + ((i * 17) % 36);
+    const ny = 110 + ((i * 29) % 36);
+    ctx.fillStyle = `rgb(${nx}, ${ny}, 245)`;
+    ctx.fillRect(x, y, 2, 2);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  cache.asphaltNormal = tex;
+  return tex;
+}

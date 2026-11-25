@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { RigidBody } from '@react-three/rapier';
-import { getAsphaltTexture } from './ProceduralTextures';
+import { getAsphaltNormalMap, getAsphaltTexture } from './ProceduralTextures';
 import { useGameStore } from '../systems/gameStore';
 import { isNightHour } from '../systems/timeUtils';
 
@@ -13,17 +13,21 @@ interface RoadSegmentProps {
 }
 
 function RoadSegment({ x, z, width, length, rotY = 0 }: RoadSegmentProps) {
-  const tex = useMemo(() => {
+  const { tex, norm } = useMemo(() => {
+    const rep = Math.max(1, Math.round(length / 18));
     const t = getAsphaltTexture().clone();
     t.needsUpdate = true;
-    t.repeat.set(1, Math.max(1, Math.round(length / 18)));
-    return t;
+    t.repeat.set(1, rep);
+    const n = getAsphaltNormalMap().clone();
+    n.needsUpdate = true;
+    n.repeat.set(2, rep * 2);
+    return { tex: t, norm: n };
   }, [length]);
 
   return (
     <mesh position={[x, 0.03, z]} rotation={[-Math.PI / 2, 0, rotY]} receiveShadow>
       <planeGeometry args={[width, length]} />
-      <meshStandardMaterial map={tex} roughness={0.92} />
+      <meshStandardMaterial map={tex} normalMap={norm} roughness={0.86} />
     </mesh>
   );
 }
