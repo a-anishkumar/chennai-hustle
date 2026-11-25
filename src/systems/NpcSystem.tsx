@@ -138,12 +138,12 @@ export function NpcSystem() {
 
   return (
     <group name="NPC_Crowd">
-      <instancedMesh ref={bodyRef} args={[undefined, undefined, NPC_COUNT]} castShadow>
-        <boxGeometry args={[0.48, 1.05, 0.3]} />
+      <instancedMesh ref={bodyRef} args={[undefined, undefined, NPC_COUNT]} castShadow frustumCulled={false}>
+        <boxGeometry args={[0.52, 1.15, 0.34]} />
         <meshStandardMaterial roughness={0.75} />
       </instancedMesh>
-      <instancedMesh ref={headRef} args={[undefined, undefined, NPC_COUNT]} castShadow>
-        <sphereGeometry args={[0.19, 8, 8]} />
+      <instancedMesh ref={headRef} args={[undefined, undefined, NPC_COUNT]} castShadow frustumCulled={false}>
+        <sphereGeometry args={[0.21, 10, 10]} />
         <meshStandardMaterial color="#8d5524" roughness={0.65} />
       </instancedMesh>
 

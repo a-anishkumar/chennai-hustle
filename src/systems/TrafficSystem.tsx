@@ -246,25 +246,25 @@ export function TrafficSystem() {
   return (
     <group name="Traffic_System">
       {/* 10 Auto-Rickshaws */}
-      <instancedMesh ref={autoRef} args={[undefined, undefined, 10]} castShadow>
+      <instancedMesh ref={autoRef} args={[undefined, undefined, 10]} castShadow frustumCulled={false}>
         <boxGeometry args={[1.45, 1.75, 2.5]} />
         <meshStandardMaterial roughness={0.6} />
       </instancedMesh>
 
       {/* 4 MTC-style Buses */}
-      <instancedMesh ref={busRef} args={[undefined, undefined, 4]} castShadow>
+      <instancedMesh ref={busRef} args={[undefined, undefined, 4]} castShadow frustumCulled={false}>
         <boxGeometry args={[2.3, 2.9, 7.6]} />
         <meshStandardMaterial roughness={0.55} />
       </instancedMesh>
 
       {/* 8 Scooters/Bikes */}
-      <instancedMesh ref={bikeRef} args={[undefined, undefined, 8]} castShadow>
+      <instancedMesh ref={bikeRef} args={[undefined, undefined, 8]} castShadow frustumCulled={false}>
         <boxGeometry args={[0.65, 1.15, 1.7]} />
         <meshStandardMaterial roughness={0.5} />
       </instancedMesh>
 
       {/* 6 Cars */}
-      <instancedMesh ref={carRef} args={[undefined, undefined, 6]} castShadow>
+      <instancedMesh ref={carRef} args={[undefined, undefined, 6]} castShadow frustumCulled={false}>
         <boxGeometry args={[1.85, 1.35, 3.8]} />
         <meshStandardMaterial roughness={0.4} metalness={0.25} />
       </instancedMesh>
