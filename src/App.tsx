@@ -20,6 +20,7 @@ import { UrbanLandmarks } from './world/landmarks/UrbanLandmarks';
 import { CivicAndShops } from './world/landmarks/CivicAndShops';
 import { MoreChennaiLandmarks } from './world/landmarks/MoreChennaiLandmarks';
 import { ExtraChennaiLandmarks } from './world/landmarks/ExtraChennaiLandmarks';
+import { ChennaiStreetBusinesses } from './world/landmarks/ChennaiStreetBusinesses';
 import { PosterBoardWorld } from './world/PosterBoardWorld';
 import { RoadLoop } from './world/RoadLoop';
 import { JobMarkers } from './world/JobMarkers';
@@ -80,6 +81,7 @@ export function App() {
             <CivicAndShops />
             <MoreChennaiLandmarks />
             <ExtraChennaiLandmarks />
+            <ChennaiStreetBusinesses />
             <PosterBoardWorld />
             <RoadLoop />
             <TrafficSystem />

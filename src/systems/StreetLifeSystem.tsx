@@ -177,6 +177,34 @@ export function StreetLifeSystem() {
           </div>
         </Html>
       </group>
+
+      {/* Children Playing Street Cricket in TNHB Courtyard (-120, 0, 72) */}
+      <group position={[-120, 0, 72]}>
+        {/* Cricket Stumps */}
+        {[-0.2, 0, 0.2].map((sx, i) => (
+          <mesh key={i} position={[sx, 0.4, -3.5]}>
+            <cylinderGeometry args={[0.03, 0.03, 0.8, 6]} />
+            <meshStandardMaterial color="#facc15" />
+          </mesh>
+        ))}
+        {/* Young Cricketers */}
+        {[
+          [0, 0, -2.5, '#38bdf8'],
+          [0.8, 0, 3.2, '#f97316'],
+          [-2.8, 0, 0.5, '#22c55e'],
+        ].map(([kx, , kz, col], idx) => (
+          <group key={idx} position={[Number(kx), 0, Number(kz)]}>
+            <mesh position={[0, 0.55, 0]} castShadow>
+              <boxGeometry args={[0.38, 0.8, 0.24]} />
+              <meshStandardMaterial color={String(col)} />
+            </mesh>
+            <mesh position={[0, 1.1, 0]} castShadow>
+              <sphereGeometry args={[0.16, 8, 8]} />
+              <meshStandardMaterial color="#8d5524" />
+            </mesh>
+          </group>
+        ))}
+      </group>
     </group>
   );
 }

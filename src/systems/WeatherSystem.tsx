@@ -2,11 +2,15 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from './gameStore';
+import { audioManager } from '../audio/AudioManager';
 
 const RAIN_COUNT = 320;
 
 export function WeatherSystem() {
   const rainRef = useRef<THREE.InstancedMesh>(null);
+  const flashLightRef = useRef<THREE.AmbientLight>(null);
+  const thunderTimerRef = useRef(6);
+  const flashIntensityRef = useRef(0);
   const weather = useGameStore((s) => s.weather);
   const isRaining = weather === 'monsoon' || weather === 'flood';
 
@@ -43,14 +47,31 @@ export function WeatherSystem() {
       rainRef.current.setMatrixAt(i, dummy.matrix);
     }
     rainRef.current.instanceMatrix.needsUpdate = true;
+
+    // Thunder & Lightning flashes during monsoon/flood
+    thunderTimerRef.current -= dt;
+    if (thunderTimerRef.current <= 0) {
+      thunderTimerRef.current = 7 + Math.random() * 8;
+      flashIntensityRef.current = 3.5;
+      audioManager.playThunder();
+    }
+    if (flashIntensityRef.current > 0) {
+      flashIntensityRef.current = Math.max(0, flashIntensityRef.current - dt * 12);
+    }
+    if (flashLightRef.current) {
+      flashLightRef.current.intensity = flashIntensityRef.current;
+    }
   });
 
   if (!isRaining) return null;
 
   return (
-    <instancedMesh ref={rainRef} args={[undefined, undefined, RAIN_COUNT]} frustumCulled={false}>
-      <boxGeometry args={[0.04, 1.35, 0.04]} />
-      <meshBasicMaterial color="#bae6fd" transparent opacity={weather === 'flood' ? 0.65 : 0.45} />
-    </instancedMesh>
+    <>
+      <ambientLight ref={flashLightRef} color="#e0f2fe" intensity={0} />
+      <instancedMesh ref={rainRef} args={[undefined, undefined, RAIN_COUNT]} frustumCulled={false}>
+        <boxGeometry args={[0.04, 1.35, 0.04]} />
+        <meshBasicMaterial color="#bae6fd" transparent opacity={weather === 'flood' ? 0.65 : 0.45} />
+      </instancedMesh>
+    </>
   );
 }

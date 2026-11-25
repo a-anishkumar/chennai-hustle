@@ -89,6 +89,20 @@ function makeTempleBell(): Howl {
   return new Howl({ src: [encodeWavDataUri(data, sr)], volume: 0.35 });
 }
 
+function makeThunderSfx(): Howl {
+  const sr = 16000;
+  const len = Math.floor(sr * 1.6);
+  const data = new Float32Array(len);
+  let lp = 0;
+  for (let i = 0; i < len; i++) {
+    const t = i / sr;
+    const env = Math.exp(-t * 1.8);
+    lp = (lp + 0.04 * (Math.random() * 2 - 1)) / 1.04;
+    data[i] = lp * 1.8 * env;
+  }
+  return new Howl({ src: [encodeWavDataUri(data, sr)], volume: 0.45 });
+}
+
 class ChennaiAudioManager {
   private initialized = false;
   private muted = false;
@@ -96,6 +110,7 @@ class ChennaiAudioManager {
   private hornSfx: Howl | null = null;
   private cashSfx: Howl | null = null;
   private bellSfx: Howl | null = null;
+  private thunderSfx: Howl | null = null;
 
   init() {
     if (this.initialized) return;
@@ -105,6 +120,7 @@ class ChennaiAudioManager {
       this.hornSfx = makeHornSfx();
       this.cashSfx = makeCashChime();
       this.bellSfx = makeTempleBell();
+      this.thunderSfx = makeThunderSfx();
       this.rainLoop.play();
     } catch {
       // Ignore audio errors in headless environments
@@ -136,6 +152,10 @@ class ChennaiAudioManager {
 
   playBell() {
     if (this.initialized && !this.muted) this.bellSfx?.play();
+  }
+
+  playThunder() {
+    if (this.initialized && !this.muted) this.thunderSfx?.play();
   }
 }
 

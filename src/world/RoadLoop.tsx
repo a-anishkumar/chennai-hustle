@@ -12,7 +12,7 @@ interface RoadSegmentProps {
   rotY?: number;
 }
 
-function RoadSegment({ x, z, width, length, rotY = 0 }: RoadSegmentProps) {
+function RoadSegment({ x, z, width, length, rotY = 0, wet = false }: RoadSegmentProps & { wet?: boolean }) {
   const { tex, norm } = useMemo(() => {
     const rep = Math.max(1, Math.round(length / 18));
     const t = getAsphaltTexture().clone();
@@ -27,7 +27,12 @@ function RoadSegment({ x, z, width, length, rotY = 0 }: RoadSegmentProps) {
   return (
     <mesh position={[x, 0.03, z]} rotation={[-Math.PI / 2, 0, rotY]} receiveShadow>
       <planeGeometry args={[width, length]} />
-      <meshStandardMaterial map={tex} normalMap={norm} roughness={0.86} />
+      <meshStandardMaterial
+        map={tex}
+        normalMap={norm}
+        roughness={wet ? 0.14 : 0.86}
+        metalness={wet ? 0.45 : 0.05}
+      />
     </mesh>
   );
 }
@@ -66,17 +71,44 @@ export function RoadLoop() {
   const weather = useGameStore((s) => s.weather);
   const night = isNightHour(timeOfDay);
   const powerCut = night && weather === 'flood';
+  const wet = weather === 'monsoon' || weather === 'flood';
 
   return (
     <group name="Road_Loop">
       {/* West Road (x = -190) */}
-      <RoadSegment x={-190} z={10} width={14} length={274} />
+      <RoadSegment x={-190} z={10} width={14} length={274} wet={wet} />
       {/* East Road (x = 40) */}
-      <RoadSegment x={40} z={10} width={14} length={274} />
+      <RoadSegment x={40} z={10} width={14} length={274} wet={wet} />
       {/* North Road (z = -120) */}
-      <RoadSegment x={-75} z={-120} width={14} length={244} rotY={Math.PI / 2} />
+      <RoadSegment x={-75} z={-120} width={14} length={244} rotY={Math.PI / 2} wet={wet} />
       {/* South Road (z = 140) */}
-      <RoadSegment x={-75} z={140} width={14} length={244} rotY={Math.PI / 2} />
+      <RoadSegment x={-75} z={140} width={14} length={244} rotY={Math.PI / 2} wet={wet} />
+
+      {/* Pedestrian Zebra Crossings */}
+      {[
+        [-190, 18, 0],
+        [-75, -120, Math.PI / 2],
+        [40, 18, 0],
+        [-75, 140, Math.PI / 2],
+      ].map(([zx, zz, rot], idx) => (
+        <group key={`zebra_${idx}`} position={[zx, 0.04, zz]} rotation={[0, rot, 0]}>
+          {[-4, -2, 0, 2, 4].map((off, si) => (
+            <mesh key={si} position={[off, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[0.9, 4.2]} />
+              <meshStandardMaterial color="#f8fafc" />
+            </mesh>
+          ))}
+        </group>
+      ))}
+
+      {/* Rain Water Puddles on Roads */}
+      {wet &&
+        POTHOLE_POSITIONS.map(([px, pz], idx) => (
+          <mesh key={`puddle_${idx}`} position={[px - 2, 0.046, pz + 4]} rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[2.2, 14]} />
+            <meshStandardMaterial color="#38bdf8" roughness={0.05} metalness={0.75} transparent opacity={0.55} />
+          </mesh>
+        ))}
 
       {/* Canal Bridge Extension (x = 40, z = 140..250) */}
       <RigidBody type="fixed" colliders="cuboid">
