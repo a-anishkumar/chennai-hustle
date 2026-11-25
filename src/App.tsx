@@ -16,6 +16,7 @@ import { TnhbColony } from './world/landmarks/TnhbColony';
 import { CoastLandmarks } from './world/landmarks/CoastLandmarks';
 import { HarbourLandmark } from './world/landmarks/HarbourLandmark';
 import { UrbanLandmarks } from './world/landmarks/UrbanLandmarks';
+import { CivicAndShops } from './world/landmarks/CivicAndShops';
 import { PosterBoardWorld } from './world/PosterBoardWorld';
 import { RoadLoop } from './world/RoadLoop';
 import { JobMarkers } from './world/JobMarkers';
@@ -72,6 +73,7 @@ export function App() {
             <CoastLandmarks />
             <HarbourLandmark />
             <UrbanLandmarks />
+            <CivicAndShops />
             <PosterBoardWorld />
             <RoadLoop />
             <TrafficSystem />

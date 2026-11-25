@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import dialogues from '../config/dialogues.json';
 import { useGameStore } from './gameStore';
 
-type NpcRole = 'office' | 'student' | 'vendor' | 'fan' | 'fisherman';
+type NpcRole = 'office' | 'student' | 'vendor' | 'fan' | 'fisherman' | 'influencer';
 
 interface NpcAgent {
   role: NpcRole;
@@ -26,10 +26,17 @@ const ROLE_COLORS: Record<NpcRole, string> = {
   vendor: '#f97316',
   fan: '#facc15',
   fisherman: '#14b8a6',
+  influencer: '#ec4899',
 };
 
-const ROLES: NpcRole[] = ['office', 'student', 'vendor', 'fan', 'fisherman'];
-const NPC_COUNT = 40;
+const INFLUENCER_LINES = [
+  'Guys! Welcome back to my Chennai street vlog — like & subscribe!',
+  'Indha tea kadai aesthetic vera level reels-ku! #ChennaiVibes',
+  'GRWM for Marina Beach sunset — outfit link in bio!',
+];
+
+const ROLES: NpcRole[] = ['office', 'student', 'vendor', 'fan', 'fisherman', 'influencer'];
+const NPC_COUNT = 44;
 
 export function NpcSystem() {
   const bodyRef = useRef<THREE.InstancedMesh>(null);
@@ -63,7 +70,10 @@ export function NpcSystem() {
         speed: role === 'vendor' ? 0.25 : 0.7 + (i % 4) * 0.2,
         radius,
         color: ROLE_COLORS[role],
-        line: dialogues.streetChatter[i % dialogues.streetChatter.length],
+        line:
+          role === 'influencer'
+            ? INFLUENCER_LINES[i % INFLUENCER_LINES.length]
+            : dialogues.streetChatter[i % dialogues.streetChatter.length],
       });
     }
     npcsRef.current = list;

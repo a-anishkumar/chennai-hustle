@@ -17,6 +17,8 @@
     { "id": "cinema", "name": "Sathyam / Kaveri Theatre (FDFS)", "x": -480, "z": -320, "type": "cinema" },
     { "id": "temple", "name": "Mylapore Kapaleeshwarar Kovil", "x": 620, "z": 520, "type": "temple" },
     { "id": "fanHouse", "name": "Poes Garden Superstar House", "x": 380, "z": 860, "type": "fanhouse" },
-    { "id": "busHub", "name": "Koyambedu Flyover & Metro Hub", "x": 0, "z": -180, "type": "transit" }
+    { "id": "busHub", "name": "Koyambedu Flyover & Metro Hub", "x": 0, "z": -180, "type": "transit" },
+    { "id": "railway", "name": "Chennai Central Railway Station", "x": -320, "z": -180, "type": "transit" },
+    { "id": "court", "name": "Madras High Court & Police HQ", "x": 220, "z": -360, "type": "civic" }
   ]
 }
