@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import http from 'http';
 import { fileURLToPath } from 'url';
-import { Server as ColyseusServer, Room } from 'colyseus';
+import { Server as ColyseusServer, Room, createNodeMatchmakingMiddleware } from 'colyseus';
 import { WebSocketTransport } from '@colyseus/ws-transport';
 import pg from 'pg';
 
@@ -49,6 +49,7 @@ class ChennaiRoom extends Room {
 
 const app = express();
 app.use(cors({ origin: true, credentials: true }));
+app.use(createNodeMatchmakingMiddleware());
 app.use(express.json({ limit: '1mb' }));
 
 app.get(['/api/health', '/health'], (_req, res) => {
