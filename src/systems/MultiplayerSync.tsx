@@ -26,7 +26,7 @@ export function MultiplayerSync() {
     const client = new Client(wsUrl);
 
     client
-      .joinOrCreate('chennai')
+      .joinOrCreate('chennai_world')
       .then((room) => {
         if (!active) {
           room.leave();
