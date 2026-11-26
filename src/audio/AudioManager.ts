@@ -103,6 +103,18 @@ function makeThunderSfx(): Howl {
   return new Howl({ src: [encodeWavDataUri(data, sr)], volume: 0.45 });
 }
 
+function makeFootstepSfx(): Howl {
+  const sr = 16000;
+  const len = Math.floor(sr * 0.09);
+  const data = new Float32Array(len);
+  for (let i = 0; i < len; i++) {
+    const t = i / sr;
+    const env = Math.exp(-t * 42);
+    data[i] = (Math.random() * 2 - 1) * 0.14 * env;
+  }
+  return new Howl({ src: [encodeWavDataUri(data, sr)], volume: 0.22 });
+}
+
 function makeWaveLoop(): Howl {
   const sr = 16000;
   const len = sr * 3;
@@ -127,6 +139,7 @@ class ChennaiAudioManager {
   private cashSfx: Howl | null = null;
   private bellSfx: Howl | null = null;
   private thunderSfx: Howl | null = null;
+  private stepSfx: Howl | null = null;
   private lastBellAt = 0;
 
   init() {
@@ -139,11 +152,16 @@ class ChennaiAudioManager {
       this.cashSfx = makeCashChime();
       this.bellSfx = makeTempleBell();
       this.thunderSfx = makeThunderSfx();
+      this.stepSfx = makeFootstepSfx();
       this.rainLoop.play();
       this.waveLoop.play();
     } catch {
       // Ignore audio errors in headless environments
     }
+  }
+
+  playFootstep() {
+    if (this.initialized && !this.muted) this.stepSfx?.play();
   }
 
   updateSpatialAmbience(px: number, pz: number) {

@@ -9,6 +9,7 @@ import { getTerrainHeight } from './TerrainHeight';
 import { AnimatedPlayerMesh } from './AnimatedPlayerMesh';
 import { AnimatedHumanNpc } from './AnimatedHumanNpc';
 import { isNightHour } from '../systems/timeUtils';
+import { audioManager } from '../audio/AudioManager';
 
 const _fwd = new THREE.Vector3();
 const _right = new THREE.Vector3();
@@ -34,6 +35,9 @@ export function PlayerController() {
   const night = isNightHour(timeOfDay);
   const [initialPos] = useState(() => useGameStore.getState().playerPos);
   const firstPersonRef = useRef(false);
+  const cinematicCamRef = useRef(false);
+  const isCrouchingRef = useRef(false);
+  const stepTimerRef = useRef(0);
 
   // Input state
   const keys = useRef<Record<string, boolean>>({});
@@ -58,6 +62,10 @@ export function PlayerController() {
         useGameStore.getState().toggleVehicleCycle();
       } else if (code === 'KeyV') {
         firstPersonRef.current = !firstPersonRef.current;
+      } else if (code === 'KeyG') {
+        cinematicCamRef.current = !cinematicCamRef.current;
+      } else if (code === 'KeyC') {
+        isCrouchingRef.current = !isCrouchingRef.current;
       } else if (code === 'KeyP') {
         useGameStore.getState().togglePhone();
       } else if (code === 'KeyM') {
@@ -71,6 +79,26 @@ export function PlayerController() {
         else if (near(-40, -31, 8)) s.openMinigame('teaMaster');
         else if (near(-480, -303, 10)) s.openMinigame('cinemaQueue');
         else if (near(962, -1318, 12)) s.openMinigame('harbourCrates');
+        else if (near(-68, -31, 7)) s.buySnack('Anbu Tea & Bajji', 25, 28, 14);
+        else if (near(-120, 24, 8) || near(1492, 92, 8) || near(408, -248, 8)) {
+          s.buySnack('Chennai Food Truck Shawarma', 25, 32, 16);
+        } else if (near(-215, -85, 9)) {
+          if (s.money >= 20) {
+            s.modifyStats({ money: -20, fuel: 100 });
+            s.showToast('Refueled 100% at Chennai Petrol Bunk (-₹20)');
+          } else {
+            s.showToast('Need ₹20 to refuel at Petrol Bunk!');
+          }
+        } else if (near(-140, -95, 8)) {
+          s.modifyStats({ fuel: 100 });
+          s.showToast('EV Bike fast-charged to 100%!');
+        } else if (near(-155, -35, 8)) {
+          s.modifyStats({ mood: 10, reputation: 4 });
+          s.showToast('TTF Vasan tuned & serviced your ride!');
+        } else if (near(-138, 62, 5) || near(-16, 68, 5) || near(-102, 62, 5) || near(-176, 6, 5)) {
+          s.modifyStats({ stamina: 18, mood: 10 });
+          s.showToast('Sat on Chennai bench — Stamina & Mood restored!');
+        }
       }
     };
 
@@ -183,7 +211,8 @@ export function PlayerController() {
     const isSprinting = keys.current['ShiftLeft'] || keys.current['ShiftRight'] || virtualInput.sprint;
     const rainPenalty =
       state.currentVehicle !== 'boat' && (state.weather === 'monsoon' || state.weather === 'flood') ? 0.78 : 1.0;
-    const speedMult = (isSprinting ? 1.32 : 1.0) * rainPenalty;
+    const crouchMult = state.currentVehicle === 'foot' && isCrouchingRef.current ? 0.55 : 1.0;
+    const speedMult = (isSprinting ? 1.32 : 1.0) * rainPenalty * crouchMult;
     const targetSpeed = isMoving ? vSpec.maxSpeed * speedMult : 0;
 
     // Vehicle-distinct acceleration, braking inertia, turning & banking behavior
@@ -244,8 +273,19 @@ export function PlayerController() {
       }
     }
 
-    // Limb & wheel animations
+    // Limb, wheel & footstep cadence
     const horizSpeed = Math.hypot(vx, vz);
+    if (state.currentVehicle === 'foot' && horizSpeed > 0.8) {
+      stepTimerRef.current += dt * (isSprinting ? 2.8 : 1.9);
+      if (stepTimerRef.current >= 1) {
+        stepTimerRef.current = 0;
+        audioManager.playFootstep();
+      }
+    }
+    if (meshGroupRef.current) {
+      const targetScaleY = state.currentVehicle === 'foot' && isCrouchingRef.current ? 0.72 : 1.0;
+      meshGroupRef.current.scale.y = THREE.MathUtils.lerp(meshGroupRef.current.scale.y, targetScaleY, dt * 10);
+    }
     if (horizSpeed > 0.4) {
       animPhase.current += dt * horizSpeed * (state.currentVehicle === 'cycle' ? 1.1 : 1.8);
       if (leftLegRef.current && rightLegRef.current) {
@@ -261,11 +301,16 @@ export function PlayerController() {
       rightLegRef.current.rotation.x *= 0.85;
     }
 
+    if (cinematicCamRef.current) {
+      camYaw.current += dt * 0.22;
+    }
+
     if (firstPersonRef.current) {
-      _camFinal.set(pos.x, pos.y + 1.68, pos.z);
+      const eyeY = pos.y + (isCrouchingRef.current ? 1.15 : 1.68);
+      _camFinal.set(pos.x, eyeY, pos.z);
       _camTarget.set(
         pos.x - Math.sin(camYaw.current) * 8,
-        pos.y + 1.68 - Math.sin(camPitch.current) * 4,
+        eyeY - Math.sin(camPitch.current) * 4,
         pos.z - Math.cos(camYaw.current) * 8
       );
       camera.position.lerp(_camFinal, Math.min(1, dt * 18));

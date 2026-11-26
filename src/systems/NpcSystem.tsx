@@ -152,7 +152,11 @@ export function NpcSystem() {
     if (!state.isStarted || state.isPaused || !npcs) return;
 
     const t = clock.getElapsedTime();
+    const h = state.timeOfDay;
+    const isRushHour = (h >= 8.0 && h <= 10.5) || (h >= 17.0 && h <= 20.5);
+    const isLateNight = h >= 23.0 || h < 5.0;
     const isRaining = state.weather === 'monsoon' || state.weather === 'flood';
+    const playerInVehicle = state.currentVehicle !== 'foot';
     const [px, , pz] = state.playerPos;
     let closestDist2 = 64;
     let closestNpc: NpcAgent | null = null;
@@ -161,12 +165,21 @@ export function NpcSystem() {
     for (let i = 0; i < activeNpcLimit; i++) {
       const n = npcs[i];
 
+      const dx = n.x - px;
+      const dz = n.z - pz;
+      const d2 = dx * dx + dz * dz;
+      const avoidVehicle = playerInVehicle && d2 < 49;
+
       n.actionTimer -= dt;
       if (isRaining && n.role !== 'beggar' && n.role !== 'vendor') {
         n.action = 'fleeing_rain';
+      } else if (avoidVehicle) {
+        n.action = 'waving_auto';
       } else if (n.actionTimer <= 0) {
         n.actionTimer = 4 + ((i * 7 + Math.floor(t)) % 5);
-        const actions: NpcAction[] = ['walking', 'walking', 'idle_chatting', 'waving_auto', 'checking_phone'];
+        const actions: NpcAction[] = isRushHour
+          ? ['walking', 'walking', 'walking', 'waving_auto', 'checking_phone']
+          : ['walking', 'walking', 'idle_chatting', 'waving_auto', 'checking_phone'];
         n.action = actions[(i + Math.floor(t)) % actions.length];
       }
 
@@ -174,16 +187,12 @@ export function NpcSystem() {
         n.action === 'fleeing_rain'
           ? 1.9
           : n.action === 'walking'
-          ? 1.0
+          ? (isRushHour ? 1.2 : 1.0)
           : 0.0;
 
       n.angle += ((n.speed * moveMult) / n.radius) * dt;
       n.x = n.homeX + Math.cos(n.angle) * n.radius;
       n.z = n.homeZ + Math.sin(n.angle) * n.radius;
-
-      const dx = n.x - px;
-      const dz = n.z - pz;
-      const d2 = dx * dx + dz * dz;
 
       // Face walking tangent or turn to face player when nearby
       const tangentRot = Math.atan2(-Math.sin(n.angle), Math.cos(n.angle));
@@ -191,7 +200,8 @@ export function NpcSystem() {
 
       const grp = npcGroupRefs.current[i];
       if (grp) {
-        grp.visible = d2 < 22500; // Frustum/distance cull beyond 150m
+        const nightHidden = isLateNight && i % 2 === 1;
+        grp.visible = !nightHidden && d2 < 22500; // Frustum/distance cull beyond 150m
         if (grp.visible) {
           grp.position.set(n.x, 0, n.z);
           grp.rotation.y = n.rotY;

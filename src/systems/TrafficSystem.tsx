@@ -226,6 +226,9 @@ export function TrafficSystem() {
     placeSpecial(ktmRef, specialProgRef.current.ktm, -1);
     placeSpecial(dukeRef, specialProgRef.current.duke, 1);
 
+    const h = state.timeOfDay;
+    const rushMult = (h >= 8.0 && h <= 10.5) || (h >= 17.0 && h <= 20.5) ? 0.78 : 1.0;
+
     const [px, , pz] = state.playerPos;
     let autoI = 0;
     let busI = 0;
@@ -297,7 +300,7 @@ export function TrafficSystem() {
         }
       }
 
-      const targetSpd = blocked ? 0 : a.baseSpeed;
+      const targetSpd = blocked ? 0 : a.baseSpeed * rushMult;
       const accelRate = a.kind === 'bike' ? 9 : a.kind === 'auto' ? 7 : a.kind === 'bus' ? 3.5 : 5.5;
       a.speed = THREE.MathUtils.lerp(a.speed, targetSpd, dt * accelRate);
       a.progress += a.lane * a.speed * dt;

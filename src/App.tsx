@@ -25,6 +25,7 @@ import { ConcertZone } from './world/landmarks/ConcertZone';
 import { ChepaukStadium } from './world/landmarks/ChepaukStadium';
 import { ChennaiStreetDetails } from './world/landmarks/ChennaiStreetDetails';
 import { PosterBoardWorld } from './world/PosterBoardWorld';
+import { WorldInteractables } from './world/WorldInteractables';
 import { RoadLoop } from './world/RoadLoop';
 import { JobMarkers } from './world/JobMarkers';
 import { PlayerController } from './world/PlayerController';
@@ -89,6 +90,7 @@ export function App() {
             <ChepaukStadium />
             <ChennaiStreetDetails />
             <PosterBoardWorld />
+            <WorldInteractables />
             <RoadLoop />
             <TrafficSystem />
             <NpcSystem />

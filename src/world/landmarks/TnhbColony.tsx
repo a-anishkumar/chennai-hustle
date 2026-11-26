@@ -4,6 +4,7 @@ import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { getAwningTexture, getChennaiFacadeNormalMap, getChennaiFacadeTexture, getKolamTexture, getSignTexture } from '../ProceduralTextures';
 import { useGameStore } from '../../systems/gameStore';
+import { isNightHour } from '../../systems/timeUtils';
 import { OnlineModel } from '../OnlineModel';
 
 const MILK_TRUCK_URL =
@@ -42,6 +43,8 @@ export function TnhbColony() {
 
   // Check proximity to home door (-133, 42) for E key rest
   const playerPos = useGameStore((s) => s.playerPos);
+  const timeOfDay = useGameStore((s) => s.timeOfDay);
+  const night = isNightHour(timeOfDay);
   const dx = playerPos[0] - -133;
   const dz = playerPos[2] - 42;
   const nearHome = dx * dx + dz * dz < 36;
@@ -71,7 +74,7 @@ export function TnhbColony() {
               <meshStandardMaterial color="#cbd5e1" roughness={0.9} />
             </mesh>
 
-            {/* Rooftop Water Tanks (Sintex-style) */}
+            {/* Rooftop Water Tanks (Sintex-style) & DTH Satellite Dish */}
             <mesh position={[-5, 11.8, -2]} castShadow>
               <cylinderGeometry args={[1.1, 1.1, 1.8, 12]} />
               <meshStandardMaterial color="#0284c7" roughness={0.4} />
@@ -80,20 +83,38 @@ export function TnhbColony() {
               <cylinderGeometry args={[1.0, 1.0, 1.6, 12]} />
               <meshStandardMaterial color="#1e293b" roughness={0.5} />
             </mesh>
+            <mesh position={[0, 11.5, -3.5]} rotation={[0.5, 0.3, 0]}>
+              <cylinderGeometry args={[0.55, 0.1, 0.25, 12]} />
+              <meshStandardMaterial color="#e2e8f0" metalness={0.5} roughness={0.3} />
+            </mesh>
 
-            {/* Balconies & Windows on front face (+X) */}
+            {/* Balconies, AC Units & Night-Lit Windows on front face (+X) */}
             {[2.0, 5.2, 8.4].map((wy, floorIdx) => (
               <group key={floorIdx} position={[10.1, wy, 0]}>
                 <mesh castShadow>
                   <boxGeometry args={[0.8, 0.25, 10.2]} />
                   <meshStandardMaterial color="#e2e8f0" />
                 </mesh>
-                {[-3.2, 0, 3.2].map((wz, wi) => (
-                  <mesh key={wi} position={[0, 0.9, wz]}>
-                    <boxGeometry args={[0.15, 1.3, 1.4]} />
-                    <meshStandardMaterial color="#1e293b" metalness={0.2} roughness={0.3} />
-                  </mesh>
-                ))}
+                {/* AC Outdoor Unit */}
+                <mesh position={[0.15, 0.45, -4.5]} castShadow>
+                  <boxGeometry args={[0.35, 0.55, 0.75]} />
+                  <meshStandardMaterial color="#f1f5f9" roughness={0.5} />
+                </mesh>
+                {[-3.2, 0, 3.2].map((wz, wi) => {
+                  const lit = night && (floorIdx + wi) % 2 === 0;
+                  return (
+                    <mesh key={wi} position={[0, 0.9, wz]}>
+                      <boxGeometry args={[0.15, 1.3, 1.4]} />
+                      <meshStandardMaterial
+                        color={lit ? '#fef08a' : '#1e293b'}
+                        emissive={lit ? '#f59e0b' : '#000000'}
+                        emissiveIntensity={lit ? 1.4 : 0}
+                        metalness={0.2}
+                        roughness={0.3}
+                      />
+                    </mesh>
+                  );
+                })}
               </group>
             ))}
 
