@@ -13,47 +13,61 @@ function makeCanvas(w: number, h: number): [HTMLCanvasElement, CanvasRenderingCo
 export function getAsphaltTexture(): THREE.CanvasTexture {
   if (cache.asphalt) return cache.asphalt;
   const [canvas, ctx] = makeCanvas(512, 512);
-  ctx.fillStyle = '#262a30';
+  ctx.fillStyle = '#252a30';
   ctx.fillRect(0, 0, 512, 512);
 
-  // Subtle worn tire tracks along both lanes
-  ctx.fillStyle = 'rgba(15, 18, 22, 0.28)';
+  // Worn tire tracks
+  ctx.fillStyle = 'rgba(10, 13, 18, 0.30)';
   ctx.fillRect(80, 0, 64, 512);
-  ctx.fillRect(160, 0, 64, 512);
-  ctx.fillRect(288, 0, 64, 512);
   ctx.fillRect(368, 0, 64, 512);
 
   // Aggregate mineral grit
-  for (let i = 0; i < 6500; i++) {
+  for (let i = 0; i < 7200; i++) {
     const x = (i * 131) % 512;
     const y = (i * 257) % 512;
-    ctx.fillStyle = i % 3 === 0 ? 'rgba(255,255,255,0.045)' : 'rgba(0,0,0,0.11)';
+    ctx.fillStyle = i % 3 === 0 ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.12)';
     ctx.fillRect(x, y, 2, 2);
   }
 
   // Weathered tar cracks
-  ctx.strokeStyle = 'rgba(10, 12, 15, 0.55)';
+  ctx.strokeStyle = 'rgba(8, 10, 14, 0.60)';
   ctx.lineWidth = 1.5;
-  for (let c = 0; c < 6; c++) {
+  for (let c = 0; c < 7; c++) {
     ctx.beginPath();
     let cx = (c * 97 + 40) % 480;
-    let cy = (c * 149) % 450;
+    let cy = (c * 149) % 420;
     ctx.moveTo(cx, cy);
     for (let s = 0; s < 5; s++) {
-      cx += ((c + s) % 2 === 0 ? 18 : -16);
+      cx += (c + s) % 2 === 0 ? 18 : -16;
       cy += 16;
       ctx.lineTo(cx, cy);
     }
     ctx.stroke();
   }
 
-  // Center dashed yellow divider
-  ctx.fillStyle = '#facc15';
-  ctx.fillRect(250, 20, 12, 196);
-  ctx.fillRect(250, 276, 12, 196);
+  // ── Pedestrian Crosswalk stripes at both ends ──
+  ctx.fillStyle = 'rgba(248,250,252,0.75)';
+  for (let s = 0; s < 8; s++) {
+    const sx = s * 64;
+    ctx.fillRect(sx, 0, 32, 48);     // top crosswalk
+    ctx.fillRect(sx, 464, 32, 48);   // bottom crosswalk
+  }
 
-  // Crisp white shoulder lines
-  ctx.fillStyle = 'rgba(248, 250, 252, 0.68)';
+  // ── Centre double yellow divider (solid, not dashed) ──
+  ctx.fillStyle = '#facc15';
+  ctx.fillRect(248, 52, 8, 420);
+  ctx.fillRect(258, 52, 8, 420);
+
+  // ── White lane dividers (dashed) ──
+  ctx.fillStyle = 'rgba(248,250,252,0.60)';
+  for (let d = 0; d < 6; d++) {
+    const dy = 60 + d * 68;
+    ctx.fillRect(124, dy, 6, 44);
+    ctx.fillRect(380, dy, 6, 44);
+  }
+
+  // Shoulder solid white lines
+  ctx.fillStyle = 'rgba(248,250,252,0.72)';
   ctx.fillRect(14, 0, 7, 512);
   ctx.fillRect(491, 0, 7, 512);
 
@@ -342,6 +356,139 @@ export function getChennaiFacadeNormalMap(): THREE.CanvasTexture {
 
   const tex = new THREE.CanvasTexture(canvas);
   cache.chennaiFacadeNormal = tex;
+  return tex;
+}
+
+/** Night-lit window overlay — small glowing rectangular windows on a dark facade */
+export function getNightWindowTexture(): THREE.CanvasTexture {
+  if (cache.nightWindow) return cache.nightWindow;
+  const [canvas, ctx] = makeCanvas(256, 512);
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, 256, 512);
+  const cols = 3, rows = 6;
+  const colW = 256 / cols, rowH = 512 / rows;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const lit = (r * cols + c) % 3 !== 0; // ~2/3 windows lit
+      if (!lit) continue;
+      const wx = c * colW + colW * 0.18;
+      const wy = r * rowH + rowH * 0.22;
+      const ww = colW * 0.60;
+      const wh = rowH * 0.52;
+      const hue = (r + c) % 2 === 0 ? '#fef3c7' : '#fde68a';
+      ctx.fillStyle = hue;
+      ctx.fillRect(wx, wy, ww, wh);
+      // subtle glow
+      const grad = ctx.createRadialGradient(wx + ww/2, wy + wh/2, 0, wx + ww/2, wy + wh/2, ww * 0.9);
+      grad.addColorStop(0, 'rgba(254,243,199,0.6)');
+      grad.addColorStop(1, 'rgba(254,243,199,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(wx - 4, wy - 4, ww + 8, wh + 8);
+    }
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  cache.nightWindow = tex;
+  return tex;
+}
+
+/** Old Chennai brick facade — exposed red-orange brick courses with mortar lines */
+export function getBrickFacadeTexture(): THREE.CanvasTexture {
+  if (cache.brickFacade) return cache.brickFacade;
+  const [canvas, ctx] = makeCanvas(256, 256);
+  ctx.fillStyle = '#c2410c';
+  ctx.fillRect(0, 0, 256, 256);
+  const bH = 16, bW = 48;
+  ctx.fillStyle = '#9a3412';
+  for (let row = 0; row < 16; row++) {
+    const off = row % 2 === 0 ? 0 : bW / 2;
+    for (let col = 0; col < Math.ceil(256 / bW) + 1; col++) {
+      const bx = col * bW + off - bW / 2;
+      const by = row * bH;
+      // Mortar gaps
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(bx, by, bW - 3, bH - 2);
+      // Colour variation per brick
+      const v = ((row * 13 + col * 7) % 5) * 0.04;
+      ctx.fillStyle = `rgba(${Math.round(192 + v * 60)},${Math.round(60 + v * 20)},20,0.6)`;
+      ctx.fillRect(bx + 1, by + 1, bW - 5, bH - 4);
+    }
+  }
+  // Weathering overlay
+  for (let i = 0; i < 2000; i++) {
+    ctx.fillStyle = i % 2 === 0 ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)';
+    ctx.fillRect((i * 67) % 256, (i * 113) % 256, 2, 2);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  cache.brickFacade = tex;
+  return tex;
+}
+
+/** Modern commercial glass-and-concrete facade with dark glass panels */
+export function getCommercialFacadeTexture(): THREE.CanvasTexture {
+  if (cache.commercialFacade) return cache.commercialFacade;
+  const [canvas, ctx] = makeCanvas(256, 512);
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, 0, 256, 512);
+  // Structural concrete bands
+  ctx.fillStyle = '#475569';
+  for (let r = 0; r < 8; r++) {
+    ctx.fillRect(0, r * 64, 256, 8);
+  }
+  // Glass panel grid
+  for (let r = 0; r < 7; r++) {
+    for (let c = 0; c < 4; c++) {
+      const px = c * 64 + 4, py = r * 64 + 10;
+      const grad = ctx.createLinearGradient(px, py, px + 56, py + 50);
+      grad.addColorStop(0, '#0f4c75');
+      grad.addColorStop(0.4, '#1b6ca8');
+      grad.addColorStop(1, '#063251');
+      ctx.fillStyle = grad;
+      ctx.fillRect(px, py, 56, 50);
+      ctx.fillStyle = 'rgba(147,197,253,0.18)';
+      ctx.fillRect(px, py, 20, 50);
+    }
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  cache.commercialFacade = tex;
+  return tex;
+}
+
+/** Marina beach sand — warm tan with subtle ripple texture */
+export function getBeachSandTexture(): THREE.CanvasTexture {
+  if (cache.beachSand) return cache.beachSand;
+  const [canvas, ctx] = makeCanvas(256, 256);
+  ctx.fillStyle = '#d4a76a';
+  ctx.fillRect(0, 0, 256, 256);
+  // Sand grain variation
+  for (let i = 0; i < 5000; i++) {
+    const x = (i * 83) % 256, y = (i * 151) % 256;
+    ctx.fillStyle = i % 3 === 0 ? 'rgba(255,255,255,0.08)' : i % 3 === 1 ? 'rgba(0,0,0,0.07)' : 'rgba(180,120,40,0.06)';
+    ctx.fillRect(x, y, 2, 2);
+  }
+  // Subtle wave ripple lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.lineWidth = 1;
+  for (let r = 0; r < 8; r++) {
+    ctx.beginPath();
+    ctx.moveTo(0, r * 32 + 8);
+    for (let x = 0; x < 256; x += 16) {
+      ctx.quadraticCurveTo(x + 8, r * 32 + 8 + (r % 2 === 0 ? 4 : -4), x + 16, r * 32 + 8);
+    }
+    ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(12, 12);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  cache.beachSand = tex;
   return tex;
 }
 

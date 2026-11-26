@@ -13,6 +13,7 @@ import {
 
 type NpcRole = 'office' | 'student' | 'vendor' | 'fan' | 'fisherman' | 'influencer' | 'beggar';
 type NpcAction = 'walking' | 'idle_chatting' | 'waving_auto' | 'checking_phone' | 'fleeing_rain';
+type PatrolMode = 'circle' | 'line' | 'stationary';
 
 interface NpcAgent {
   id: number;
@@ -21,8 +22,13 @@ interface NpcAgent {
   prop: HumanNpcProp;
   action: NpcAction;
   actionTimer: number;
+  patrolMode: PatrolMode;
   homeX: number;
   homeZ: number;
+  dirX: number;
+  dirZ: number;
+  patrolT: number;
+  patrolDir: 1 | -1;
   x: number;
   z: number;
   rotY: number;
@@ -115,22 +121,46 @@ export function NpcSystem() {
       const hub = hubs[i % hubs.length];
       const role = ROLES[i % ROLES.length];
       const angle = (i * 1.7) % (Math.PI * 2);
-      const radius = 5 + (i % 6) * 2.5;
+      const radius = 6 + (i % 5) * 3.0;
+      const patrolMode: PatrolMode =
+        role === 'vendor' || role === 'beggar'
+          ? 'stationary'
+          : i % 2 === 0
+          ? 'line'
+          : 'circle';
+      const dirAngle = ((i * 53) % 4) * (Math.PI / 2);
+      const dirX = Math.cos(dirAngle);
+      const dirZ = Math.sin(dirAngle);
+      const homeX = hub[0] + ((i * 13) % 14) - 7;
+      const homeZ = hub[1] + ((i * 17) % 14) - 7;
       const roleProps = ROLE_PROPS[role];
+      const speed =
+        role === 'vendor' || role === 'beggar'
+          ? 0.0
+          : role === 'student'
+          ? 1.25 + (i % 3) * 0.15
+          : role === 'office'
+          ? 1.05 + (i % 3) * 0.12
+          : 0.78 + (i % 4) * 0.14;
       list.push({
         id: i,
         role,
         variant: ROLE_VARIANTS[role],
         prop: roleProps[i % roleProps.length],
-        action: 'walking',
+        action: patrolMode === 'stationary' ? 'idle_chatting' : 'walking',
         actionTimer: 2 + (i % 5),
-        homeX: hub[0] + ((i * 13) % 14) - 7,
-        homeZ: hub[1] + ((i * 17) % 14) - 7,
-        x: hub[0] + Math.cos(angle) * radius,
-        z: hub[1] + Math.sin(angle) * radius,
+        patrolMode,
+        homeX,
+        homeZ,
+        dirX,
+        dirZ,
+        patrolT: (i % 5) * 2 - 4,
+        patrolDir: i % 2 === 0 ? 1 : -1,
+        x: patrolMode === 'circle' ? homeX + Math.cos(angle) * radius : homeX,
+        z: patrolMode === 'circle' ? homeZ + Math.sin(angle) * radius : homeZ,
         rotY: 0,
         angle,
-        speed: role === 'vendor' || role === 'beggar' ? 0.25 : 0.85 + (i % 4) * 0.2,
+        speed,
         radius,
         color: ROLE_COLORS[role],
         line:
@@ -180,6 +210,11 @@ export function NpcSystem() {
         n.action = 'fleeing_rain';
       } else if (avoidVehicle) {
         n.action = 'waving_auto';
+      } else if (n.patrolMode === 'stationary') {
+        if (n.actionTimer <= 0) {
+          n.actionTimer = 5 + ((i * 7 + Math.floor(t)) % 4);
+          n.action = i % 2 === 0 ? 'idle_chatting' : 'checking_phone';
+        }
       } else if (n.actionTimer <= 0) {
         n.actionTimer = 4 + ((i * 7 + Math.floor(t)) % 5);
         const actions: NpcAction[] = isRushHour
@@ -195,12 +230,27 @@ export function NpcSystem() {
           ? (isRushHour ? 1.2 : 1.0)
           : 0.0;
 
-      n.angle += ((n.speed * moveMult) / n.radius) * dt;
-      n.x = n.homeX + Math.cos(n.angle) * n.radius;
-      n.z = n.homeZ + Math.sin(n.angle) * n.radius;
+      let tangentRot = n.rotY;
+      if (n.patrolMode === 'line') {
+        n.patrolT += n.speed * moveMult * n.patrolDir * dt;
+        if (n.patrolT > n.radius) {
+          n.patrolT = n.radius;
+          n.patrolDir = -1;
+        } else if (n.patrolT < -n.radius) {
+          n.patrolT = -n.radius;
+          n.patrolDir = 1;
+        }
+        n.x = n.homeX + n.dirX * n.patrolT;
+        n.z = n.homeZ + n.dirZ * n.patrolT;
+        tangentRot = Math.atan2(n.dirX * n.patrolDir, n.dirZ * n.patrolDir);
+      } else if (n.patrolMode === 'circle') {
+        n.angle += ((n.speed * moveMult) / n.radius) * dt;
+        n.x = n.homeX + Math.cos(n.angle) * n.radius;
+        n.z = n.homeZ + Math.sin(n.angle) * n.radius;
+        tangentRot = Math.atan2(-Math.sin(n.angle), Math.cos(n.angle));
+      }
 
       // Face walking tangent or turn to face player when nearby
-      const tangentRot = Math.atan2(-Math.sin(n.angle), Math.cos(n.angle));
       n.rotY = d2 < 36 ? Math.atan2(px - n.x, pz - n.z) : tangentRot;
 
       const grp = npcGroupRefs.current[i];

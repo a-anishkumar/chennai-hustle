@@ -1,15 +1,20 @@
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { CuboidCollider, RigidBody } from '@react-three/rapier';
+import { useFrame } from '@react-three/fiber';
 import worldConfig from '../config/world.json';
 import { getTerrainHeight, seededRandom } from './TerrainHeight';
 import { createChennaiBuildingGeos, createPalmCrownGeo, createUtilityPoleGeo } from './ChennaiArchitecture';
 import {
   getAsphaltNormalMap,
+  getBrickFacadeTexture,
   getChennaiFacadeNormalMap,
   getChennaiFacadeTexture,
+  getCommercialFacadeTexture,
+  getNightWindowTexture,
   getTerrainDetailTexture,
 } from './ProceduralTextures';
+import { useGameStore } from '../systems/gameStore';
 
 interface CityChunkProps {
   cx: number;
@@ -20,6 +25,79 @@ interface CityChunkProps {
 const CHUNK_SIZE = worldConfig.chunkSize; // 250
 const HALF_WORLD = worldConfig.worldSize / 2; // 2000
 const CHENNAI_PALETTE = ['#fde68a', '#fda4af', '#7dd3fc', '#6ee7b7', '#fdba74', '#fef3c7', '#f9a8d4'];
+
+// Building facade type determines which texture to use
+type BuildingType = 'residential' | 'brick' | 'commercial';
+const BUILDING_TYPES: BuildingType[] = ['residential', 'residential', 'brick', 'commercial'];
+
+type BuildingInstance = { x: number; y: number; z: number; w: number; h: number; d: number; rotY: number; color: string; bType: BuildingType };
+
+function setBuildingSubList(
+  mesh: THREE.InstancedMesh | null,
+  list: readonly BuildingInstance[],
+  dummy: THREE.Object3D,
+  color: THREE.Color,
+  scaleMult = 1
+) {
+  if (!mesh) return;
+  for (let i = 0; i < list.length; i++) {
+    const b = list[i];
+    dummy.position.set(b.x, b.y, b.z);
+    dummy.rotation.set(0, b.rotY, 0);
+    dummy.scale.set(b.w * scaleMult, b.h * (scaleMult > 1 ? 1.001 : 1), b.d * scaleMult);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
+    if (mesh.instanceColor) mesh.setColorAt(i, color.set(b.color));
+  }
+  mesh.instanceMatrix.needsUpdate = true;
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+}
+
+function NightStreetLight({
+  worldX,
+  worldZ,
+  enablePointLight,
+}: {
+  worldX: number;
+  worldZ: number;
+  enablePointLight: boolean;
+}) {
+  const lightRef = useRef<THREE.PointLight>(null);
+  const coneRef = useRef<THREE.Mesh>(null);
+
+  useFrame(() => {
+    const state = useGameStore.getState();
+    const h = state.timeOfDay;
+    const isNight = h >= 18.2 || h < 6.2;
+    const powerCut = isNight && state.weather === 'flood';
+    const lit = isNight && !powerCut;
+
+    if (coneRef.current) {
+      coneRef.current.visible = lit;
+    }
+    if (lightRef.current) {
+      if (!lit) {
+        lightRef.current.visible = false;
+      } else {
+        const [px, , pz] = state.playerPos;
+        const d2 = (px - worldX) * (px - worldX) + (pz - worldZ) * (pz - worldZ);
+        lightRef.current.visible = d2 < 90 * 90;
+      }
+    }
+  });
+
+  return (
+    <>
+      <mesh ref={coneRef} position={[0, -1.8, 0]} visible={false}>
+        <coneGeometry args={[2.6, 3.6, 10, 1, true]} />
+        <meshBasicMaterial color="#fb923c" transparent opacity={0.11} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+      {enablePointLight && (
+        <pointLight ref={lightRef} position={[0, -0.4, 0]} color="#fb923c" intensity={18} distance={26} decay={2} visible={false} />
+      )}
+    </>
+  );
+}
 
 function isInsideReservedZone(wx: number, wz: number): boolean {
   // Core civic, commercial & TNHB district
@@ -84,7 +162,7 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
     geo.computeVertexNormals();
 
     const rand = seededRandom(cx * 73856093 ^ cz * 19349663);
-    const bList: { x: number; y: number; z: number; w: number; h: number; d: number; rotY: number; color: string }[] = [];
+    const bList: { x: number; y: number; z: number; w: number; h: number; d: number; rotY: number; color: string; bType: BuildingType }[] = [];
     const tList: { x: number; y: number; z: number; scale: number }[] = [];
     const pList: { x: number; y: number; z: number }[] = [];
 
@@ -121,6 +199,7 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
           d,
           rotY,
           color: CHENNAI_PALETTE[Math.floor(rand() * CHENNAI_PALETTE.length)],
+          bType: BUILDING_TYPES[Math.floor(rand() * BUILDING_TYPES.length)],
         });
       }
     }
@@ -159,6 +238,9 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
   const bBodyRef = useRef<THREE.InstancedMesh>(null);
   const bTrimRef = useRef<THREE.InstancedMesh>(null);
   const bDetailRef = useRef<THREE.InstancedMesh>(null);
+  const bBrickRef = useRef<THREE.InstancedMesh>(null);
+  const bCommRef = useRef<THREE.InstancedMesh>(null);
+  const bNightRef = useRef<THREE.InstancedMesh>(null);
   const tTrunkRef = useRef<THREE.InstancedMesh>(null);
   const tCrownRef = useRef<THREE.InstancedMesh>(null);
   const poleRef = useRef<THREE.InstancedMesh>(null);
@@ -166,6 +248,9 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
   const buildingGeos = useMemo(() => createChennaiBuildingGeos(), []);
   const facadeTex = useMemo(() => getChennaiFacadeTexture(), []);
   const facadeNormal = useMemo(() => getChennaiFacadeNormalMap(), []);
+  const brickTex = useMemo(() => getBrickFacadeTexture(), []);
+  const commTex = useMemo(() => getCommercialFacadeTexture(), []);
+  const nightWinTex = useMemo(() => getNightWindowTexture(), []);
   const terrainTex = useMemo(() => getTerrainDetailTexture(), []);
   const terrainNorm = useMemo(() => {
     const n = getAsphaltNormalMap().clone();
@@ -176,26 +261,44 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
   const palmCrownGeo = useMemo(() => createPalmCrownGeo(), []);
   const poleGeo = useMemo(() => createUtilityPoleGeo(), []);
 
+  // Split buildings by type for separate instanced meshes
+  const { resBldgs, brickBldgs, commBldgs } = useMemo(() => {
+    const resBldgs: typeof buildings = [];
+    const brickBldgs: typeof buildings = [];
+    const commBldgs: typeof buildings = [];
+    buildings.forEach((b) => {
+      if (b.bType === 'brick') brickBldgs.push(b);
+      else if (b.bType === 'commercial') commBldgs.push(b);
+      else resBldgs.push(b);
+    });
+    return { resBldgs, brickBldgs, commBldgs };
+  }, [buildings]);
+
+  // Night window emissive material — intensity driven by time of day
+  const nightWinMatRef = useRef<THREE.MeshStandardMaterial>(null);
+  useFrame(() => {
+    if (!nightWinMatRef.current || !bNightRef.current) return;
+    const state = useGameStore.getState();
+    const h = state.timeOfDay;
+    const isNight = h >= 19.0 || h < 6.0;
+    const isDusk = (h >= 17.8 && h < 19.0) || (h >= 6.0 && h < 6.8);
+    const powerCut = isNight && state.weather === 'flood';
+    const intensity = powerCut ? 0.0 : isNight ? 1.5 : isDusk ? 0.75 : 0.0;
+    bNightRef.current.visible = intensity > 0.01;
+    nightWinMatRef.current.emissiveIntensity = intensity;
+    nightWinMatRef.current.opacity = powerCut ? 0.0 : isNight ? 0.88 : isDusk ? 0.45 : 0.0;
+  });
+
   useEffect(() => {
     const dummy = new THREE.Object3D();
     const color = new THREE.Color();
 
-    if (bBodyRef.current && bTrimRef.current && bDetailRef.current) {
-      buildings.forEach((b, i) => {
-        dummy.position.set(b.x, b.y, b.z);
-        dummy.rotation.set(0, b.rotY, 0);
-        dummy.scale.set(b.w, b.h, b.d);
-        dummy.updateMatrix();
-        bBodyRef.current!.setMatrixAt(i, dummy.matrix);
-        bTrimRef.current!.setMatrixAt(i, dummy.matrix);
-        bDetailRef.current!.setMatrixAt(i, dummy.matrix);
-        bBodyRef.current!.setColorAt(i, color.set(b.color));
-      });
-      bBodyRef.current.instanceMatrix.needsUpdate = true;
-      bTrimRef.current.instanceMatrix.needsUpdate = true;
-      bDetailRef.current.instanceMatrix.needsUpdate = true;
-      if (bBodyRef.current.instanceColor) bBodyRef.current.instanceColor.needsUpdate = true;
-    }
+    setBuildingSubList(bBodyRef.current, resBldgs, dummy, color);
+    setBuildingSubList(bTrimRef.current, resBldgs, dummy, color);
+    setBuildingSubList(bDetailRef.current, resBldgs, dummy, color);
+    setBuildingSubList(bBrickRef.current, brickBldgs, dummy, color);
+    setBuildingSubList(bCommRef.current, commBldgs, dummy, color);
+    setBuildingSubList(bNightRef.current, buildings, dummy, color, 1.005);
 
     if (tTrunkRef.current && tCrownRef.current) {
       trees.forEach((t, i) => {
@@ -224,9 +327,12 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
       });
       poleRef.current.instanceMatrix.needsUpdate = true;
     }
-  }, [buildings, trees, poles]);
+  }, [buildings, resBldgs, brickBldgs, commBldgs, trees, poles]);
 
   const showCrossStreets = isActiveDetail && originX < worldConfig.coastStartX - 80 && !(originX > -220 && originX < 80 && originZ > -160 && originZ < 170);
+
+  // Streetlights at pole tops — capped at 6 per active chunk to protect GPU
+  const lightPoles = useMemo(() => (isActiveDetail ? poles.slice(0, 6) : []), [poles, isActiveDetail]);
 
   return (
     <group position={[originX, 0, originZ]}>
@@ -257,23 +363,49 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
         </>
       )}
 
-      {buildings.length > 0 && (
+      {/* ── Residential buildings (plain facade) ── */}
+      {resBldgs.length > 0 && (
         <>
-          <instancedMesh
-            ref={bBodyRef}
-            args={[buildingGeos.body, undefined, buildings.length]}
-            castShadow={isActiveDetail}
-            receiveShadow
-          >
+          <instancedMesh ref={bBodyRef} args={[buildingGeos.body, undefined, resBldgs.length]} castShadow={isActiveDetail} receiveShadow>
             <meshStandardMaterial map={facadeTex} normalMap={facadeNormal} roughness={0.78} />
           </instancedMesh>
-          <instancedMesh ref={bTrimRef} args={[buildingGeos.trim, undefined, buildings.length]} castShadow={isActiveDetail}>
+          <instancedMesh ref={bTrimRef} args={[buildingGeos.trim, undefined, resBldgs.length]} castShadow={isActiveDetail}>
             <meshStandardMaterial color="#f1f5f9" roughness={0.85} />
           </instancedMesh>
-          <instancedMesh ref={bDetailRef} args={[buildingGeos.details, undefined, buildings.length]}>
+          <instancedMesh ref={bDetailRef} args={[buildingGeos.details, undefined, resBldgs.length]}>
             <meshStandardMaterial color="#0284c7" roughness={0.45} />
           </instancedMesh>
         </>
+      )}
+
+      {/* ── Old brick buildings ── */}
+      {brickBldgs.length > 0 && (
+        <instancedMesh ref={bBrickRef} args={[buildingGeos.body, undefined, brickBldgs.length]} castShadow={isActiveDetail} receiveShadow>
+          <meshStandardMaterial map={brickTex} roughness={0.88} />
+        </instancedMesh>
+      )}
+
+      {/* ── Commercial glass buildings ── */}
+      {commBldgs.length > 0 && (
+        <instancedMesh ref={bCommRef} args={[buildingGeos.body, undefined, commBldgs.length]} castShadow={isActiveDetail} receiveShadow>
+          <meshStandardMaterial map={commTex} roughness={0.35} metalness={0.4} />
+        </instancedMesh>
+      )}
+
+      {/* ── Night window emissive overlay on all buildings ── */}
+      {buildings.length > 0 && isActiveDetail && (
+        <instancedMesh ref={bNightRef} args={[buildingGeos.body, undefined, buildings.length]}>
+          <meshStandardMaterial
+            ref={nightWinMatRef}
+            map={nightWinTex}
+            emissive="#fef3c7"
+            emissiveMap={nightWinTex}
+            emissiveIntensity={0}
+            transparent
+            opacity={0.0}
+            depthWrite={false}
+          />
+        </instancedMesh>
       )}
 
       {trees.length > 0 && (
@@ -293,6 +425,26 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
           <meshStandardMaterial color="#64748b" roughness={0.7} />
         </instancedMesh>
       )}
+
+      {/* ── Streetlight lamps at pole tops (sodium-orange, night only) ── */}
+      {lightPoles.map((p, i) => (
+        <group key={`sl_${i}`} position={[p.x, p.y + 6.15, p.z]}>
+          {/* Lamp arm & housing */}
+          <mesh position={[-0.6, 0, 0]}>
+            <boxGeometry args={[1.3, 0.14, 0.25]} />
+            <meshStandardMaterial color="#374151" roughness={0.6} />
+          </mesh>
+          <mesh position={[-1.1, -0.08, 0]}>
+            <boxGeometry args={[0.5, 0.16, 0.35]} />
+            <meshStandardMaterial color="#fde047" emissive="#fb923c" emissiveIntensity={0.6} roughness={0.4} />
+          </mesh>
+          <NightStreetLight
+            worldX={originX + p.x - 1.1}
+            worldZ={originZ + p.z}
+            enablePointLight={i % 2 === 0}
+          />
+        </group>
+      ))}
     </group>
   );
 }
