@@ -4,7 +4,12 @@ import { CuboidCollider, RigidBody } from '@react-three/rapier';
 import worldConfig from '../config/world.json';
 import { getTerrainHeight, seededRandom } from './TerrainHeight';
 import { createChennaiBuildingGeos, createPalmCrownGeo, createUtilityPoleGeo } from './ChennaiArchitecture';
-import { getChennaiFacadeNormalMap, getChennaiFacadeTexture } from './ProceduralTextures';
+import {
+  getAsphaltNormalMap,
+  getChennaiFacadeNormalMap,
+  getChennaiFacadeTexture,
+  getTerrainDetailTexture,
+} from './ProceduralTextures';
 
 interface CityChunkProps {
   cx: number;
@@ -161,6 +166,13 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
   const buildingGeos = useMemo(() => createChennaiBuildingGeos(), []);
   const facadeTex = useMemo(() => getChennaiFacadeTexture(), []);
   const facadeNormal = useMemo(() => getChennaiFacadeNormalMap(), []);
+  const terrainTex = useMemo(() => getTerrainDetailTexture(), []);
+  const terrainNorm = useMemo(() => {
+    const n = getAsphaltNormalMap().clone();
+    n.needsUpdate = true;
+    n.repeat.set(20, 20);
+    return n;
+  }, []);
   const palmCrownGeo = useMemo(() => createPalmCrownGeo(), []);
   const poleGeo = useMemo(() => createUtilityPoleGeo(), []);
 
@@ -222,12 +234,12 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
         <RigidBody type="fixed" colliders={false}>
           <CuboidCollider args={[CHUNK_SIZE / 2, 1, CHUNK_SIZE / 2]} position={[0, -1, 0]} />
           <mesh geometry={terrainGeo} receiveShadow>
-            <meshStandardMaterial vertexColors roughness={0.94} />
+            <meshStandardMaterial vertexColors map={terrainTex} normalMap={terrainNorm} normalScale={new THREE.Vector2(0.35, 0.35)} roughness={0.92} />
           </mesh>
         </RigidBody>
       ) : (
         <mesh geometry={terrainGeo} receiveShadow>
-          <meshStandardMaterial vertexColors roughness={0.94} />
+          <meshStandardMaterial vertexColors map={terrainTex} roughness={0.94} />
         </mesh>
       )}
 

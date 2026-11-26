@@ -100,6 +100,19 @@ export function RoadLoop() {
       {/* South Road (z = 140) */}
       <RoadSegment x={-75} z={140} width={14} length={244} rotY={Math.PI / 2} wet={wet} />
 
+      {/* Raised Concrete Footpaths / Sidewalk Curbs along Road Loop */}
+      {[
+        [-181.5, 10, 2.5, 256],
+        [31.5, 10, 2.5, 256],
+        [-75, -111.5, 210, 2.5],
+        [-75, 131.5, 210, 2.5],
+      ].map(([fx, fz, fw, fl], fi) => (
+        <mesh key={`footpath_${fi}`} position={[fx, 0.06, fz]} receiveShadow>
+          <boxGeometry args={[fw, 0.12, fl]} />
+          <meshStandardMaterial color="#cbd5e1" roughness={0.92} />
+        </mesh>
+      ))}
+
       {/* Pedestrian Zebra Crossings */}
       {[
         [-190, 18, 0],

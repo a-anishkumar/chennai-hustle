@@ -4,6 +4,7 @@ import { Environment, Lightformer } from '@react-three/drei';
 import { Physics } from '@react-three/rapier';
 import * as THREE from 'three';
 import { DayNightLighting } from './systems/DayNightLighting';
+import { PostProcessing } from './systems/PostProcessing';
 import { WeatherSystem } from './systems/WeatherSystem';
 import { StoryEvents } from './systems/StoryEvents';
 import { FpsMonitor } from './systems/FpsMonitor';
@@ -75,6 +76,7 @@ export function App() {
             </Environment>
           )}
           <DayNightLighting />
+          <PostProcessing />
           <WeatherSystem />
           <FpsMonitor />
           <Physics gravity={[0, -20, 0]} paused={!isStarted}>

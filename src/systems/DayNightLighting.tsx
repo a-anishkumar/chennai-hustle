@@ -1,8 +1,28 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from './gameStore';
 import { audioManager } from '../audio/AudioManager';
+
+const SKY_VERT = `
+  varying vec3 vWorldPos;
+  void main() {
+    vec4 wp = modelMatrix * vec4(position, 1.0);
+    vWorldPos = wp.xyz;
+    gl_Position = projectionMatrix * viewMatrix * wp;
+  }
+`;
+
+const SKY_FRAG = `
+  uniform vec3 uTopColor;
+  uniform vec3 uHorizonColor;
+  varying vec3 vWorldPos;
+  void main() {
+    float h = clamp(normalize(vWorldPos).y, 0.0, 1.0);
+    vec3 col = mix(uHorizonColor, uTopColor, pow(h, 0.55));
+    gl_FragColor = vec4(col, 1.0);
+  }
+`;
 
 const SKY_NIGHT = new THREE.Color('#091124');
 const SKY_DAWN = new THREE.Color('#f97316');
@@ -23,6 +43,14 @@ export function DayNightLighting() {
   const cloudsRef = useRef<THREE.Group>(null);
   const bgRef = useRef<THREE.Color>(null);
   const fogRef = useRef<THREE.FogExp2>(null);
+  const skyMatRef = useRef<THREE.ShaderMaterial>(null);
+  const skyUniforms = useMemo(
+    () => ({
+      uTopColor: { value: new THREE.Color('#2563eb') },
+      uHorizonColor: { value: new THREE.Color('#93c5fd') },
+    }),
+    []
+  );
   const quality = useGameStore((s) => s.quality);
 
   const shadowMapSize = quality === 'high' ? 2048 : quality === 'medium' ? 1024 : 512;
@@ -63,6 +91,10 @@ export function DayNightLighting() {
 
     if (bgRef.current) {
       bgRef.current.copy(skyCol);
+    }
+    if (skyMatRef.current) {
+      skyMatRef.current.uniforms.uHorizonColor.value.copy(skyCol);
+      skyMatRef.current.uniforms.uTopColor.value.copy(skyCol).multiplyScalar(0.58);
     }
     if (fogRef.current) {
       fogRef.current.color.copy(skyCol);
@@ -125,22 +157,31 @@ export function DayNightLighting() {
       <color ref={bgRef} attach="background" args={['#60a5fa']} />
       <fogExp2 ref={fogRef} attach="fog" args={['#60a5fa', 0.0022]} />
       <hemisphereLight ref={hemiLightRef} args={['#93c5fd', '#78350f', 0.75]} />
+      {/* Procedural Atmospheric Sky Gradient Dome */}
+      <mesh>
+        <sphereGeometry args={[760, 24, 16]} />
+        <shaderMaterial ref={skyMatRef} vertexShader={SKY_VERT} fragmentShader={SKY_FRAG} uniforms={skyUniforms} side={THREE.BackSide} depthWrite={false} />
+      </mesh>
       {/* Visible Sun / Moon Disc */}
       <mesh ref={sunMeshRef}>
         <sphereGeometry args={[18, 16, 16]} />
         <meshBasicMaterial color="#fef08a" />
       </mesh>
-      {/* Drifting Stylized Clouds */}
+      {/* Drifting Volumetric-Style Cloud Clusters */}
       <group ref={cloudsRef}>
-        {[-220, -80, 60, 200, 340].map((cx, i) => (
-          <group key={i} position={[cx, (i % 2) * 12, ((i * 97) % 240) - 120]}>
-            <mesh>
-              <boxGeometry args={[28, 7, 16]} />
-              <meshStandardMaterial color="#f8fafc" roughness={1} />
+        {[-240, -100, 40, 180, 320].map((cx, i) => (
+          <group key={i} position={[cx, (i % 2) * 14, ((i * 97) % 240) - 120]}>
+            <mesh position={[0, 0, 0]} scale={[1.6, 0.7, 1.1]}>
+              <sphereGeometry args={[10, 12, 10]} />
+              <meshStandardMaterial color="#f8fafc" roughness={1} transparent opacity={0.92} />
             </mesh>
-            <mesh position={[8, 4, 0]}>
-              <boxGeometry args={[16, 6, 12]} />
-              <meshStandardMaterial color="#f1f5f9" roughness={1} />
+            <mesh position={[10, 2, 2]} scale={[1.2, 0.65, 1.0]}>
+              <sphereGeometry args={[8, 10, 8]} />
+              <meshStandardMaterial color="#f1f5f9" roughness={1} transparent opacity={0.88} />
+            </mesh>
+            <mesh position={[-9, 1.5, -2]} scale={[1.1, 0.6, 0.9]}>
+              <sphereGeometry args={[8, 10, 8]} />
+              <meshStandardMaterial color="#e2e8f0" roughness={1} transparent opacity={0.88} />
             </mesh>
           </group>
         ))}

@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
-import { getAwningTexture, getChennaiFacadeNormalMap, getChennaiFacadeTexture, getKolamTexture, getSignTexture } from '../ProceduralTextures';
+import { getAwningTexture, getChennaiFacadeNormalMap, getChennaiFacadeTexture, getCourtyardPaverTexture, getKolamTexture, getSignTexture } from '../ProceduralTextures';
 import { useGameStore } from '../../systems/gameStore';
 import { isNightHour } from '../../systems/timeUtils';
 import { OnlineModel } from '../OnlineModel';
@@ -24,6 +24,7 @@ export function TnhbColony() {
   const awningTex = useMemo(() => getAwningTexture('#dc2626', '#fef08a'), []);
   const facadeTex = useMemo(() => getChennaiFacadeTexture(), []);
   const facadeNormal = useMemo(() => getChennaiFacadeNormalMap(), []);
+  const courtyardTex = useMemo(() => getCourtyardPaverTexture(), []);
   const aavinSignTex = useMemo(() => getSignTexture('AAVIN & ANNACHI STORE', 'Besant Nagar TNHB', '#0284c7', '#fde047'), []);
   const clothesRef = useRef<THREE.Group>(null);
   const homeMarkerRef = useRef<THREE.Mesh>(null);
@@ -54,7 +55,7 @@ export function TnhbColony() {
       {/* Central Colony Courtyard Concrete Pad */}
       <mesh position={[-120, 0.02, 60]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[76, 68]} />
-        <meshStandardMaterial color="#94a3b8" roughness={0.95} />
+        <meshStandardMaterial map={courtyardTex} roughness={0.9} />
       </mesh>
 
       {/* 4 Stacked TNHB Apartment Blocks */}

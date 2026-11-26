@@ -175,6 +175,59 @@ export function getAsphaltNormalMap(): THREE.CanvasTexture {
   return tex;
 }
 
+export function getTerrainDetailTexture(): THREE.CanvasTexture {
+  if (cache.terrainDetail) return cache.terrainDetail;
+  const [canvas, ctx] = makeCanvas(256, 256);
+  ctx.fillStyle = '#e2e8f0';
+  ctx.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 4500; i++) {
+    const x = (i * 83) % 256;
+    const y = (i * 151) % 256;
+    ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.09)';
+    ctx.fillRect(x, y, 2, 2);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(28, 28);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  cache.terrainDetail = tex;
+  return tex;
+}
+
+export function getCourtyardPaverTexture(): THREE.CanvasTexture {
+  if (cache.courtyardPaver) return cache.courtyardPaver;
+  const [canvas, ctx] = makeCanvas(256, 256);
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillRect(0, 0, 256, 256);
+  ctx.strokeStyle = 'rgba(30, 41, 59, 0.25)';
+  ctx.lineWidth = 2;
+  for (let y = 0; y < 256; y += 32) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(256, y);
+    ctx.stroke();
+    const off = (y / 32) % 2 === 0 ? 0 : 16;
+    for (let x = off; x < 256; x += 32) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + 32);
+      ctx.stroke();
+    }
+  }
+  for (let i = 0; i < 1800; i++) {
+    ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    ctx.fillRect((i * 71) % 256, (i * 113) % 256, 2, 2);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(14, 14);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  cache.courtyardPaver = tex;
+  return tex;
+}
+
 export function getSignTexture(title: string, subtitle = '', bg = '#1e293b', fg = '#fde047'): THREE.CanvasTexture {
   const key = `sign_${title}_${bg}`;
   if (cache[key]) return cache[key];
