@@ -4,7 +4,6 @@ import { Environment, Lightformer } from '@react-three/drei';
 import { Physics } from '@react-three/rapier';
 import * as THREE from 'three';
 import { DayNightLighting } from './systems/DayNightLighting';
-import { PostProcessing } from './systems/PostProcessing';
 import { WeatherSystem } from './systems/WeatherSystem';
 import { StoryEvents } from './systems/StoryEvents';
 import { FpsMonitor } from './systems/FpsMonitor';
@@ -46,7 +45,7 @@ export function App() {
   const quality = useGameStore((s) => s.quality);
   const isStarted = useGameStore((s) => s.isStarted);
   const colorBlind = useGameStore((s) => s.colorBlind);
-  const dpr: [number, number] = quality === 'high' ? [1, 2] : quality === 'medium' ? [1, 1.5] : [0.75, 1];
+  const dpr: [number, number] = quality === 'high' ? [1, 1.25] : quality === 'medium' ? [0.85, 1] : [0.7, 0.85];
 
   return (
     <div
@@ -70,14 +69,13 @@ export function App() {
       >
         <Suspense fallback={null}>
           {quality !== 'low' && (
-            <Environment resolution={128} frames={1} environmentIntensity={0.48}>
+            <Environment resolution={64} frames={1} environmentIntensity={0.42}>
               <Lightformer intensity={2.0} position={[0, 12, 0]} scale={[24, 24, 1]} rotation={[Math.PI / 2, 0, 0]} color="#fff7ed" />
               <Lightformer intensity={1.35} position={[12, 5, 10]} scale={[12, 6, 1]} color="#93c5fd" />
               <Lightformer intensity={0.95} position={[-12, 4, -10]} scale={[12, 6, 1]} color="#fde047" />
             </Environment>
           )}
           <DayNightLighting />
-          <PostProcessing />
           <WeatherSystem />
           <FpsMonitor />
           <Physics gravity={[0, -20, 0]} paused={!isStarted}>

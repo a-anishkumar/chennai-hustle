@@ -39,16 +39,15 @@ export function TnhbColony() {
     if (homeMarkerRef.current) {
       homeMarkerRef.current.position.y = 0.08 + Math.sin(t * 3) * 0.03;
       homeMarkerRef.current.rotation.z = t * 0.8;
+      const [px, , pz] = useGameStore.getState().playerPos;
+      const near = (px - -133) ** 2 + (pz - 42) ** 2 < 36;
+      const mat = homeMarkerRef.current.material as THREE.MeshBasicMaterial;
+      mat.color.set(near ? '#22c55e' : '#facc15');
     }
   });
 
-  // Check proximity to home door (-133, 42) for E key rest
-  const playerPos = useGameStore((s) => s.playerPos);
   const timeOfDay = useGameStore((s) => s.timeOfDay);
   const night = isNightHour(timeOfDay);
-  const dx = playerPos[0] - -133;
-  const dz = playerPos[2] - 42;
-  const nearHome = dx * dx + dz * dz < 36;
 
   return (
     <group name="TNHB_Colony">
@@ -134,7 +133,7 @@ export function TnhbColony() {
       {/* Home Base Interactive Ring (Block A Door) */}
       <mesh ref={homeMarkerRef} position={[-133, 0.08, 42]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[1.4, 1.9, 24]} />
-        <meshBasicMaterial color={nearHome ? '#22c55e' : '#facc15'} side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#facc15" side={THREE.DoubleSide} />
       </mesh>
 
       {/* Clotheslines strung across the courtyard */}

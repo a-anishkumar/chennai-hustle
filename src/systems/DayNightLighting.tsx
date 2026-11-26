@@ -53,7 +53,7 @@ export function DayNightLighting() {
   );
   const quality = useGameStore((s) => s.quality);
 
-  const shadowMapSize = quality === 'high' ? 2048 : quality === 'medium' ? 1024 : 512;
+  const shadowMapSize = quality === 'high' ? 1024 : 512;
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.1);

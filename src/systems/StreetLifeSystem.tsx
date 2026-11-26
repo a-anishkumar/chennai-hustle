@@ -32,7 +32,7 @@ const DRAINAGE_SPOTS: [number, number][] = [
 ];
 
 const BIRD_FLOCK: { species: 'parrot' | 'stork'; radius: number; altitude: number; speed: number; phase: number }[] =
-  Array.from({ length: 12 }, (_, i) => ({
+  Array.from({ length: 5 }, (_, i) => ({
     species: i % 3 === 0 ? 'stork' : 'parrot',
     radius: 26 + (i % 5) * 14,
     altitude: 17 + (i % 4) * 3,

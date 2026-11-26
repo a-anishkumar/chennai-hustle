@@ -83,7 +83,7 @@ const ROLE_PROPS: Record<NpcRole, HumanNpcProp[]> = {
 };
 
 const ROLES: NpcRole[] = ['office', 'student', 'vendor', 'fan', 'fisherman', 'influencer', 'beggar'];
-const NPC_COUNT = 24;
+const NPC_COUNT = 16;
 
 function mapActionToAnim(action: NpcAction, variant: HumanNpcVariant): HumanNpcAnim {
   if (variant === 'michelle') return 'dance';
@@ -95,7 +95,7 @@ function mapActionToAnim(action: NpcAction, variant: HumanNpcVariant): HumanNpcA
 
 export function NpcSystem() {
   const quality = useGameStore((s) => s.quality);
-  const activeNpcLimit = quality === 'low' ? 12 : quality === 'medium' ? 18 : NPC_COUNT;
+  const activeNpcLimit = quality === 'low' ? 8 : quality === 'medium' ? 12 : NPC_COUNT;
   const npcGroupRefs = useRef<(THREE.Group | null)[]>([]);
   const [npcAnims, setNpcAnims] = useState<HumanNpcAnim[]>(() => Array(NPC_COUNT).fill('walk'));
   const [nearbyLine, setNearbyLine] = useState<{ x: number; z: number; text: string } | null>(null);
@@ -206,7 +206,7 @@ export function NpcSystem() {
       const grp = npcGroupRefs.current[i];
       if (grp) {
         const nightHidden = isLateNight && i % 2 === 1;
-        grp.visible = !nightHidden && d2 < 22500; // Frustum/distance cull beyond 150m
+        grp.visible = !nightHidden && d2 < 10000; // Cull beyond 100m
         if (grp.visible) {
           grp.position.set(n.x, 0, n.z);
           grp.rotation.y = n.rotY;

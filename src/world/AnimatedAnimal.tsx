@@ -114,6 +114,11 @@ export function RoamingAnimal({
   useFrame(({ clock }) => {
     const state = useGameStore.getState();
     if (!state.isStarted || state.isPaused || !groupRef.current) return;
+    const [px, , pz] = state.playerPos;
+    const d2 = (home[0] - px) ** 2 + (home[1] - pz) ** 2;
+    const inRange = d2 < 14400; // Cull animals beyond 120m
+    groupRef.current.visible = inRange;
+    if (!inRange) return;
 
     const t = clock.getElapsedTime() + phase * 3.7;
     const cycle = t % 14;
@@ -188,6 +193,11 @@ export function FlyingBird({
   useFrame(({ clock }) => {
     const state = useGameStore.getState();
     if (!state.isStarted || state.isPaused || !groupRef.current) return;
+    const [px, , pz] = state.playerPos;
+    const d2 = (center[0] - px) ** 2 + (center[1] - pz) ** 2;
+    const inRange = d2 < 25600; // Cull birds beyond 160m
+    groupRef.current.visible = inRange;
+    if (!inRange) return;
 
     const t = clock.getElapsedTime();
     const ang = t * speed + phase;

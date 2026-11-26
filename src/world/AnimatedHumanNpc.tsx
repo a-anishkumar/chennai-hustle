@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { useAnimations, useGLTF } from '@react-three/drei';
 import { SkeletonUtils } from 'three-stdlib';
 import * as THREE from 'three';
+import { useGameStore } from '../systems/gameStore';
 
 export type HumanNpcVariant = 'cesium' | 'soldier' | 'xbot' | 'michelle';
 export type HumanNpcAnim = 'walk' | 'run' | 'idle' | 'dance' | 'agree';
@@ -204,7 +205,17 @@ export function ChennaiHumanRig({
   const hasMustache = seed % 2 === 0;
   const hasGlasses = seed % 4 === 1;
 
+  const worldPosRef = useRef(new THREE.Vector3());
+
   useFrame(({ clock }) => {
+    if (!rootRef.current) return;
+    rootRef.current.getWorldPosition(worldPosRef.current);
+    const [px, , pz] = useGameStore.getState().playerPos;
+    const d2 = (worldPosRef.current.x - px) ** 2 + (worldPosRef.current.z - pz) ** 2;
+    const inRange = d2 < 12100; // Cull NPCs beyond 110m
+    rootRef.current.visible = inRange;
+    if (!inRange) return;
+
     const t = clock.getElapsedTime() * timeScale + seed * 1.3;
 
     if (sitting) {
