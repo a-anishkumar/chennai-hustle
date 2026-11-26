@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -101,8 +101,7 @@ export function NpcSystem() {
   const [nearbyLine, setNearbyLine] = useState<{ x: number; z: number; text: string } | null>(null);
   const checkTimer = useRef(0);
 
-  const npcsRef = useRef<NpcAgent[] | null>(null);
-  if (!npcsRef.current) {
+  const [npcs] = useState<NpcAgent[]>(() => {
     const list: NpcAgent[] = [];
     const hubs: [number, number][] = [
       [-120, 60],  // TNHB Courtyard
@@ -142,14 +141,20 @@ export function NpcSystem() {
             : dialogues.streetChatter[i % dialogues.streetChatter.length],
       });
     }
-    npcsRef.current = list;
-  }
+    return list;
+  });
+
+  const simNpcsRef = useRef<NpcAgent[]>([]);
+
+  useEffect(() => {
+    simNpcsRef.current = npcs.map((n) => ({ ...n }));
+  }, [npcs]);
 
   useFrame(({ clock }, delta) => {
     const dt = Math.min(delta, 0.05);
     const state = useGameStore.getState();
-    const npcs = npcsRef.current;
-    if (!state.isStarted || state.isPaused || !npcs) return;
+    const simNpcs = simNpcsRef.current;
+    if (!state.isStarted || state.isPaused || simNpcs.length === 0) return;
 
     const t = clock.getElapsedTime();
     const h = state.timeOfDay;
@@ -163,7 +168,7 @@ export function NpcSystem() {
     let animsChanged = false;
 
     for (let i = 0; i < activeNpcLimit; i++) {
-      const n = npcs[i];
+      const n = simNpcs[i];
 
       const dx = n.x - px;
       const dz = n.z - pz;
@@ -220,7 +225,7 @@ export function NpcSystem() {
     }
 
     if (animsChanged) {
-      setNpcAnims(npcs.map((n) => mapActionToAnim(n.action, n.variant)));
+      setNpcAnims(simNpcs.map((n) => mapActionToAnim(n.action, n.variant)));
     }
 
     checkTimer.current += dt;
@@ -245,7 +250,7 @@ export function NpcSystem() {
 
   return (
     <group name="NPC_Crowd">
-      {npcsRef.current.slice(0, activeNpcLimit).map((n, i) => (
+      {npcs.slice(0, activeNpcLimit).map((n, i) => (
         <group
           key={n.id}
           ref={(el) => {

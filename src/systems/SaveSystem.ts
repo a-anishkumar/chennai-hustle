@@ -106,3 +106,26 @@ export function clearSaveData(): void {
 export function hasSaveData(): boolean {
   return readSaveData() !== null;
 }
+
+export async function syncCloudSaveToLocal(): Promise<SaveData | null> {
+  try {
+    const res = await fetch('/api/save/default');
+    if (!res.ok) return null;
+    const json = (await res.json()) as { save?: SaveData | null };
+    if (json.save && json.save.version === 1) {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(json.save));
+      return json.save;
+    }
+  } catch {
+    // Offline fallback
+  }
+  return null;
+}
+
+export function syncPosterToServer(poster: PastedPoster): void {
+  fetch('/api/posters', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(poster),
+  }).catch(() => {});
+}

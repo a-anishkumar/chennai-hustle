@@ -11,6 +11,7 @@ import { FpsMonitor } from './systems/FpsMonitor';
 import { TrafficSystem } from './systems/TrafficSystem';
 import { NpcSystem } from './systems/NpcSystem';
 import { StreetLifeSystem } from './systems/StreetLifeSystem';
+import { MultiplayerSync } from './systems/MultiplayerSync';
 import { useGameStore } from './systems/gameStore';
 import { ChunkManager } from './world/ChunkManager';
 import { FloodWater } from './world/water/FloodWater';
@@ -97,6 +98,7 @@ export function App() {
             <TamilNaduEnvironment />
             <PosterBoardWorld />
             <WorldInteractables />
+            <MultiplayerSync />
             <RoadLoop />
             <TrafficSystem />
             <NpcSystem />

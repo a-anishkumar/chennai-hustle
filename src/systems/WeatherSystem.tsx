@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from './gameStore';
@@ -18,8 +18,9 @@ export function WeatherSystem() {
   const isRaining = weather === 'monsoon' || weather === 'flood';
   const activeRainCount = quality === 'low' ? 180 : quality === 'medium' ? 360 : MAX_RAIN_COUNT;
 
-  const dropsRef = useRef<{ ox: number; oy: number; oz: number; speed: number }[] | null>(null);
-  if (!dropsRef.current) {
+  const dropsRef = useRef<{ ox: number; oy: number; oz: number; speed: number }[]>([]);
+
+  useEffect(() => {
     const list: { ox: number; oy: number; oz: number; speed: number }[] = [];
     for (let i = 0; i < MAX_RAIN_COUNT; i++) {
       list.push({
@@ -30,16 +31,16 @@ export function WeatherSystem() {
       });
     }
     dropsRef.current = list;
-  }
+  }, []);
 
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
   useFrame(({ clock }, delta) => {
-    if (!isRaining || !rainRef.current || !dropsRef.current) return;
+    const drops = dropsRef.current;
+    if (!isRaining || !rainRef.current || drops.length === 0) return;
     const dt = Math.min(delta, 0.05);
     const t = clock.getElapsedTime();
     const [px, , pz] = useGameStore.getState().playerPos;
-    const drops = dropsRef.current;
 
     for (let i = 0; i < MAX_RAIN_COUNT; i++) {
       if (i >= activeRainCount) {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ArrowLeft,
   Bike,
@@ -46,10 +46,6 @@ export function PhoneUI() {
   const fastTravelTo = useGameStore((s) => s.fastTravelTo);
 
   const [tab, setTab] = useState<PhoneTab>('home');
-
-  useEffect(() => {
-    if (!isPhoneOpen) setTab('home');
-  }, [isPhoneOpen]);
 
   const foodOffers = useMemo(() => generateFoodOffers(dayCount + timeHour), [dayCount, timeHour]);
   const rideOffers = useMemo(() => generateBikeTaxiOffers(timeHour), [timeHour]);

@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { RigidBody } from '@react-three/rapier';
+import { CuboidCollider, RapierRigidBody, RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { getSignTexture } from '../ProceduralTextures';
 import { OnlineModel } from '../OnlineModel';
@@ -17,6 +17,7 @@ export function MoreChennaiLandmarks() {
   const gateNorthRefs = useRef<(THREE.Group | null)[]>([]);
   const gateSouthRefs = useRef<(THREE.Group | null)[]>([]);
   const gateLightRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const gateBarrierRefs = useRef<(RapierRigidBody | null)[]>([]);
 
   const signs = useMemo(
     () => ({
@@ -54,6 +55,10 @@ export function MoreChennaiLandmarks() {
         const mat = gl.material as THREE.MeshStandardMaterial;
         mat.emissive.set(trainNear && blink ? '#ef4444' : '#000000');
         mat.emissiveIntensity = trainNear && blink ? 2.5 : 0;
+      }
+      const barrier = gateBarrierRefs.current[i];
+      if (barrier) {
+        barrier.setNextKinematicTranslation({ x: cx, y: trainNear ? 1.2 : -6, z: -196 });
       }
     });
     // Animated Aeroplane taking off / circling near Airport (-850, 420)
@@ -188,6 +193,16 @@ export function MoreChennaiLandmarks() {
         {/* 3 Automated Indian Railways Level Crossings & Gates */}
         {LEVEL_CROSSING_XS.map((cx, idx) => (
           <group key={`lc_${cx}`} position={[cx, 0, 0]}>
+            <RigidBody
+              ref={(el) => {
+                gateBarrierRefs.current[idx] = el;
+              }}
+              type="kinematicPosition"
+              colliders={false}
+              position={[cx, -6, -196]}
+            >
+              <CuboidCollider args={[6.8, 1.2, 4.4]} />
+            </RigidBody>
             {/* Paved Road-Rail Crossing Apron & Warning Stripes */}
             <mesh position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
               <planeGeometry args={[14, 7.2]} />

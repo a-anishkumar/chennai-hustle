@@ -380,35 +380,12 @@ export function PlayerController() {
       <CapsuleCollider args={[0.55, 0.38]} position={[0, 0.95, 0]} />
 
       <group ref={meshGroupRef}>
-        {/* Player Character: Skeletal Animated GLB on foot, or Rider Rig on vehicles */}
+        {/* Player Character: Skeletal Animated Chennai Human on foot or seated on vehicles */}
         {currentVehicle === 'foot' ? (
-          <AnimatedPlayerMesh
-            isMoving={movingAnim}
-            isSprinting={sprintAnim}
-            fallback={
-              <group>
-                <mesh position={[0, 1.05, 0]} castShadow>
-                  <boxGeometry args={[0.52, 0.68, 0.32]} />
-                  <meshStandardMaterial color="#f97316" roughness={0.7} />
-                </mesh>
-                <mesh position={[0, 1.58, 0]} castShadow>
-                  <sphereGeometry args={[0.21, 12, 12]} />
-                  <meshStandardMaterial color="#8d5524" roughness={0.6} />
-                </mesh>
-                <mesh ref={leftLegRef} position={[-0.14, 0.42, 0]} castShadow>
-                  <boxGeometry args={[0.18, 0.65, 0.2]} />
-                  <meshStandardMaterial color="#1e3a8a" roughness={0.8} />
-                </mesh>
-                <mesh ref={rightLegRef} position={[0.14, 0.42, 0]} castShadow>
-                  <boxGeometry args={[0.18, 0.65, 0.2]} />
-                  <meshStandardMaterial color="#1e3a8a" roughness={0.8} />
-                </mesh>
-              </group>
-            }
-          />
+          <AnimatedPlayerMesh isMoving={movingAnim} isSprinting={sprintAnim} />
         ) : (
-          <group position={[0, isCycle || isBike ? 0.35 : 0.15, 0]}>
-            <AnimatedHumanNpc variant="xbot" anim="idle" tintColor="#f97316" prop="bag" />
+          <group position={[0, isCycle || isBike ? 0.65 : 0.45, 0]}>
+            <AnimatedHumanNpc variant="xbot" anim="idle" tintColor="#f97316" prop="bag" sitting />
             {night && (
               <pointLight position={[0, 1.0, 2.2]} color="#fef08a" intensity={10} distance={22} decay={2} />
             )}

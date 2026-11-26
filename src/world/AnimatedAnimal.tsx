@@ -7,7 +7,7 @@ import { useGameStore } from '../systems/gameStore';
 
 export type AnimalSpecies = 'cow' | 'bull' | 'shiba' | 'husky' | 'fox' | 'parrot' | 'stork';
 
-export const ANIMAL_MODEL_URLS: Record<AnimalSpecies, string> = {
+const ANIMAL_MODEL_URLS: Record<AnimalSpecies, string> = {
   cow: '/models/animals/Cow.glb',
   bull: '/models/animals/Bull.glb',
   shiba: '/models/animals/ShibaInu.glb',

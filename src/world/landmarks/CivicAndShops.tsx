@@ -38,11 +38,11 @@ function getTeaShopPhase(h: number): {
   return { phase: 'closed', label: 'Closed • Opens 5:30 AM', customerCount: 0, shutterScaleY: 1.0, steamActive: false, lightsOn: false };
 }
 
-const TEA_CUSTOMERS: { pos: [number, number, number]; rotY: number; color: string; prop: 'newspaper' | 'phone' | 'shopping_bag' | 'bag' | 'cigarette' }[] = [
-  { pos: [-1.8, 0, 3.2], rotY: Math.PI, color: '#e2e8f0', prop: 'newspaper' },
+const TEA_CUSTOMERS: { pos: [number, number, number]; rotY: number; color: string; prop: 'newspaper' | 'phone' | 'shopping_bag' | 'bag' | 'cigarette'; sitting?: boolean }[] = [
+  { pos: [-2.1, 0.46, 3.2], rotY: 0, color: '#e2e8f0', prop: 'newspaper', sitting: true },
   { pos: [0.2, 0, 3.3], rotY: Math.PI, color: '#38bdf8', prop: 'phone' },
   { pos: [1.8, 0, 3.1], rotY: Math.PI, color: '#facc15', prop: 'bag' },
-  { pos: [-2.6, 0, 3.9], rotY: Math.PI * 0.85, color: '#ec4899', prop: 'shopping_bag' },
+  { pos: [-0.8, 0, 3.8], rotY: Math.PI * 0.9, color: '#ec4899', prop: 'shopping_bag' },
   { pos: [2.6, 0, 4.0], rotY: -Math.PI * 0.85, color: '#f97316', prop: 'cigarette' },
 ];
 
@@ -208,7 +208,7 @@ function AnbuTeaShop({ sign, awning }: { sign: THREE.CanvasTexture; awning: THRE
       {/* Dynamic Customers Based on Time of Day */}
       {TEA_CUSTOMERS.slice(0, status.customerCount).map((c, idx) => (
         <group key={idx} position={c.pos} rotation={[0, c.rotY, 0]}>
-          <AnimatedHumanNpc variant="xbot" anim="idle" tintColor={c.color} prop={c.prop} seed={92 + idx} />
+          <AnimatedHumanNpc variant="xbot" anim="idle" tintColor={c.color} prop={c.prop} sitting={c.sitting} seed={92 + idx} />
         </group>
       ))}
 

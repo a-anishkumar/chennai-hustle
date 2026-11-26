@@ -119,8 +119,9 @@ export function TrafficSystem() {
     []
   );
 
-  const agentsRef = useRef<TrafficAgent[] | null>(null);
-  if (!agentsRef.current) {
+  const agentsRef = useRef<TrafficAgent[]>([]);
+
+  useEffect(() => {
     const list: TrafficAgent[] = [];
     const specs: { kind: VehicleKind; count: number; speed: number; colors: string[] }[] = [
       { kind: 'auto', count: 10, speed: 13, colors: ['#facc15'] },
@@ -140,7 +141,6 @@ export function TrafficSystem() {
           progress,
           speed: sp.speed,
           baseSpeed: sp.speed + (idx % 3),
-          // Distinct signal obedience: autos jump lights often, cars obey strictly
           violator: sp.kind === 'auto' ? idx % 3 === 0 : sp.kind === 'bike' ? idx % 5 === 0 : false,
           color: sp.colors[i % sp.colors.length],
           x: sample.x,
@@ -153,14 +153,9 @@ export function TrafficSystem() {
       }
     }
     agentsRef.current = list;
-  }
-
-  useEffect(() => {
-    const agents = agentsRef.current;
-    if (!agents) return;
     const col = new THREE.Color();
     const groups: Record<VehicleKind, TrafficAgent[]> = { auto: [], bus: [], bike: [], car: [] };
-    agents.forEach((a) => groups[a.kind].push(a));
+    list.forEach((a) => groups[a.kind].push(a));
 
     const applyColors = (mesh: THREE.InstancedMesh | null, items: TrafficAgent[]) => {
       if (!mesh) return;
@@ -179,7 +174,9 @@ export function TrafficSystem() {
     const dt = Math.min(delta, 0.05);
     const state = useGameStore.getState();
     const agents = agentsRef.current;
-    if (!state.isStarted || state.isPaused || !agents) return;
+    if (!state.isStarted || state.isPaused || agents.length === 0) return;
+
+    const [px, , pz] = state.playerPos;
 
     signalTimer.current += dt;
     let currentNsGreen = nsGreen;
@@ -194,22 +191,32 @@ export function TrafficSystem() {
       if (honkTimer.current <= 0) setHonkBubble(null);
     }
 
+    const canAdvanceSpecial = (prog: number, lane: 1 | -1, isEmergency = false) => {
+      const s = sampleLoop(prog, lane, lane === 1 ? 3.2 : 3.8);
+      const floodStop = state.waterLevel > 0.25 && s.z > 105;
+      const nearPlayer = (s.x - px) ** 2 + (s.z - pz) ** 2 < 36;
+      const redLight = !isEmergency && s.nearSignal && (s.isNS ? !currentNsGreen : currentNsGreen);
+      return !(floodStop || nearPlayer || redLight);
+    };
+
     if (heroTruckRef.current) {
-      heroProgressRef.current += 9.5 * dt;
+      if (canAdvanceSpecial(heroProgressRef.current, 1)) {
+        heroProgressRef.current += 9.5 * dt;
+      }
       const hs = sampleLoop(heroProgressRef.current, 1);
       heroTruckRef.current.position.set(hs.x, 0, hs.z);
       heroTruckRef.current.rotation.y = hs.rotY - Math.PI / 2;
     }
 
     // Police, Ambulance, Taxi, Water Truck, Trash Truck, R15, KTM & Duke
-    specialProgRef.current.police += 16 * dt;
-    specialProgRef.current.ambulance += 17.5 * dt;
-    specialProgRef.current.taxi -= 13.5 * dt;
-    specialProgRef.current.water += 10.5 * dt;
-    specialProgRef.current.trash -= 9.5 * dt;
-    specialProgRef.current.r15 += 22 * dt;
-    specialProgRef.current.ktm -= 21 * dt;
-    specialProgRef.current.duke += 20.5 * dt;
+    if (canAdvanceSpecial(specialProgRef.current.police, 1, true)) specialProgRef.current.police += 16 * dt;
+    if (canAdvanceSpecial(specialProgRef.current.ambulance, 1, true)) specialProgRef.current.ambulance += 17.5 * dt;
+    if (canAdvanceSpecial(specialProgRef.current.taxi, -1)) specialProgRef.current.taxi -= 13.5 * dt;
+    if (canAdvanceSpecial(specialProgRef.current.water, 1)) specialProgRef.current.water += 10.5 * dt;
+    if (canAdvanceSpecial(specialProgRef.current.trash, -1)) specialProgRef.current.trash -= 9.5 * dt;
+    if (canAdvanceSpecial(specialProgRef.current.r15, 1)) specialProgRef.current.r15 += 22 * dt;
+    if (canAdvanceSpecial(specialProgRef.current.ktm, -1)) specialProgRef.current.ktm -= 21 * dt;
+    if (canAdvanceSpecial(specialProgRef.current.duke, 1)) specialProgRef.current.duke += 20.5 * dt;
 
     const placeSpecial = (ref: React.RefObject<THREE.Group | null>, prog: number, lane: 1 | -1) => {
       if (!ref.current) return;
@@ -229,7 +236,6 @@ export function TrafficSystem() {
     const h = state.timeOfDay;
     const rushMult = (h >= 8.0 && h <= 10.5) || (h >= 17.0 && h <= 20.5) ? 0.78 : 1.0;
 
-    const [px, , pz] = state.playerPos;
     let autoI = 0;
     let busI = 0;
     let bikeI = 0;

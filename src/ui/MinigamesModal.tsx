@@ -35,16 +35,6 @@ export function MinigamesModal() {
   const [postersDone, setPostersDone] = useState(0);
   const [selectedCampaign, setSelectedCampaign] = useState(0);
 
-  // Reset local states on open
-  useEffect(() => {
-    setTeaMeter(0);
-    setTeaHits(0);
-    setPacked([]);
-    setCrates(0);
-    setWorkStamina(100);
-    setPostersDone(0);
-  }, [activeMinigame]);
-
   // Tea meter oscillation
   useEffect(() => {
     if (activeMinigame !== 'teaMaster') return;
