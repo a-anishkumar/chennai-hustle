@@ -160,7 +160,8 @@ export function CivicAndShops() {
       tasmac: getSignTexture('TASMAC RETAIL', 'State Beverages Shop', '#334155', '#fbbf24'),
       bar: getSignTexture('MARINA LOUNGE BAR', 'Open Till 11 PM', '#4c1d95', '#f472b6'),
       hotel: getSignTexture('GRAND CHENNAI HOTEL', 'AC Rooms & Banquet', '#0f172a', '#38bdf8'),
-      railway: getSignTexture('CHENNAI CENTRAL', 'Southern Railway Station', '#991b1b', '#fef08a'),
+      railway: getSignTexture('சென்னை சென்ட்ரல் • CHENNAI CENTRAL', 'Southern Railway • MAS Terminus', '#991b1b', '#fef08a'),
+      platformBoard: getSignTexture('CHENNAI CENTRAL (MAS)', 'PF 1 • 12622 TAMIL NADU EXP', '#facc15', '#0f172a'),
       police: getSignTexture('GREATER CHENNAI POLICE', 'B1 Law & Order Station', '#1e3a8a', '#facc15'),
       post: getSignTexture('CHENNAI GPO • INDIA POST', 'Rajaji Salai • Speed Post', '#b91c1c', '#fef08a'),
       court: getSignTexture('HIGH COURT CHENNAI', 'Justice & Law', '#7f1d1d', '#fde047'),
@@ -263,32 +264,169 @@ export function CivicAndShops() {
         </mesh>
       </group>
 
-      {/* 6. Chennai Central Railway Station (-320, 0, -180) */}
+      {/* 6. Realistic Chennai Central Railway Station (-320, 0, -180) */}
       <group position={[-320, 0, -180]}>
+        {/* Main Indo-Saracenic Red-Brick Terminal */}
         <RigidBody type="fixed" colliders="cuboid">
-          <mesh position={[0, 6, 0]} castShadow receiveShadow>
-            <boxGeometry args={[42, 12, 22]} />
-            <meshStandardMaterial color="#b91c1c" roughness={0.75} />
+          <mesh position={[0, 5.5, 0]} castShadow receiveShadow>
+            <boxGeometry args={[44, 11, 18]} />
+            <meshStandardMaterial color="#991b1b" roughness={0.78} />
           </mesh>
         </RigidBody>
-        {/* Central Clock Tower */}
-        <mesh position={[0, 16, 6]} castShadow>
-          <boxGeometry args={[8, 12, 8]} />
-          <meshStandardMaterial color="#dc2626" />
+
+        {/* White Heritage Cornice Bands & Arched Front Windows */}
+        {[3.8, 7.6, 10.9].map((wy, wi) => (
+          <mesh key={`cornice_${wi}`} position={[0, wy, 9.08]}>
+            <boxGeometry args={[44.4, 0.35, 0.25]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.7} />
+          </mesh>
+        ))}
+        {[-16, -11, -6, 6, 11, 16].map((wx, wi) => (
+          <group key={`win_${wi}`}>
+            <mesh position={[wx, 2.4, 9.06]}>
+              <planeGeometry args={[2.2, 2.8]} />
+              <meshStandardMaterial color="#1e293b" metalness={0.3} roughness={0.3} />
+            </mesh>
+            <mesh position={[wx, 6.0, 9.06]}>
+              <planeGeometry args={[2.2, 2.4]} />
+              <meshStandardMaterial color="#fef08a" emissive="#f59e0b" emissiveIntensity={0.25} />
+            </mesh>
+          </group>
+        ))}
+
+        {/* Grand Entrance Portico with White Pillars */}
+        <mesh position={[0, 5.2, 10.6]} castShadow>
+          <boxGeometry args={[12, 0.6, 3.6]} />
+          <meshStandardMaterial color="#f8fafc" roughness={0.6} />
         </mesh>
-        <mesh position={[0, 18, 10.1]}>
-          <circleGeometry args={[1.6, 16]} />
-          <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={0.4} />
+        {[-4.8, -1.6, 1.6, 4.8].map((px, pi) => (
+          <mesh key={`port_${pi}`} position={[px, 2.6, 11.9]} castShadow>
+            <cylinderGeometry args={[0.32, 0.36, 5.2, 10]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.6} />
+          </mesh>
+        ))}
+
+        {/* Flanking Heritage Towers & White Indo-Saracenic Domes */}
+        {[-19.5, 19.5].map((tx, ti) => (
+          <group key={`tower_${ti}`} position={[tx, 0, 5]}>
+            <mesh position={[0, 13.5, 0]} castShadow>
+              <boxGeometry args={[5.5, 5, 5.5]} />
+              <meshStandardMaterial color="#b91c1c" roughness={0.75} />
+            </mesh>
+            <mesh position={[0, 16.5, 0]} castShadow>
+              <cylinderGeometry args={[2.1, 2.3, 1.2, 12]} />
+              <meshStandardMaterial color="#f8fafc" />
+            </mesh>
+            <mesh position={[0, 18.2, 0]} castShadow>
+              <sphereGeometry args={[2.1, 14, 12]} />
+              <meshStandardMaterial color="#f8fafc" roughness={0.4} />
+            </mesh>
+          </group>
+        ))}
+
+        {/* Central Heritage Clock Tower + Cupola Dome */}
+        <mesh position={[0, 16, 4]} castShadow>
+          <boxGeometry args={[7.5, 11, 7.5]} />
+          <meshStandardMaterial color="#b91c1c" roughness={0.75} />
         </mesh>
-        <mesh position={[0, 10.5, 11.2]}>
-          <boxGeometry args={[24, 3.2, 0.4]} />
+        <mesh position={[0, 22.2, 4]} castShadow>
+          <cylinderGeometry args={[2.8, 3.0, 1.5, 12]} />
+          <meshStandardMaterial color="#f8fafc" />
+        </mesh>
+        <mesh position={[0, 24.4, 4]} castShadow>
+          <sphereGeometry args={[2.8, 16, 14]} />
+          <meshStandardMaterial color="#f8fafc" roughness={0.35} />
+        </mesh>
+        {/* Glowing Clock Face */}
+        <mesh position={[0, 17.5, 7.82]}>
+          <circleGeometry args={[1.85, 20]} />
+          <meshStandardMaterial color="#fef9c3" emissive="#fde047" emissiveIntensity={0.65} />
+        </mesh>
+        <mesh position={[0, 17.95, 7.86]}>
+          <boxGeometry args={[0.12, 1.0, 0.05]} />
+          <meshStandardMaterial color="#0f172a" />
+        </mesh>
+        <mesh position={[0.45, 17.5, 7.86]}>
+          <boxGeometry args={[0.9, 0.12, 0.05]} />
+          <meshStandardMaterial color="#0f172a" />
+        </mesh>
+
+        {/* Station Nameboard */}
+        <mesh position={[0, 9.4, 9.2]}>
+          <boxGeometry args={[24, 2.8, 0.35]} />
           <meshStandardMaterial map={signs.railway} />
         </mesh>
-        {/* Express Train at Platform */}
-        <mesh position={[0, 1.8, -16]} castShadow>
-          <boxGeometry args={[48, 3.4, 3.2]} />
-          <meshStandardMaterial color="#1d4ed8" />
+
+        {/* Covered Platform 1 Behind Terminal */}
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[0, 0.25, -13]} receiveShadow>
+            <boxGeometry args={[52, 0.5, 7.5]} />
+            <meshStandardMaterial color="#94a3b8" roughness={0.9} />
+          </mesh>
+        </RigidBody>
+        {/* Yellow Tactile Platform Edge */}
+        <mesh position={[0, 0.51, -16.6]}>
+          <boxGeometry args={[52, 0.04, 0.35]} />
+          <meshStandardMaterial color="#facc15" />
         </mesh>
+        {/* Platform Steel Shelter Canopy & Pillars */}
+        <mesh position={[0, 4.4, -13]} castShadow>
+          <boxGeometry args={[50, 0.22, 6.8]} />
+          <meshStandardMaterial color="#475569" metalness={0.5} roughness={0.5} />
+        </mesh>
+        {[-20, -10, 0, 10, 20].map((px, pi) => (
+          <mesh key={`pf_col_${pi}`} position={[px, 2.4, -13]} castShadow>
+            <cylinderGeometry args={[0.14, 0.16, 4.0, 8]} />
+            <meshStandardMaterial color="#cbd5e1" metalness={0.6} />
+          </mesh>
+        ))}
+        {/* Hanging Yellow Chennai Central Platform Boards */}
+        {[-12, 12].map((bx, bi) => (
+          <mesh key={`pf_sign_${bi}`} position={[bx, 3.6, -13]}>
+            <boxGeometry args={[5.5, 1.0, 0.15]} />
+            <meshStandardMaterial map={signs.platformBoard} />
+          </mesh>
+        ))}
+        {/* Waiting Passengers with Bags on Platform */}
+        {[-14, -4, 6, 15].map((wx, wi) => (
+          <group key={`pf_pax_${wi}`} position={[wx, 0.5, -13.8]}>
+            <AnimatedHumanNpc anim="idle" tintColor={['#38bdf8', '#f97316', '#facc15', '#ec4899'][wi]} prop="bag" seed={60 + wi} />
+          </group>
+        ))}
+
+        {/* Steel Railway Track & Sleepers + Detailed Express Train (WAP-7 Loco + 4 Coaches) */}
+        <mesh position={[0, 0.08, -19.2]}>
+          <boxGeometry args={[62, 0.12, 1.8]} />
+          <meshStandardMaterial color="#334155" roughness={0.95} />
+        </mesh>
+        {/* WAP-7 Red/Cream Electric Locomotive */}
+        <group position={[-21, 0, -19.2]}>
+          <mesh position={[0, 2.0, 0]} castShadow>
+            <boxGeometry args={[10.5, 3.2, 3.1]} />
+            <meshStandardMaterial color="#dc2626" roughness={0.4} />
+          </mesh>
+          <mesh position={[0, 2.2, 0]}>
+            <boxGeometry args={[10.55, 0.7, 3.14]} />
+            <meshStandardMaterial color="#fef3c7" />
+          </mesh>
+          <mesh position={[-5.26, 1.6, 0]}>
+            <sphereGeometry args={[0.25, 8, 8]} />
+            <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={2.2} />
+          </mesh>
+        </group>
+        {/* 4 Blue ICF/LHB Passenger Coaches */}
+        {[-9, 2.5, 14, 25.5].map((cx, ci) => (
+          <group key={`coach_${ci}`} position={[cx, 0, -19.2]}>
+            <mesh position={[0, 2.0, 0]} castShadow>
+              <boxGeometry args={[10.6, 3.1, 3.05]} />
+              <meshStandardMaterial color="#1d4ed8" roughness={0.45} />
+            </mesh>
+            <mesh position={[0, 2.25, 0]}>
+              <boxGeometry args={[10.64, 0.75, 3.08]} />
+              <meshStandardMaterial color="#bae6fd" metalness={0.4} roughness={0.3} />
+            </mesh>
+          </group>
+        ))}
       </group>
 
       {/* 7. Greater Chennai Police Station (moved to -245, 0, -90 — clear of Ripon Building) */}
