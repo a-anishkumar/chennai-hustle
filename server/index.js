@@ -123,6 +123,6 @@ const gameServer = new ColyseusServer({
 });
 gameServer.define('chennai_world', ChennaiRoom);
 
-httpServer.listen(PORT, () => {
+gameServer.listen(PORT).then(() => {
   console.log(`Chennai Hustle Express + Colyseus API listening on http://localhost:${PORT}`);
 });
