@@ -85,6 +85,7 @@ export function PlayerController() {
         } else if (near(-215, -85, 9)) {
           if (s.money >= 20) {
             s.modifyStats({ money: -20, fuel: 100 });
+            audioManager.playCash();
             s.showToast('Refueled 100% at Chennai Petrol Bunk (-₹20)');
           } else {
             s.showToast('Need ₹20 to refuel at Petrol Bunk!');
