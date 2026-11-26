@@ -17,7 +17,7 @@ export type HumanNpcProp =
   | 'tools'
   | 'cricket_bat';
 
-const MICHELLE_URL = '/models/npcs/Michelle.glb';
+const MICHELLE_URL = `${import.meta.env.BASE_URL}models/npcs/Michelle.glb`;
 useGLTF.preload(MICHELLE_URL);
 
 const SKIN_TONES = ['#8d5524', '#7a4920', '#a1663c', '#6b3e1b'];

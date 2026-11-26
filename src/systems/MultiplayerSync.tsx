@@ -21,8 +21,14 @@ export function MultiplayerSync() {
 
   useEffect(() => {
     if (!isStarted) return;
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const customWs = import.meta.env.VITE_MULTIPLAYER_URL as string | undefined;
+    if (!isLocal && !customWs) return;
+
     let active = true;
-    const wsUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.hostname}:3001`;
+    const wsUrl =
+      customWs ||
+      `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.hostname}:3001`;
     const client = new Client(wsUrl);
 
     client

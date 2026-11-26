@@ -7,14 +7,15 @@ import { useGameStore } from '../systems/gameStore';
 
 export type AnimalSpecies = 'cow' | 'bull' | 'shiba' | 'husky' | 'fox' | 'parrot' | 'stork';
 
+const BASE = import.meta.env.BASE_URL;
 const ANIMAL_MODEL_URLS: Record<AnimalSpecies, string> = {
-  cow: '/models/animals/Cow.glb',
-  bull: '/models/animals/Bull.glb',
-  shiba: '/models/animals/ShibaInu.glb',
-  husky: '/models/animals/Husky.glb',
-  fox: '/models/animals/Fox.glb',
-  parrot: '/models/animals/Parrot.glb',
-  stork: '/models/animals/Stork.glb',
+  cow: `${BASE}models/animals/Cow.glb`,
+  bull: `${BASE}models/animals/Bull.glb`,
+  shiba: `${BASE}models/animals/ShibaInu.glb`,
+  husky: `${BASE}models/animals/Husky.glb`,
+  fox: `${BASE}models/animals/Fox.glb`,
+  parrot: `${BASE}models/animals/Parrot.glb`,
+  stork: `${BASE}models/animals/Stork.glb`,
 };
 
 const DEFAULT_SCALES: Record<AnimalSpecies, number> = {
