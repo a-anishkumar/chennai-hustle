@@ -3,6 +3,7 @@ import { RigidBody } from '@react-three/rapier';
 import { getAsphaltNormalMap, getAsphaltTexture, getChessboardTexture, getSignTexture } from './ProceduralTextures';
 import { useGameStore } from '../systems/gameStore';
 import { isNightHour } from '../systems/timeUtils';
+import { AnimatedHumanNpc } from './AnimatedHumanNpc';
 
 interface RoadSegmentProps {
   x: number;
@@ -75,6 +76,18 @@ export function RoadLoop() {
 
   const chessTex = useMemo(() => getChessboardTexture(), []);
   const napierSign = useMemo(() => getSignTexture('NAPIER CHESS BRIDGE', 'Cooum River • Marina Coast', '#0f172a', '#f8fafc'), []);
+  const busMainSign = useMemo(
+    () => getSignTexture('பேருந்து நிறுத்தம் • BUS STAND', 'MTC • Nethaji Nagar • 21G • 29C • 47A', '#1e3a8a', '#facc15'),
+    []
+  );
+  const busRouteBoard = useMemo(
+    () => getSignTexture('MTC ROUTES: 21G • 29C • 47A', 'Broadway • Central • T.Nagar • Marina', '#f8fafc', '#1e3a8a'),
+    []
+  );
+  const busStopPoleSign = useMemo(
+    () => getSignTexture('MTC BUS', 'STOP • 21G', '#dc2626', '#ffffff'),
+    []
+  );
 
   return (
     <group name="Road_Loop">
@@ -247,28 +260,105 @@ export function RoadLoop() {
         </mesh>
       ))}
 
-      {/* Nethaji Nagar Bus Stop Shelter */}
+      {/* Authentic Tamil Nadu MTC Bus Stand (-180, 0, 18) */}
       <group position={[-180, 0, 18]}>
+        {/* Elevated Concrete Platform */}
         <RigidBody type="fixed" colliders="cuboid">
-          <mesh position={[0, 1.4, 0]} castShadow>
-            <boxGeometry args={[2.4, 2.8, 6.2]} />
-            <meshStandardMaterial color="#1d4ed8" roughness={0.5} />
+          <mesh position={[0, 0.1, 0]} receiveShadow>
+            <boxGeometry args={[3.4, 0.2, 10.6]} />
+            <meshStandardMaterial color="#94a3b8" roughness={0.9} />
           </mesh>
         </RigidBody>
-        {/* Yellow Roof */}
-        <mesh position={[0, 2.95, 0]} castShadow>
-          <boxGeometry args={[3.2, 0.25, 6.8]} />
-          <meshStandardMaterial color="#facc15" roughness={0.4} />
+        {/* Yellow & Black Kerb Edge */}
+        {[-4, -2, 0, 2, 4].map((kz, ki) => (
+          <mesh key={ki} position={[-1.68, 0.11, kz]}>
+            <boxGeometry args={[0.1, 0.21, 1.8]} />
+            <meshStandardMaterial color={ki % 2 === 0 ? '#facc15' : '#0f172a'} />
+          </mesh>
+        ))}
+
+        {/* Open Shelter Back Wall (enterable front & sides!) */}
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[1.35, 1.55, 0]} castShadow receiveShadow>
+            <boxGeometry args={[0.25, 2.7, 9.8]} />
+            <meshStandardMaterial color="#e2e8f0" roughness={0.75} />
+          </mesh>
+        </RigidBody>
+        {/* MTC Blue & Yellow Trim Strip on Back Wall */}
+        <mesh position={[1.21, 2.35, 0]}>
+          <boxGeometry args={[0.04, 0.55, 9.7]} />
+          <meshStandardMaterial color="#1d4ed8" />
         </mesh>
-        {/* Bus Stop Pole */}
-        <mesh position={[-1.4, 1.8, 3.6]} castShadow>
-          <cylinderGeometry args={[0.08, 0.08, 3.6, 8]} />
-          <meshStandardMaterial color="#e2e8f0" />
+        {/* Illuminated Route Timetable Board */}
+        <mesh position={[1.2, 1.65, -2.1]} rotation={[0, -Math.PI / 2, 0]}>
+          <planeGeometry args={[3.6, 1.2]} />
+          <meshStandardMaterial map={busRouteBoard} emissive="#ffffff" emissiveIntensity={night ? 0.35 : 0.05} />
         </mesh>
-        <mesh position={[-1.4, 3.3, 3.6]}>
-          <boxGeometry args={[0.1, 0.7, 0.9]} />
-          <meshStandardMaterial color="#ef4444" />
+
+        {/* 4 Stainless-Steel Front & Rear Pillars */}
+        {[
+          [-1.3, 1.6, -4.6],
+          [-1.3, 1.6, 4.6],
+          [1.25, 1.6, -4.6],
+          [1.25, 1.6, 4.6],
+        ].map(([px, py, pz], pi) => (
+          <mesh key={pi} position={[px, py, pz]} castShadow>
+            <cylinderGeometry args={[0.09, 0.09, 3.0, 10]} />
+            <meshStandardMaterial color="#cbd5e1" metalness={0.75} roughness={0.25} />
+          </mesh>
+        ))}
+
+        {/* Sloped Shelter Canopy Roof + Tamil Nadu MTC Fascia Sign */}
+        <mesh position={[-0.05, 3.15, 0]} rotation={[0, 0, 0.08]} castShadow>
+          <boxGeometry args={[3.6, 0.16, 10.4]} />
+          <meshStandardMaterial color="#1d4ed8" roughness={0.4} />
         </mesh>
+        <mesh position={[-1.82, 3.25, 0]} rotation={[0, -Math.PI / 2, 0]}>
+          <boxGeometry args={[9.8, 0.92, 0.14]} />
+          <meshStandardMaterial map={busMainSign} />
+        </mesh>
+
+        {/* Stainless-Steel Bus Stand Bench + Waiting Passengers */}
+        <mesh position={[0.65, 0.55, 1.8]} castShadow>
+          <boxGeometry args={[0.65, 0.1, 3.6]} />
+          <meshStandardMaterial color="#94a3b8" metalness={0.65} roughness={0.35} />
+        </mesh>
+        <mesh position={[0.92, 0.92, 1.8]} castShadow>
+          <boxGeometry args={[0.08, 0.55, 3.6]} />
+          <meshStandardMaterial color="#1d4ed8" roughness={0.5} />
+        </mesh>
+        <group position={[0.52, 0.56, 1.1]} rotation={[0, -Math.PI / 2, 0]}>
+          <AnimatedHumanNpc anim="idle" tintColor="#e2e8f0" prop="newspaper" sitting seed={12} />
+        </group>
+        <group position={[0.52, 0.56, 2.5]} rotation={[0, -Math.PI / 2, 0]}>
+          <AnimatedHumanNpc anim="idle" tintColor="#f97316" prop="phone" sitting seed={19} />
+        </group>
+        <group position={[-0.5, 0.2, -3.1]} rotation={[0, -Math.PI / 2, 0]}>
+          <AnimatedHumanNpc anim="idle" tintColor="#38bdf8" prop="bag" seed={24} />
+        </group>
+
+        {/* Iconic Red MTC Bus Stop Post */}
+        <mesh position={[-1.4, 1.9, 5.4]} castShadow>
+          <cylinderGeometry args={[0.08, 0.09, 3.8, 10]} />
+          <meshStandardMaterial color="#f8fafc" metalness={0.4} />
+        </mesh>
+        <mesh position={[-1.4, 3.45, 5.4]} rotation={[0, -Math.PI / 2, 0]}>
+          <boxGeometry args={[0.95, 0.72, 0.12]} />
+          <meshStandardMaterial map={busStopPoleSign} />
+        </mesh>
+
+        {/* Shelter Tube Light */}
+        <mesh position={[0, 2.98, 0]}>
+          <boxGeometry args={[0.18, 0.08, 4.2]} />
+          <meshStandardMaterial
+            color="#f8fafc"
+            emissive={night && !powerCut ? '#fef08a' : '#000000'}
+            emissiveIntensity={night && !powerCut ? 2.5 : 0}
+          />
+        </mesh>
+        {night && !powerCut && (
+          <pointLight position={[0, 2.7, 0]} color="#fef08a" intensity={10} distance={14} decay={2} />
+        )}
       </group>
 
       {/* Streetlights with Arm & Night Point Lights */}
