@@ -4,6 +4,9 @@ import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { getSignTexture } from '../ProceduralTextures';
 import { OnlineModel } from '../OnlineModel';
+import { AnimatedHumanNpc } from '../AnimatedHumanNpc';
+
+const LEVEL_CROSSING_XS = [-190, 40, 480];
 
 const FOX_URL =
   'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Fox/glTF-Binary/Fox.glb';
@@ -11,6 +14,9 @@ const FOX_URL =
 export function MoreChennaiLandmarks() {
   const trainRef = useRef<THREE.Group>(null);
   const planeRef = useRef<THREE.Group>(null);
+  const gateNorthRefs = useRef<(THREE.Group | null)[]>([]);
+  const gateSouthRefs = useRef<(THREE.Group | null)[]>([]);
+  const gateLightRefs = useRef<(THREE.Mesh | null)[]>([]);
 
   const signs = useMemo(
     () => ({
@@ -20,17 +26,36 @@ export function MoreChennaiLandmarks() {
       park: getSignTexture('SEMMOZHI PARK', 'Morning Walk & Fountain', '#15803d', '#ffffff'),
       school: getSignTexture('CHENNAI HIGH SCHOOL', 'Education & Sports', '#b45309', '#fef9c3'),
       ripon: getSignTexture('RIPON BUILDING', 'Greater Chennai Corporation', '#f8fafc', '#1e3a8a'),
+      lcGate: getSignTexture('RAILWAY GATE • LC', 'STOP WHEN GATE CLOSED', '#facc15', '#dc2626'),
     }),
     []
   );
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
     const t = clock.getElapsedTime();
+    const dt = Math.min(delta, 0.05);
     // Animated Express Train moving along Railway Track (z = -196)
+    const tx = ((t * 24) % 1400) - 700;
     if (trainRef.current) {
-      const tx = ((t * 24) % 1400) - 700;
       trainRef.current.position.set(tx, 0, -196);
     }
+
+    // Automate Railway Level Crossing Gates when Express Train approaches
+    const blink = Math.sin(t * 10) > 0;
+    LEVEL_CROSSING_XS.forEach((cx, i) => {
+      const trainNear = Math.abs(tx - cx) < 105;
+      const targetAngle = trainNear ? 0 : Math.PI / 2.25;
+      const gn = gateNorthRefs.current[i];
+      const gs = gateSouthRefs.current[i];
+      if (gn) gn.rotation.z = THREE.MathUtils.lerp(gn.rotation.z, targetAngle, dt * 4);
+      if (gs) gs.rotation.z = THREE.MathUtils.lerp(gs.rotation.z, targetAngle, dt * 4);
+      const gl = gateLightRefs.current[i];
+      if (gl) {
+        const mat = gl.material as THREE.MeshStandardMaterial;
+        mat.emissive.set(trainNear && blink ? '#ef4444' : '#000000');
+        mat.emissiveIntensity = trainNear && blink ? 2.5 : 0;
+      }
+    });
     // Animated Aeroplane taking off / circling near Airport (-850, 420)
     if (planeRef.current) {
       const angle = t * 0.22;
@@ -159,6 +184,105 @@ export function MoreChennaiLandmarks() {
           <boxGeometry args={[1600, 0.14, 0.16]} />
           <meshStandardMaterial color="#94a3b8" metalness={0.8} roughness={0.3} />
         </mesh>
+
+        {/* 3 Automated Indian Railways Level Crossings & Gates */}
+        {LEVEL_CROSSING_XS.map((cx, idx) => (
+          <group key={`lc_${cx}`} position={[cx, 0, 0]}>
+            {/* Paved Road-Rail Crossing Apron & Warning Stripes */}
+            <mesh position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+              <planeGeometry args={[14, 7.2]} />
+              <meshStandardMaterial color="#334155" roughness={0.85} />
+            </mesh>
+            <mesh position={[0, 0.07, 3.8]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[13.6, 0.45]} />
+              <meshStandardMaterial color="#facc15" />
+            </mesh>
+            <mesh position={[0, 0.07, -3.8]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[13.6, 0.45]} />
+              <meshStandardMaterial color="#facc15" />
+            </mesh>
+
+            {/* South Gate Post & Animated Striped Boom Arm */}
+            <group position={[-6.8, 0, 4.4]}>
+              <mesh position={[0, 0.85, 0]} castShadow>
+                <boxGeometry args={[0.45, 1.7, 0.45]} />
+                <meshStandardMaterial color="#eab308" />
+              </mesh>
+              <group
+                ref={(el) => {
+                  gateSouthRefs.current[idx] = el;
+                }}
+                position={[0, 1.25, 0]}
+                rotation={[0, 0, Math.PI / 2.25]}
+              >
+                {[0, 1, 2, 3, 4, 5, 6, 7].map((seg) => (
+                  <mesh key={seg} position={[0.85 + seg * 1.55, 0, 0]} castShadow>
+                    <boxGeometry args={[1.55, 0.14, 0.14]} />
+                    <meshStandardMaterial color={seg % 2 === 0 ? '#facc15' : '#0f172a'} />
+                  </mesh>
+                ))}
+              </group>
+            </group>
+
+            {/* North Gate Post & Animated Striped Boom Arm */}
+            <group position={[-6.8, 0, -4.4]}>
+              <mesh position={[0, 0.85, 0]} castShadow>
+                <boxGeometry args={[0.45, 1.7, 0.45]} />
+                <meshStandardMaterial color="#eab308" />
+              </mesh>
+              <group
+                ref={(el) => {
+                  gateNorthRefs.current[idx] = el;
+                }}
+                position={[0, 1.25, 0]}
+                rotation={[0, 0, Math.PI / 2.25]}
+              >
+                {[0, 1, 2, 3, 4, 5, 6, 7].map((seg) => (
+                  <mesh key={seg} position={[0.85 + seg * 1.55, 0, 0]} castShadow>
+                    <boxGeometry args={[1.55, 0.14, 0.14]} />
+                    <meshStandardMaterial color={seg % 2 === 0 ? '#facc15' : '#0f172a'} />
+                  </mesh>
+                ))}
+              </group>
+            </group>
+
+            {/* Railway Warning Signal Post + Flashing Red Beacon */}
+            <group position={[7.4, 0, 4.4]}>
+              <mesh position={[0, 1.8, 0]} castShadow>
+                <cylinderGeometry args={[0.1, 0.12, 3.6, 8]} />
+                <meshStandardMaterial color="#f8fafc" />
+              </mesh>
+              <mesh position={[0, 2.7, 0.12]}>
+                <boxGeometry args={[1.6, 0.65, 0.12]} />
+                <meshStandardMaterial map={signs.lcGate} />
+              </mesh>
+              <mesh
+                ref={(el) => {
+                  gateLightRefs.current[idx] = el;
+                }}
+                position={[0, 3.65, 0]}
+              >
+                <sphereGeometry args={[0.26, 8, 8]} />
+                <meshStandardMaterial color="#7f1d1d" />
+              </mesh>
+            </group>
+
+            {/* Gateman Cabin & Railway Gateman */}
+            <RigidBody type="fixed" colliders="cuboid">
+              <mesh position={[9.8, 1.4, -4.8]} castShadow receiveShadow>
+                <boxGeometry args={[3.2, 2.8, 2.8]} />
+                <meshStandardMaterial color="#fef08a" roughness={0.75} />
+              </mesh>
+            </RigidBody>
+            <mesh position={[9.8, 2.95, -4.8]} castShadow>
+              <boxGeometry args={[3.6, 0.3, 3.2]} />
+              <meshStandardMaterial color="#dc2626" />
+            </mesh>
+            <group position={[7.8, 0, -4.4]} rotation={[0, -Math.PI / 4, 0]}>
+              <AnimatedHumanNpc anim="idle" tintColor="#f8fafc" prop="tools" seed={70 + idx} />
+            </group>
+          </group>
+        ))}
       </group>
 
       {/* Moving Express Train with Detailed Passenger Compartments */}
