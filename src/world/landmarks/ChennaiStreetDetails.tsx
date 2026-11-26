@@ -126,12 +126,14 @@ function SittingBench({
         </mesh>
       ))}
       {npcProp !== 'none' && (
-        <group position={[0.35, 0.12, 0.12]}>
+        <group position={[0.35, 0.46, 0.14]}>
           <AnimatedHumanNpc
             variant="xbot"
             anim="idle"
             tintColor={npcProp === 'newspaper' ? '#e2e8f0' : '#38bdf8'}
             prop={npcProp}
+            sitting
+            seed={Math.abs(Math.round(pos[0] + pos[2]))}
           />
         </group>
       )}

@@ -1,16 +1,21 @@
-import { useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useMemo } from 'react';
 import { Html } from '@react-three/drei';
 import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { getSignTexture } from '../ProceduralTextures';
+import { AnimatedHumanNpc } from '../AnimatedHumanNpc';
 
-const FAN_COUNT = 28;
+const CSK_FANS = Array.from({ length: 8 }, (_, i) => ({
+  x: -22 + (i % 4) * 4.5,
+  z: 49 + Math.floor(i / 4) * 3.4,
+}));
+
+const RCB_FANS = Array.from({ length: 5 }, (_, i) => ({
+  x: 10 + (i % 3) * 4.5,
+  z: 49 + Math.floor(i / 3) * 3.4,
+}));
 
 export function ChepaukStadium() {
-  const cskFansRef = useRef<THREE.InstancedMesh>(null);
-  const rcbFansRef = useRef<THREE.InstancedMesh>(null);
-  const dummy = useMemo(() => new THREE.Object3D(), []);
 
   const signs = useMemo(
     () => ({
@@ -22,35 +27,6 @@ export function ChepaukStadium() {
     }),
     []
   );
-
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
-    if (cskFansRef.current) {
-      for (let i = 0; i < FAN_COUNT; i++) {
-        const fx = -24 + (i % 7) * 3.2;
-        const fz = 48 + Math.floor(i / 7) * 3.0;
-        const jump = Math.abs(Math.sin(t * 6 + i)) * 0.5;
-        dummy.position.set(fx, 0.75 + jump, fz);
-        dummy.rotation.set(0, Math.PI, 0);
-        dummy.updateMatrix();
-        cskFansRef.current.setMatrixAt(i, dummy.matrix);
-      }
-      cskFansRef.current.instanceMatrix.needsUpdate = true;
-    }
-
-    if (rcbFansRef.current) {
-      for (let i = 0; i < 14; i++) {
-        const fx = 10 + (i % 5) * 3.2;
-        const fz = 48 + Math.floor(i / 5) * 3.0;
-        const jump = Math.abs(Math.sin(t * 5.5 + i * 1.2)) * 0.45;
-        dummy.position.set(fx, 0.75 + jump, fz);
-        dummy.rotation.set(0, Math.PI, 0);
-        dummy.updateMatrix();
-        rcbFansRef.current.setMatrixAt(i, dummy.matrix);
-      }
-      rcbFansRef.current.instanceMatrix.needsUpdate = true;
-    }
-  });
 
   return (
     <group name="Chepauk_And_Stations">
@@ -104,14 +80,16 @@ export function ChepaukStadium() {
         </mesh>
 
         {/* Cheering CSK (Yellow) & RCB (Red) Fans Outside Stadium */}
-        <instancedMesh ref={cskFansRef} args={[undefined, undefined, FAN_COUNT]} castShadow frustumCulled={false}>
-          <boxGeometry args={[0.5, 1.1, 0.32]} />
-          <meshStandardMaterial color="#facc15" />
-        </instancedMesh>
-        <instancedMesh ref={rcbFansRef} args={[undefined, undefined, 14]} castShadow frustumCulled={false}>
-          <boxGeometry args={[0.5, 1.1, 0.32]} />
-          <meshStandardMaterial color="#dc2626" />
-        </instancedMesh>
+        {CSK_FANS.map((f, i) => (
+          <group key={`csk_${i}`} position={[f.x, 0, f.z]} rotation={[0, Math.PI, 0]}>
+            <AnimatedHumanNpc variant="xbot" anim="dance" tintColor="#facc15" seed={i + 20} />
+          </group>
+        ))}
+        {RCB_FANS.map((f, i) => (
+          <group key={`rcb_${i}`} position={[f.x, 0, f.z]} rotation={[0, Math.PI, 0]}>
+            <AnimatedHumanNpc variant="xbot" anim="agree" tintColor="#dc2626" seed={i + 30} />
+          </group>
+        ))}
 
         <Html position={[-12, 3.2, 52]} center zIndexRange={[1, 8]}>
           <div

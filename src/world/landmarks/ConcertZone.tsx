@@ -6,17 +6,21 @@ import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { getAwningTexture, getSignTexture } from '../ProceduralTextures';
 
-const DANCER_COUNT = 22;
 const SMOKE_COUNT = 12;
 
 const DANCER_COLORS = ['#ec4899', '#38bdf8', '#facc15', '#a855f7', '#22c55e', '#f97316'];
+
+const DANCER_SPOTS = Array.from({ length: 12 }, (_, i) => ({
+  x: -9 + (i % 4) * 5.8,
+  z: 10 + Math.floor(i / 4) * 3.6,
+  color: DANCER_COLORS[i % DANCER_COLORS.length],
+  isMichelle: i % 3 === 0,
+}));
 
 export function ConcertZone() {
   const discoBallRef = useRef<THREE.Mesh>(null);
   const spot1Ref = useRef<THREE.PointLight>(null);
   const spot2Ref = useRef<THREE.PointLight>(null);
-  const dancersRef = useRef<THREE.InstancedMesh>(null);
-  const dancerHeadsRef = useRef<THREE.InstancedMesh>(null);
   const smokeRef = useRef<THREE.InstancedMesh>(null);
 
   const signs = useMemo(
@@ -42,31 +46,6 @@ export function ConcertZone() {
     }
     if (spot2Ref.current) {
       spot2Ref.current.color.setHSL(((t * 0.25) + 0.5) % 1, 0.9, 0.55);
-    }
-
-    // People dancing & vibing in front of the DJ stage
-    if (dancersRef.current && dancerHeadsRef.current) {
-      for (let i = 0; i < DANCER_COUNT; i++) {
-        const row = Math.floor(i / 6);
-        const col = i % 6;
-        const dx = -9 + col * 3.6 + Math.sin(t * 3 + i) * 0.35;
-        const dz = 10 + row * 3.2;
-        const jump = Math.abs(Math.sin(t * 6.5 + i * 0.9)) * 0.55;
-        const sway = Math.sin(t * 5 + i) * 0.18;
-
-        dummy.position.set(dx, 0.75 + jump, dz);
-        dummy.rotation.set(0, Math.PI + sway, sway);
-        dummy.scale.set(1, 1, 1);
-        dummy.updateMatrix();
-        dancersRef.current.setMatrixAt(i, dummy.matrix);
-
-        dummy.position.set(dx, 1.48 + jump, dz);
-        dummy.rotation.set(0, Math.PI, 0);
-        dummy.updateMatrix();
-        dancerHeadsRef.current.setMatrixAt(i, dummy.matrix);
-      }
-      dancersRef.current.instanceMatrix.needsUpdate = true;
-      dancerHeadsRef.current.instanceMatrix.needsUpdate = true;
     }
 
     // Rising smoke puffs near smoking corner (x = 18, z = 14 relative)
@@ -136,14 +115,16 @@ export function ConcertZone() {
       <pointLight ref={spot2Ref} position={[6, 7.5, 8]} intensity={25} distance={32} />
 
       {/* Dancing & Vibing Crowd */}
-      <instancedMesh ref={dancersRef} args={[undefined, undefined, DANCER_COUNT]} castShadow frustumCulled={false}>
-        <boxGeometry args={[0.5, 1.1, 0.32]} />
-        <meshStandardMaterial color="#ec4899" />
-      </instancedMesh>
-      <instancedMesh ref={dancerHeadsRef} args={[undefined, undefined, DANCER_COUNT]} castShadow frustumCulled={false}>
-        <sphereGeometry args={[0.2, 8, 8]} />
-        <meshStandardMaterial color="#8d5524" />
-      </instancedMesh>
+      {DANCER_SPOTS.map((d, i) => (
+        <group key={`dancer_${i}`} position={[d.x, 0, d.z]} rotation={[0, Math.PI, 0]}>
+          <AnimatedHumanNpc
+            variant={d.isMichelle ? 'michelle' : 'xbot'}
+            anim="dance"
+            tintColor={d.color}
+            seed={i + 10}
+          />
+        </group>
+      ))}
 
       {/* Concert Vibe Label */}
       <Html position={[0, 10.2, -4]} center zIndexRange={[1, 8]}>

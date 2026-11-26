@@ -261,6 +261,7 @@ export function NpcSystem() {
             timeScale={0.9 + (i % 3) * 0.1}
             tintColor={n.color}
             prop={npcAnims[i] === 'idle' && n.action === 'checking_phone' ? 'phone' : n.prop}
+            seed={i + 1}
           />
         </group>
       ))}
