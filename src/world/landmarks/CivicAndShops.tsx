@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
-import { getSignTexture } from '../ProceduralTextures';
+import { getAwningTexture, getSignTexture } from '../ProceduralTextures';
 import { useGameStore } from '../../systems/gameStore';
 import { AnimatedHumanNpc } from '../AnimatedHumanNpc';
 
@@ -46,7 +46,7 @@ const TEA_CUSTOMERS: { pos: [number, number, number]; rotY: number; color: strin
   { pos: [2.6, 0, 4.0], rotY: -Math.PI * 0.85, color: '#f97316', prop: 'cigarette' },
 ];
 
-function AnbuTeaShop({ sign }: { sign: THREE.CanvasTexture }) {
+function AnbuTeaShop({ sign, awning }: { sign: THREE.CanvasTexture; awning: THREE.CanvasTexture }) {
   const timeOfDay = useGameStore((s) => s.timeOfDay);
   const status = getTeaShopPhase(timeOfDay);
   const steamRef = useRef<THREE.InstancedMesh>(null);
@@ -61,7 +61,7 @@ function AnbuTeaShop({ sign }: { sign: THREE.CanvasTexture }) {
       } else {
         const cycle = (t * 0.7 + i * 0.35) % 1.4;
         const sc = 0.08 + cycle * 0.14;
-        dummy.position.set(-1.1 + Math.sin(t * 2 + i) * 0.12, 1.45 + cycle * 1.1, 2.35);
+        dummy.position.set(-1.3 + Math.sin(t * 2 + i) * 0.12, 1.55 + cycle * 1.1, 1.95);
         dummy.scale.set(sc, sc, sc);
       }
       dummy.updateMatrix();
@@ -72,35 +72,120 @@ function AnbuTeaShop({ sign }: { sign: THREE.CanvasTexture }) {
 
   return (
     <group position={[-68, 0, -35]}>
+      {/* Elevated Concrete Veranda Floor */}
+      <mesh position={[0, 0.08, 0.4]} receiveShadow>
+        <boxGeometry args={[7.2, 0.16, 6.2]} />
+        <meshStandardMaterial color="#94a3b8" roughness={0.9} />
+      </mesh>
+
+      {/* Open-Front Tea Shop Walls (Back, Left, Right — enterable/visible interior!) */}
       <RigidBody type="fixed" colliders="cuboid">
-        <mesh position={[0, 1.6, 0]} castShadow>
-          <boxGeometry args={[6, 3.2, 4.5]} />
-          <meshStandardMaterial color="#fef9c3" />
+        <mesh position={[0, 1.65, -2.0]} castShadow receiveShadow>
+          <boxGeometry args={[6.4, 3.2, 0.3]} />
+          <meshStandardMaterial color="#fef9c3" roughness={0.85} />
+        </mesh>
+        <mesh position={[-3.05, 1.65, 0]} castShadow>
+          <boxGeometry args={[0.3, 3.2, 4.2]} />
+          <meshStandardMaterial color="#fef08a" roughness={0.85} />
+        </mesh>
+        <mesh position={[3.05, 1.65, 0]} castShadow>
+          <boxGeometry args={[0.3, 3.2, 4.2]} />
+          <meshStandardMaterial color="#fef08a" roughness={0.85} />
         </mesh>
       </RigidBody>
-      <mesh position={[0, 3.6, 2.3]}>
-        <boxGeometry args={[5.8, 1.2, 0.2]} />
+
+      {/* Interior Back Shelf with Biscuit Jars, Tea Tins & Hanging Bananas */}
+      <mesh position={[0, 1.8, -1.68]} castShadow>
+        <boxGeometry args={[5.4, 0.1, 0.48]} />
+        <meshStandardMaterial color="#78350f" />
+      </mesh>
+      {[-2.0, -1.2, -0.4, 0.4, 1.2, 2.0].map((jx, ji) => (
+        <mesh key={`jar_${ji}`} position={[jx, 2.08, -1.68]}>
+          <cylinderGeometry args={[0.16, 0.16, 0.44, 10]} />
+          <meshStandardMaterial color={['#f97316', '#dc2626', '#eab308', '#38bdf8', '#22c55e', '#a855f7'][ji]} transparent opacity={0.82} />
+        </mesh>
+      ))}
+      {/* Hanging Yellow Banana Bunch */}
+      <group position={[2.2, 2.55, 1.65]}>
+        {[-0.12, 0, 0.12].map((bx, bi) => (
+          <mesh key={bi} position={[bx, -0.15, 0]} rotation={[0.2, 0, bx]}>
+            <capsuleGeometry args={[0.045, 0.22, 4, 6]} />
+            <meshStandardMaterial color="#facc15" roughness={0.6} />
+          </mesh>
+        ))}
+      </group>
+
+      {/* Sloped Corrugated Tin Roof & Striped Green-Yellow Awning */}
+      <mesh position={[0, 3.35, 0]} rotation={[0.08, 0, 0]} castShadow>
+        <boxGeometry args={[6.8, 0.16, 4.8]} />
+        <meshStandardMaterial color="#475569" metalness={0.4} roughness={0.6} />
+      </mesh>
+      <mesh position={[0, 2.75, 2.75]} rotation={[-0.32, 0, 0]} castShadow>
+        <boxGeometry args={[6.6, 0.08, 1.8]} />
+        <meshStandardMaterial map={awning} />
+      </mesh>
+      {[-3.0, 3.0].map((px, pi) => (
+        <mesh key={`tcol_${pi}`} position={[px, 1.5, 2.1]} castShadow>
+          <cylinderGeometry args={[0.07, 0.08, 3.0, 8]} />
+          <meshStandardMaterial color="#15803d" />
+        </mesh>
+      ))}
+
+      {/* Tamil + English Signboard */}
+      <mesh position={[0, 3.95, 2.25]}>
+        <boxGeometry args={[6.2, 1.15, 0.2]} />
         <meshStandardMaterial map={sign} />
       </mesh>
 
       {/* Rolling Shutter (opens at 5:30 AM, closes at 10:00 PM) */}
-      <mesh position={[0, 2.75 - status.shutterScaleY * 1.25, 2.28]}>
-        <boxGeometry args={[5.2, 2.5 * status.shutterScaleY, 0.12]} />
+      <mesh position={[0, 2.85 - status.shutterScaleY * 1.25, 2.15]}>
+        <boxGeometry args={[5.6, 2.5 * status.shutterScaleY, 0.1]} />
         <meshStandardMaterial color="#64748b" metalness={0.5} roughness={0.5} />
       </mesh>
 
-      {/* Tea Boiler Counter & Brass Samovar */}
-      <mesh position={[0, 0.55, 2.45]} castShadow>
-        <boxGeometry args={[4.6, 1.1, 0.85]} />
-        <meshStandardMaterial color="#92400e" />
+      {/* Stainless-Steel Tea Counter + Glowing Glass Vadai/Bajji Showcase */}
+      <mesh position={[0, 0.55, 1.95]} castShadow>
+        <boxGeometry args={[5.2, 1.0, 0.85]} />
+        <meshStandardMaterial color="#cbd5e1" metalness={0.55} roughness={0.35} />
       </mesh>
-      <mesh position={[-1.1, 1.35, 2.35]} castShadow>
-        <cylinderGeometry args={[0.24, 0.28, 0.65, 10]} />
-        <meshStandardMaterial color="#eab308" metalness={0.75} roughness={0.25} />
+      {/* Glowing Glass Snack Case with Vadais & Bajjis */}
+      <mesh position={[1.1, 1.38, 1.95]}>
+        <boxGeometry args={[1.8, 0.62, 0.65]} />
+        <meshStandardMaterial color="#fef08a" emissive="#f59e0b" emissiveIntensity={status.lightsOn ? 0.45 : 0} transparent opacity={0.65} />
+      </mesh>
+      {[-0.4, 0, 0.4].map((vx, vi) => (
+        <mesh key={`vadai_${vi}`} position={[1.1 + vx, 1.22, 1.95]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.1, 0.045, 6, 10]} />
+          <meshStandardMaterial color="#b45309" />
+        </mesh>
+      ))}
+
+      {/* Twin Brass/Copper Tea Boilers (Samovars) + Gas Stove Flame */}
+      <mesh position={[-1.3, 1.42, 1.95]} castShadow>
+        <cylinderGeometry args={[0.26, 0.3, 0.72, 12]} />
+        <meshStandardMaterial color="#eab308" metalness={0.8} roughness={0.22} />
+      </mesh>
+      <mesh position={[-0.65, 1.34, 1.95]} castShadow>
+        <cylinderGeometry args={[0.2, 0.22, 0.55, 12]} />
+        <meshStandardMaterial color="#cbd5e1" metalness={0.75} roughness={0.25} />
       </mesh>
 
-      {/* Warm Shop Light */}
-      {status.lightsOn && <pointLight position={[0, 2.6, 2.9]} color="#fde047" intensity={4} distance={10} />}
+      {/* Roadside Wooden Tea Bench Outside */}
+      <mesh position={[-2.1, 0.45, 3.2]} castShadow>
+        <boxGeometry args={[1.9, 0.1, 0.52]} />
+        <meshStandardMaterial color="#92400e" roughness={0.85} />
+      </mesh>
+
+      {/* Warm Hanging Bulb & Shop Light */}
+      <mesh position={[0, 2.85, 2.25]}>
+        <sphereGeometry args={[0.12, 8, 8]} />
+        <meshStandardMaterial
+          color="#fef9c3"
+          emissive={status.lightsOn ? '#fbbf24' : '#000000'}
+          emissiveIntensity={status.lightsOn ? 2.5 : 0}
+        />
+      </mesh>
+      {status.lightsOn && <pointLight position={[0, 2.6, 2.8]} color="#fde047" intensity={7} distance={12} />}
 
       {/* Rising Tea Steam */}
       <instancedMesh ref={steamRef} args={[undefined, undefined, 8]} frustumCulled={false}>
@@ -110,11 +195,12 @@ function AnbuTeaShop({ sign }: { sign: THREE.CanvasTexture }) {
 
       {/* Tea Master (active when shop is not closed) */}
       {status.phase !== 'closed' && (
-        <group position={[0.5, 0, 2.0]}>
+        <group position={[0.2, 0.16, 1.05]}>
           <AnimatedHumanNpc
             variant="soldier"
             anim={status.phase === 'preparing' || status.phase === 'evening_rush' ? 'agree' : 'idle'}
             prop={status.phase === 'closing' || status.phase === 'opening' ? 'tools' : 'none'}
+            seed={91}
           />
         </group>
       )}
@@ -122,12 +208,12 @@ function AnbuTeaShop({ sign }: { sign: THREE.CanvasTexture }) {
       {/* Dynamic Customers Based on Time of Day */}
       {TEA_CUSTOMERS.slice(0, status.customerCount).map((c, idx) => (
         <group key={idx} position={c.pos} rotation={[0, c.rotY, 0]}>
-          <AnimatedHumanNpc variant="xbot" anim="idle" tintColor={c.color} prop={c.prop} />
+          <AnimatedHumanNpc variant="xbot" anim="idle" tintColor={c.color} prop={c.prop} seed={92 + idx} />
         </group>
       ))}
 
       {/* Live Daily Schedule Status Pill */}
-      <Html position={[0, 4.55, 2.3]} center zIndexRange={[1, 8]}>
+      <Html position={[0, 4.8, 2.25]} center zIndexRange={[1, 8]}>
         <div
           style={{
             background: status.phase === 'closed' ? 'rgba(15,23,42,0.9)' : 'rgba(21,128,61,0.92)',
@@ -154,7 +240,8 @@ export function CivicAndShops() {
 
   const signs = useMemo(
     () => ({
-      tea: getSignTexture('ANBU TEA KADAI', 'Tea • Vadai • Bajji • Bun', '#15803d', '#fef08a'),
+      tea: getSignTexture('அன்பு டீ கடை • ANBU TEA KADAI', 'Tea • Vadai • Bajji • Bun Butter Jam', '#15803d', '#fef08a'),
+      teaAwning: getAwningTexture('#15803d', '#fef08a'),
       jewellery: getSignTexture('KAVERI JEWELLERY', '22K Gold & Diamonds', '#78350f', '#facc15'),
       barber: getSignTexture('METRO HAIR SALOON', 'AC Barber Shop', '#1e3a8a', '#ffffff'),
       tasmac: getSignTexture('TASMAC RETAIL', 'State Beverages Shop', '#334155', '#fbbf24'),
@@ -184,7 +271,7 @@ export function CivicAndShops() {
   return (
     <group name="Civic_And_Shops">
       {/* 1. Dedicated Tea Shop Corner (-68, 0, -35) with 24h Daily Schedule */}
-      <AnbuTeaShop sign={signs.tea} />
+      <AnbuTeaShop sign={signs.tea} awning={signs.teaAwning} />
 
       {/* 2. Jewellery Shop (160, 0, -145) */}
       <group position={[160, 0, -145]}>
