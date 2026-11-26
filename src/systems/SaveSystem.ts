@@ -64,15 +64,23 @@ export interface SaveData {
 
 const SAVE_KEY = 'chennai_hustle_save_v1';
 
+function hasApiBackend(): boolean {
+  if (typeof window === 'undefined') return false;
+  const host = window.location.hostname;
+  return host === 'localhost' || host === '127.0.0.1' || Boolean(import.meta.env.VITE_API_URL);
+}
+
 export function writeSaveData(data: SaveData): boolean {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-    // Best-effort sync to Node.js + Express backend if running
-    fetch('/api/save/default', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    }).catch(() => {});
+    // Best-effort sync to Node.js + Express backend when running locally or configured
+    if (hasApiBackend()) {
+      fetch('/api/save/default', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }).catch(() => {});
+    }
     return true;
   } catch (err) {
     console.warn('Failed to save to localStorage:', err);
@@ -108,6 +116,7 @@ export function hasSaveData(): boolean {
 }
 
 export async function syncCloudSaveToLocal(): Promise<SaveData | null> {
+  if (!hasApiBackend()) return null;
   try {
     const res = await fetch('/api/save/default');
     if (!res.ok) return null;
@@ -123,6 +132,7 @@ export async function syncCloudSaveToLocal(): Promise<SaveData | null> {
 }
 
 export function syncPosterToServer(poster: PastedPoster): void {
+  if (!hasApiBackend()) return;
   fetch('/api/posters', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

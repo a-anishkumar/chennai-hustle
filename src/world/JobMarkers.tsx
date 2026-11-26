@@ -6,6 +6,12 @@ import { useGameStore } from '../systems/gameStore';
 
 export function JobMarkers() {
   const activeJob = useGameStore((s) => s.activeJob);
+  if (!activeJob) return null;
+  return <ActiveJobMarkers />;
+}
+
+function ActiveJobMarkers() {
+  const activeJob = useGameStore((s) => s.activeJob);
   const playerPos = useGameStore((s) => s.playerPos);
   const beaconRef = useRef<THREE.Mesh>(null);
   const triggerCooldown = useRef(0);

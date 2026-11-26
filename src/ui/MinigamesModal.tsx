@@ -9,6 +9,11 @@ const GROCERY_POOL = ['Filter Coffee', 'Idli Batter', 'Tender Coconut', 'Milk Pa
 
 export function MinigamesModal() {
   const activeMinigame = useGameStore((s) => s.activeMinigame);
+  if (!activeMinigame) return null;
+  return <MinigamesModalInner key={activeMinigame} activeMinigame={activeMinigame} />;
+}
+
+function MinigamesModalInner({ activeMinigame }: { activeMinigame: NonNullable<ReturnType<typeof useGameStore.getState>['activeMinigame']> }) {
   const openMinigame = useGameStore((s) => s.openMinigame);
   const completeMinigameReward = useGameStore((s) => s.completeMinigameReward);
   const startJob = useGameStore((s) => s.startJob);
@@ -52,8 +57,6 @@ export function MinigamesModal() {
     }, 3800);
     return () => clearInterval(id);
   }, [activeMinigame]);
-
-  if (!activeMinigame) return null;
 
   const campaigns = [...brands.campaigns.films, ...brands.campaigns.parties];
 
