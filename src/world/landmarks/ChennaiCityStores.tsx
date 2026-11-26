@@ -13,6 +13,9 @@ export function ChennaiCityStores() {
       pcShop: getSignTexture('ரிச்சி ஸ்ட்ரீட் பிசி', 'PC • LAPTOPS • GAMING • REPAIR', '#111827', '#22d3ee'),
       pharmacy: getSignTexture('சென்னை மெடிக்கல்ஸ்', '24x7 PHARMACY & SURGICALS', '#047857', '#ffffff'),
       bakery: getSignTexture('சென்னை பேக்கரி & ஸ்வீட்ஸ்', 'FRESH PUFFS • CAKES • SWEETS', '#991b1b', '#fde047'),
+      silkSaree: getSignTexture('ஸ்ரீ காஞ்சி பட்டு & டெக்ஸ்டைல்ஸ்', 'KANCHI SILKS • SAREES • WEDDING', '#831843', '#fde047'),
+      menswear: getSignTexture('சென்னை ஃபேஷன் & டெனிம்', 'MENSWEAR • SHIRTS • JEANS • KURTA', '#1e293b', '#38bdf8'),
+      tailorDress: getSignTexture('நம்ம டெய்லர் & ரெடிமேட்ஸ்', 'VESHTI • UNIFORMS • READYMADE', '#7c2d12', '#fef08a'),
       awningRed: getAwningTexture('#dc2626', '#fef08a'),
       awningGreen: getAwningTexture('#16a34a', '#ffffff'),
       awningPink: getAwningTexture('#db2777', '#fef9c3'),
@@ -238,6 +241,115 @@ export function ChennaiCityStores() {
           <boxGeometry args={[4.2, 0.95, 0.85]} />
           <meshStandardMaterial color="#fef08a" emissive="#f59e0b" emissiveIntensity={0.3} transparent opacity={0.75} />
         </mesh>
+      </group>
+
+      {/* 8. Kanchi Silks & Sarees Showroom (362, 0, -242 — T. Nagar Textile District) */}
+      <group position={[362, 0, -242]}>
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[0, 4.2, 0]} castShadow receiveShadow>
+            <boxGeometry args={[16, 8.4, 10]} />
+            <meshStandardMaterial color="#831843" roughness={0.65} />
+          </mesh>
+        </RigidBody>
+        {/* Gold Ornamental Band & Signboard */}
+        <mesh position={[0, 4.4, 5.05]}>
+          <boxGeometry args={[16.2, 0.4, 0.15]} />
+          <meshStandardMaterial color="#facc15" metalness={0.6} roughness={0.3} />
+        </mesh>
+        <mesh position={[0, 6.8, 5.15]}>
+          <boxGeometry args={[14.5, 2.1, 0.28]} />
+          <meshStandardMaterial map={signs.silkSaree} />
+        </mesh>
+        {/* Glass Display Window with Draped Silk Saree Mannequins */}
+        <mesh position={[0, 2.0, 5.05]}>
+          <planeGeometry args={[13.5, 3.2]} />
+          <meshStandardMaterial color="#fef3c7" transparent opacity={0.32} metalness={0.5} />
+        </mesh>
+        {[-4.2, -1.4, 1.4, 4.2].map((mx, mi) => (
+          <group key={`saree_${mi}`} position={[mx, 0.4, 4.5]}>
+            <mesh position={[0, 0.8, 0]} castShadow>
+              <cylinderGeometry args={[0.18, 0.34, 1.4, 10]} />
+              <meshStandardMaterial color={['#dc2626', '#1d4ed8', '#15803d', '#db2777'][mi]} roughness={0.45} />
+            </mesh>
+            <mesh position={[0, 1.65, 0]}>
+              <sphereGeometry args={[0.14, 10, 10]} />
+              <meshStandardMaterial color="#fde047" metalness={0.4} />
+            </mesh>
+          </group>
+        ))}
+        <pointLight position={[0, 3.4, 4.8]} color="#fde047" intensity={8} distance={14} />
+        <group position={[-2.2, 0, 6.2]} rotation={[0, Math.PI, 0]}>
+          <AnimatedHumanNpc variant="michelle" anim="idle" seed={65} />
+        </group>
+        <group position={[2.2, 0, 6.1]} rotation={[0, Math.PI, 0]}>
+          <AnimatedHumanNpc anim="walk" tintColor="#facc15" prop="shopping_bag" seed={66} />
+        </group>
+      </group>
+
+      {/* 9. Chennai Menswear & Fashion Boutique (20, 0, -52) */}
+      <group position={[20, 0, -52]} rotation={[0, -Math.PI / 2, 0]}>
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[0, 2.2, 0]} castShadow receiveShadow>
+            <boxGeometry args={[8.5, 4.4, 6]} />
+            <meshStandardMaterial color="#1e293b" roughness={0.55} />
+          </mesh>
+        </RigidBody>
+        <mesh position={[0, 4.6, 3.05]}>
+          <boxGeometry args={[8.2, 1.35, 0.22]} />
+          <meshStandardMaterial map={signs.menswear} />
+        </mesh>
+        <mesh position={[0, 1.9, 3.03]}>
+          <planeGeometry args={[6.8, 2.8]} />
+          <meshStandardMaterial color="#bae6fd" transparent opacity={0.35} metalness={0.55} />
+        </mesh>
+        {/* Display Mannequins + Hanging Shirt Rack */}
+        {[-2.0, 2.0].map((mx, mi) => (
+          <group key={`man_${mi}`} position={[mx, 0.3, 2.5]}>
+            <mesh position={[0, 0.85, 0]}>
+              <capsuleGeometry args={[0.17, 0.5, 4, 8]} />
+              <meshStandardMaterial color={mi === 0 ? '#38bdf8' : '#f97316'} roughness={0.6} />
+            </mesh>
+            <mesh position={[0, 1.42, 0]}>
+              <sphereGeometry args={[0.13, 8, 8]} />
+              <meshStandardMaterial color="#e2e8f0" />
+            </mesh>
+          </group>
+        ))}
+        <group position={[0, 0, 4.1]} rotation={[0, Math.PI, 0]}>
+          <AnimatedHumanNpc anim="idle" tintColor="#38bdf8" prop="shopping_bag" seed={67} />
+        </group>
+      </group>
+
+      {/* 10. Namma Tailors & Readymade Dress Shop (-82, 0, 118) */}
+      <group position={[-82, 0, 118]} rotation={[0, Math.PI, 0]}>
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[0, 1.7, 0]} castShadow receiveShadow>
+            <boxGeometry args={[6.0, 3.4, 4.4]} />
+            <meshStandardMaterial color="#fef3c7" roughness={0.85} />
+          </mesh>
+        </RigidBody>
+        <mesh position={[0, 3.6, 2.25]}>
+          <boxGeometry args={[5.8, 1.15, 0.2]} />
+          <meshStandardMaterial map={signs.tailorDress} />
+        </mesh>
+        <mesh position={[0, 2.55, 2.85]} rotation={[-0.35, 0, 0]} castShadow>
+          <boxGeometry args={[5.9, 0.1, 1.6]} />
+          <meshStandardMaterial map={signs.awningRed} />
+        </mesh>
+        {/* Outdoor Hanging Shirt & Dress Rack */}
+        <mesh position={[-1.4, 1.65, 2.55]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.03, 0.03, 2.6, 8]} />
+          <meshStandardMaterial color="#94a3b8" metalness={0.7} />
+        </mesh>
+        {[-2.2, -1.7, -1.2, -0.7].map((hx, hi) => (
+          <mesh key={`hanger_${hi}`} position={[hx, 1.25, 2.55]} castShadow>
+            <boxGeometry args={[0.36, 0.65, 0.12]} />
+            <meshStandardMaterial color={['#f8fafc', '#38bdf8', '#facc15', '#ec4899'][hi]} roughness={0.75} />
+          </mesh>
+        ))}
+        <group position={[1.4, 0, 2.9]} rotation={[0, Math.PI, 0]}>
+          <AnimatedHumanNpc anim="agree" tintColor="#f8fafc" prop="shopping_bag" seed={68} />
+        </group>
       </group>
     </group>
   );
