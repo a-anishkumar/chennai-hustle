@@ -244,20 +244,20 @@ export function PlayerController() {
           state.currentVehicle === 'foot'
             ? 14
             : state.currentVehicle === 'cab'
-            ? 5.5
-            : state.currentVehicle === 'boat'
-            ? 4.2
-            : 9.5;
+              ? 5.5
+              : state.currentVehicle === 'boat'
+                ? 4.2
+                : 9.5;
         meshGroupRef.current.rotation.y += diff * Math.min(1, dt * turnRate);
 
         const leanFactor =
           state.currentVehicle === 'bike'
             ? 0.35
             : state.currentVehicle === 'cycle'
-            ? 0.25
-            : state.currentVehicle === 'auto'
-            ? -0.1
-            : 0;
+              ? 0.25
+              : state.currentVehicle === 'auto'
+                ? -0.1
+                : 0;
         meshGroupRef.current.rotation.z = THREE.MathUtils.lerp(
           meshGroupRef.current.rotation.z,
           THREE.MathUtils.clamp(diff * leanFactor, -0.24, 0.24),
