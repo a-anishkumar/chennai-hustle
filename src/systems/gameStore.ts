@@ -84,6 +84,7 @@ export interface GameState {
 
   // Jobs, Wallet & Phone
   activeJob: ActiveJob | null;
+  waypoint: { x: number; z: number; label: string } | null;
   ratings: { bikeTaxi: number; foodDelivery: number; completedCount: number };
   transactions: Transaction[];
   messages: PhoneMessage[];
@@ -102,6 +103,7 @@ export interface GameState {
   setShowEndingModal: (open: boolean) => void;
   setShowFullMap: (open: boolean) => void;
   toggleFullMap: () => void;
+  setWaypoint: (wp: { x: number; z: number; label: string } | null) => void;
   setShowSettings: (open: boolean) => void;
   toggleAccessibility: (key: 'subtitles' | 'reducedMotion' | 'colorBlind' | 'forceTouchControls') => void;
   startFloodReliefMission: () => void;
@@ -223,6 +225,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   nearestLandmark: 'Nethaji Nagar TNHB Colony',
 
   activeJob: null,
+  waypoint: null,
   ratings: { bikeTaxi: 4.8, foodDelivery: 4.9, completedCount: 0 },
   transactions: [],
   messages: INITIAL_MESSAGES,
@@ -332,6 +335,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   setShowEndingModal: (open) => set({ showEndingModal: open }),
   setShowFullMap: (open) => set({ showFullMap: open }),
   toggleFullMap: () => set((s) => ({ showFullMap: !s.showFullMap })),
+  setWaypoint: (wp) => set({ waypoint: wp }),
   setShowSettings: (open) => set({ showSettings: open }),
   toggleAccessibility: (key) => set((s) => ({ [key]: !s[key] })),
 

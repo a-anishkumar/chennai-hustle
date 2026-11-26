@@ -9,6 +9,7 @@ export function Minimap() {
   const playerPos = useGameStore((s) => s.playerPos);
   const playerRotY = useGameStore((s) => s.playerRotY);
   const activeJob = useGameStore((s) => s.activeJob);
+  const waypoint = useGameStore((s) => s.waypoint);
   const toggleFullMap = useGameStore((s) => s.toggleFullMap);
 
   const [px, , pz] = playerPos;
@@ -25,6 +26,7 @@ export function Minimap() {
       : activeJob.dropoffPos
     : null;
   const targetMap = targetPos ? toMap(targetPos[0], targetPos[2]) : null;
+  const wpMap = waypoint ? toMap(waypoint.x, waypoint.z) : null;
 
   const [rx1, rz1] = toMap(-190, -120);
   const [rx2, rz2] = toMap(40, 140);
@@ -110,6 +112,29 @@ export function Minimap() {
               fill={activeJob?.stage === 'pickup' ? '#f59e0b' : '#22c55e'}
               stroke="#fff"
               strokeWidth={1.5}
+            />
+          </>
+        )}
+
+        {/* Custom Waypoint GPS Line */}
+        {wpMap && (
+          <>
+            <line
+              x1={MAP_SIZE / 2}
+              y1={MAP_SIZE / 2}
+              x2={wpMap[0]}
+              y2={wpMap[1]}
+              stroke="#22d3ee"
+              strokeWidth={2}
+              strokeDasharray="3 3"
+            />
+            <circle
+              cx={Math.max(6, Math.min(MAP_SIZE - 6, wpMap[0]))}
+              cy={Math.max(6, Math.min(MAP_SIZE - 6, wpMap[1]))}
+              r={4}
+              fill="#22d3ee"
+              stroke="#fff"
+              strokeWidth={1.2}
             />
           </>
         )}
