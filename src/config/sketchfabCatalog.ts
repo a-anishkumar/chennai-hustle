@@ -22,9 +22,38 @@ export interface SketchfabCatalogEntry {
   animations: number;
   localPath: string;
   defaultScale: number;
+  targetHeight?: number;
   defaultRotY?: number;
   yOffset?: number;
 }
+
+const TARGET_HEIGHTS: Record<string, number> = {
+  auto_rickshaw: 1.85,
+  mtc_bus: 3.1,
+  scooter: 1.15,
+  motorcycle: 1.2,
+  taxi_car: 1.55,
+  bicycle: 1.05,
+  delivery_truck: 2.5,
+  male_pedestrian: 1.75,
+  female_pedestrian: 1.68,
+  police_officer: 1.78,
+  construction_worker: 1.76,
+  indian_shop: 4.2,
+  commercial_shop: 4.8,
+  apartment_block: 14.0,
+  hindu_temple: 18.0,
+  coconut_palm: 9.0,
+  coconut_palm_lod: 8.5,
+  food_cart: 2.4,
+  tea_boiler: 0.75,
+  park_bench: 0.9,
+  street_lamp: 6.2,
+  traffic_signal: 5.2,
+  utility_pole: 6.4,
+  dustbin: 1.0,
+  billboard: 4.5,
+};
 
 /**
  * Verified downloadable CC-BY / CC0 models fetched via Sketchfab Data API v3.
@@ -444,7 +473,7 @@ export const SKETCHFAB_CATALOG: SketchfabCatalogEntry[] = [
 ];
 
 export const SKETCHFAB_BY_ID: Record<string, SketchfabCatalogEntry> = Object.fromEntries(
-  SKETCHFAB_CATALOG.map((e) => [e.id, e])
+  SKETCHFAB_CATALOG.map((e) => [e.id, { ...e, targetHeight: e.targetHeight ?? TARGET_HEIGHTS[e.id] }])
 );
 
 const manifestData = sketchfabManifest as {

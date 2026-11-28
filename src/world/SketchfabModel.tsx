@@ -36,6 +36,7 @@ function LoadedSketchfabMesh({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
   scale = 1,
+  targetHeight,
   animName,
   timeScale = 1,
   maxDist = 180,
@@ -44,6 +45,7 @@ function LoadedSketchfabMesh({
   position?: [number, number, number];
   rotation?: [number, number, number];
   scale?: number;
+  targetHeight?: number;
   animName?: string;
   timeScale?: number;
   maxDist?: number;
@@ -52,7 +54,7 @@ function LoadedSketchfabMesh({
   const groupRef = useRef<THREE.Group>(null);
   const worldVecRef = useRef(new THREE.Vector3());
 
-  const clone = useMemo(() => {
+  const { clone, normScale, centerOffset } = useMemo(() => {
     const cloned = SkeletonUtils.clone(scene);
     cloned.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
@@ -66,8 +68,19 @@ function LoadedSketchfabMesh({
         });
       }
     });
-    return cloned;
-  }, [scene]);
+
+    // Auto-normalize arbitrary artist export units (cm/mm/m) & ground min.y = 0
+    cloned.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(cloned);
+    const size = new THREE.Vector3();
+    const center = new THREE.Vector3();
+    box.getSize(size);
+    box.getCenter(center);
+
+    const s = targetHeight && size.y > 0.001 ? (targetHeight / size.y) * scale : scale;
+    const offset: [number, number, number] = [-center.x * s, -box.min.y * s, -center.z * s];
+    return { clone: cloned, normScale: s, centerOffset: offset };
+  }, [scene, scale, targetHeight]);
 
   const { actions, names } = useAnimations(animations, clone);
 
@@ -97,7 +110,7 @@ function LoadedSketchfabMesh({
 
   return (
     <group ref={groupRef} position={position} rotation={rotation}>
-      <primitive object={clone} scale={scale} />
+      <primitive object={clone} scale={normScale} position={centerOffset} />
     </group>
   );
 }
@@ -155,6 +168,7 @@ export function SketchfabSlot({
           position={finalPos}
           rotation={finalRot}
           scale={finalScale}
+          targetHeight={entry.targetHeight}
           animName={animName}
           timeScale={timeScale}
           maxDist={maxDist}
