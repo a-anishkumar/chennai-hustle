@@ -15,6 +15,7 @@ export function UrbanLandmarks() {
   const hsbSign = useMemo(() => getSignTexture('HOTEL SARAVANA BHAVAN', 'Ghee Roast • Filter Coffee', '#15803d', '#fef08a'), []);
   const buhariSign = useMemo(() => getSignTexture('BUHARI HOTEL', 'Mount Road • Chicken 65 & Biryani', '#991b1b', '#fde047'), []);
   const muruganSign = useMemo(() => getSignTexture('MURUGAN IDLI SHOP', 'Soft Idli • 4 Chutneys', '#ea580c', '#ffffff'), []);
+  const templeSign = useMemo(() => getSignTexture('கபாலீஸ்வரர் கோவில் • KAPALEESHWARAR', 'Mylapore • Arulmigu Temple & Tank', '#7c2d12', '#fde047'), []);
 
   return (
     <group name="Urban_Landmarks">
@@ -123,6 +124,15 @@ export function UrbanLandmarks() {
         <mesh position={[18, 1.2, 12]} castShadow>
           <boxGeometry args={[4.5, 2.4, 3.5]} />
           <meshStandardMaterial color="#ec4899" />
+        </mesh>
+        {/* Brass Kodimaram (Temple Flagstaff) & Tamil Signboard */}
+        <mesh position={[0, 6.0, 5.5]} castShadow>
+          <cylinderGeometry args={[0.16, 0.24, 12, 8]} />
+          <meshStandardMaterial color="#eab308" metalness={0.75} roughness={0.25} />
+        </mesh>
+        <mesh position={[0, 1.6, 15.6]}>
+          <boxGeometry args={[12.5, 1.8, 0.28]} />
+          <meshStandardMaterial map={templeSign} />
         </mesh>
       </group>
 

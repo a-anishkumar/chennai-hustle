@@ -10,7 +10,7 @@ export function FpsMonitor() {
   useEffect(() => {
     const cores = navigator.hardwareConcurrency || 4;
     const mem = (navigator as unknown as { deviceMemory?: number }).deviceMemory || 4;
-    const recommended = cores >= 12 && mem >= 16 ? 'high' : cores <= 2 || mem <= 2 ? 'low' : 'medium';
+    const recommended = cores >= 16 && mem >= 16 ? 'high' : cores <= 2 || mem <= 2 ? 'low' : 'medium';
     const s = useGameStore.getState();
     if (s.quality === 'medium' && recommended !== 'medium') {
       s.setQuality(recommended);

@@ -1,10 +1,32 @@
 import { useMemo, useRef, useState } from 'react';
 import { Crosshair, Maximize2, Minimize2, Navigation, RotateCcw, Search, X, ZoomIn, ZoomOut } from 'lucide-react';
 import worldConfig from '../config/world.json';
+import { gameToLatLon } from '../config/gis';
+import rawSegments from '../config/besant_nagar_road_segments.json';
 import { useGameStore } from '../systems/gameStore';
 
 const MAP_PX = 520;
 const HALF = worldConfig.worldSize / 2; // 2000
+
+const MAJOR_HW = new Set(['primary', 'primary_link', 'secondary', 'secondary_link', 'tertiary', 'tertiary_link', 'trunk']);
+
+// Precompute a single compact SVG path string for all Besant Nagar / Adyar OSM arterial segments
+const OSM_MAJOR_SVG_PATH = (() => {
+  const segs = rawSegments as Array<{ x: number; z: number; len: number; rot: number; hw: string }>;
+  const parts: string[] = [];
+  for (let i = 0; i < segs.length; i++) {
+    const s = segs[i];
+    if (!MAJOR_HW.has(s.hw)) continue;
+    const dx = Math.sin(s.rot) * (s.len * 0.5);
+    const dz = Math.cos(s.rot) * (s.len * 0.5);
+    const x1 = (((s.x - dx + HALF) / worldConfig.worldSize) * MAP_PX).toFixed(1);
+    const y1 = (((s.z - dz + HALF) / worldConfig.worldSize) * MAP_PX).toFixed(1);
+    const x2 = (((s.x + dx + HALF) / worldConfig.worldSize) * MAP_PX).toFixed(1);
+    const y2 = (((s.z + dz + HALF) / worldConfig.worldSize) * MAP_PX).toFixed(1);
+    parts.push(`M${x1} ${y1}L${x2} ${y2}`);
+  }
+  return parts.join('');
+})();
 
 const CATEGORIES = [
   { id: 'all', label: 'All' },
@@ -55,6 +77,7 @@ export function FullMapModal() {
   ];
 
   const [px, pz] = toPx(playerPos[0], playerPos[2]);
+  const [lat, lon] = gameToLatLon(playerPos[0], playerPos[2]);
   const [, canalY] = toPx(0, worldConfig.canalZ);
   const [coastX] = toPx(worldConfig.coastStartX, 0);
   const [, railY] = toPx(0, -196);
@@ -131,7 +154,7 @@ export function FullMapModal() {
           <div>
             <h3 style={{ fontSize: 16, fontWeight: 800, color: '#fde047' }}>Chennai Interactive City Map (4 km × 4 km)</h3>
             <div style={{ fontSize: 11, color: '#94a3b8' }}>
-              Drag to pan • Scroll to zoom • Click any place or empty spot to set GPS Waypoint
+              GPS: {lat.toFixed(4)}°N, {lon.toFixed(4)}°E • Drag to pan • Scroll to zoom • Streets: © OpenStreetMap contributors (ODbL)
               {fastTravelUnlocked ? ' • Fast-Travel Unlocked!' : ''}
             </div>
           </div>
@@ -368,6 +391,9 @@ export function FullMapModal() {
             {/* Railway Line */}
             <line x1={0} y1={railY} x2={coastX} y2={railY} stroke="#94a3b8" strokeWidth={2 / zoom} strokeDasharray="5 3" />
 
+            {/* Real OpenStreetMap Besant Nagar / Adyar Road Network Overlay */}
+            <path d={OSM_MAJOR_SVG_PATH} fill="none" stroke="#334155" strokeWidth={1.6 / zoom} strokeLinecap="round" opacity={0.85} />
+
             {/* Major Chennai Roads & 4 Canal Bridges */}
             {[
               [-190, -120, -190, 260],
@@ -378,7 +404,9 @@ export function FullMapModal() {
               [480, -1350, 950, -1350],
               [-850, 260, -190, 260],
               [40, 520, 1180, 520],
-              [1420, -120, 1420, 360],
+              [1420, -120, 1420, 620],
+              [1180, 520, 1180, 620],
+              [1180, 620, 1420, 620],
               [920, -120, 920, 200],
             ].map(([x1, z1, x2, z2], ri) => {
               const [mx1, mz1] = toPx(x1, z1);

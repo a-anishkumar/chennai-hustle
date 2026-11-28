@@ -93,6 +93,8 @@ export function TrafficSystem() {
   const r15Ref = useRef<THREE.Group>(null);
   const ktmRef = useRef<THREE.Group>(null);
   const dukeRef = useRef<THREE.Group>(null);
+  const coastBusRef = useRef<THREE.Group>(null);
+  const headlightMatRef = useRef<THREE.MeshStandardMaterial>(null);
   const specialProgRef = useRef({
     police: 320,
     ambulance: 610,
@@ -102,6 +104,7 @@ export function TrafficSystem() {
     r15: 90,
     ktm: 260,
     duke: 540,
+    coast: 0,
   });
 
   const [nsGreen, setNsGreen] = useState(true);
@@ -233,7 +236,24 @@ export function TrafficSystem() {
     placeSpecial(ktmRef, specialProgRef.current.ktm, -1);
     placeSpecial(dukeRef, specialProgRef.current.duke, 1);
 
+    // Coastal MTC Shuttle Bus patrolling Marina <-> Lighthouse <-> Elliot's Beach (x = 1420, z: 120..590)
+    specialProgRef.current.coast += dt * 0.055;
+    if (coastBusRef.current) {
+      const cPhase = specialProgRef.current.coast % 2;
+      const goingSouth = cPhase < 1;
+      const tPos = goingSouth ? cPhase : 2 - cPhase;
+      const cz = 120 + tPos * 470;
+      const cx = goingSouth ? 1417.2 : 1422.8;
+      coastBusRef.current.position.set(cx, 0, cz);
+      coastBusRef.current.rotation.y = goingSouth ? 0 : Math.PI;
+    }
+
     const h = state.timeOfDay;
+    if (headlightMatRef.current) {
+      const isNight = h >= 18.0 || h < 6.2;
+      const isRain = state.weather === 'monsoon' || state.weather === 'flood';
+      headlightMatRef.current.emissiveIntensity = isNight ? 2.6 : isRain ? 1.1 : 0.25;
+    }
     const rushMult = (h >= 8.0 && h <= 10.5) || (h >= 17.0 && h <= 20.5) ? 0.78 : 1.0;
 
     let autoI = 0;
@@ -411,7 +431,7 @@ export function TrafficSystem() {
         <meshStandardMaterial color="#1e293b" roughness={0.8} />
       </instancedMesh>
       <instancedMesh ref={autoLightsRef} args={[geos.auto.lights, undefined, 10]} frustumCulled={false}>
-        <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.5} />
+        <meshStandardMaterial ref={headlightMatRef} color="#fef08a" emissive="#fde047" emissiveIntensity={0.4} />
       </instancedMesh>
 
       {/* 4 MTC Buses */}
@@ -422,7 +442,7 @@ export function TrafficSystem() {
         <meshStandardMaterial color="#0f172a" roughness={0.6} />
       </instancedMesh>
       <instancedMesh ref={busLightsRef} args={[geos.bus.lights, undefined, 4]} frustumCulled={false}>
-        <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.5} />
+        <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.2} />
       </instancedMesh>
 
       {/* 8 Scooters/Bikes */}
@@ -554,27 +574,18 @@ export function TrafficSystem() {
         </mesh>
       </group>
 
-      {/* 4 Intersection Traffic Signals */}
-      {SIGNAL_CORNERS.map(([sx, sz], idx) => (
-        <group key={idx} position={[sx, 0, sz]}>
-          <mesh position={[0, 2.5, 0]} castShadow>
-            <cylinderGeometry args={[0.1, 0.12, 5, 6]} />
-            <meshStandardMaterial color="#334155" />
-          </mesh>
-          <mesh position={[0, 4.9, 0]}>
-            <boxGeometry args={[0.45, 1.1, 0.45]} />
-            <meshStandardMaterial color="#0f172a" />
-          </mesh>
-          <mesh position={[0, 5.15, 0.25]}>
-            <sphereGeometry args={[0.14, 8, 8]} />
-            <meshBasicMaterial color={nsGreen ? '#22c55e' : '#ef4444'} />
-          </mesh>
-          <mesh position={[0.25, 4.65, 0]}>
-            <sphereGeometry args={[0.14, 8, 8]} />
-            <meshBasicMaterial color={nsGreen ? '#ef4444' : '#22c55e'} />
-          </mesh>
-        </group>
-      ))}
+      {/* Coastal Route MTC Beach Shuttle (Marina <-> Lighthouse <-> Elliot's Beach) */}
+      <group ref={coastBusRef}>
+        <mesh geometry={geos.bus.body} castShadow>
+          <meshStandardMaterial color="#2563eb" roughness={0.5} />
+        </mesh>
+        <mesh geometry={geos.bus.trim}>
+          <meshStandardMaterial color="#0f172a" roughness={0.6} />
+        </mesh>
+        <mesh geometry={geos.bus.lights}>
+          <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.4} />
+        </mesh>
+      </group>
 
       {honkBubble && (
         <Html position={[honkBubble.x, 3.2, honkBubble.z]} center zIndexRange={[1, 8]}>

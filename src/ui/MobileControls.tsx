@@ -14,10 +14,10 @@ export function MobileControls() {
   const [boosting, setBoosting] = useState(false);
   const centerRef = useRef<{ x: number; y: number } | null>(null);
 
-  const isTouchOrNarrow =
+  const isCoarsePointer =
     typeof window !== 'undefined' &&
-    ('ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth < 820);
-  if (!isStarted || (!isTouchOrNarrow && !forceTouchControls)) return null;
+    (Boolean(window.matchMedia?.('(pointer: coarse)').matches) || window.innerWidth < 820);
+  if (!isStarted || (!isCoarsePointer && !forceTouchControls)) return null;
 
   const MAX_R = 44;
 

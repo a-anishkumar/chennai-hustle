@@ -34,6 +34,8 @@
     { "id": "ripon", "name": "Ripon Building (Chennai Corp)", "x": -245, "z": -225, "type": "civic" },
     { "id": "concert", "name": "Sai Abhyankar Live & DJ Disco", "x": 160, "z": 20, "type": "entertainment" },
     { "id": "chepauk", "name": "Chepauk Cricket Stadium (CSK)", "x": 920, "z": 120, "type": "entertainment" },
-    { "id": "petrol", "name": "Chennai Petrol Bunk & EV Station", "x": -175, "z": -90, "type": "transit" }
+    { "id": "petrol", "name": "Chennai Petrol Bunk & EV Station", "x": -175, "z": -90, "type": "transit" },
+    { "id": "elliotsBeach", "name": "Elliot's Beach • Karl Schmidt Memorial", "x": 1445, "z": 520, "type": "beach" },
+    { "id": "besantChurch", "name": "Besant Nagar • Velankanni Church", "x": 315, "z": -25, "type": "civic" }
   ]
 }

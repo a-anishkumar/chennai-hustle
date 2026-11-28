@@ -1,9 +1,25 @@
 import { Maximize2 } from 'lucide-react';
 import { useGameStore } from '../systems/gameStore';
 import worldConfig from '../config/world.json';
+import rawSegments from '../config/besant_nagar_road_segments.json';
 
 const MAP_SIZE = 136;
 const VIEW_RANGE = 260; // meters half-width
+const SCALE = MAP_SIZE / 2 / VIEW_RANGE;
+
+const MINIMAP_MAJOR_HW = new Set(['primary', 'primary_link', 'secondary', 'secondary_link', 'tertiary', 'tertiary_link']);
+const MINIMAP_OSM_WORLD_PATH = (() => {
+  const segs = rawSegments as Array<{ x: number; z: number; len: number; rot: number; hw: string }>;
+  const parts: string[] = [];
+  for (let i = 0; i < segs.length; i++) {
+    const s = segs[i];
+    if (!MINIMAP_MAJOR_HW.has(s.hw)) continue;
+    const dx = Math.sin(s.rot) * (s.len * 0.5);
+    const dz = Math.cos(s.rot) * (s.len * 0.5);
+    parts.push(`M${(s.x - dx).toFixed(1)} ${(s.z - dz).toFixed(1)}L${(s.x + dx).toFixed(1)} ${(s.z + dz).toFixed(1)}`);
+  }
+  return parts.join('');
+})();
 
 export function Minimap() {
   const playerPos = useGameStore((s) => s.playerPos);
@@ -70,6 +86,11 @@ export function Minimap() {
         <Maximize2 size={12} />
       </button>
       <svg width={MAP_SIZE} height={MAP_SIZE} style={{ background: '#0f172a', borderRadius: 12, display: 'block' }}>
+        {/* OSM Local Streets */}
+        <g transform={`translate(${MAP_SIZE / 2 - px * SCALE}, ${MAP_SIZE / 2 - pz * SCALE}) scale(${SCALE})`}>
+          <path d={MINIMAP_OSM_WORLD_PATH} fill="none" stroke="#334155" strokeWidth={10} strokeLinecap="round" />
+        </g>
+
         {/* Canal */}
         <rect x={0} y={canalY - 8} width={MAP_SIZE} height={16} fill="#0e7490" opacity={0.7} />
 

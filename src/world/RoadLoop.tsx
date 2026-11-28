@@ -212,10 +212,12 @@ export function RoadLoop() {
       {/* North Arterial: Mall / Loop -> North Harbour */}
       <RoadSegment x={480} z={-740} width={12} length={1240} wet={wet} />
       <RoadSegment x={715} z={-1350} width={12} length={480} rotY={Math.PI / 2} wet={wet} />
-      {/* South Arterial: Canal Bridge -> Temple, Amusement Park & Fan House */}
+      {/* South Arterial: Canal Bridge -> Temple, Amusement Park, Elliot's Beach & Fan House */}
       <RoadSegment x={40} z={530} width={12} length={680} wet={wet} />
       <RoadSegment x={610} z={520} width={12} length={1140} rotY={Math.PI / 2} wet={wet} />
       <RoadSegment x={1180} z={570} width={12} length={120} wet={wet} />
+      <RoadSegment x={1300} z={620} width={12} length={260} rotY={Math.PI / 2} wet={wet} />
+      <RoadSegment x={1420} z={495} width={12} length={270} wet={wet} />
       <RoadSegment x={210} z={860} width={12} length={350} rotY={Math.PI / 2} wet={wet} />
 
       {/* Potholes */}

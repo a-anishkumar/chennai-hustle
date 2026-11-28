@@ -5,10 +5,10 @@ import { useGameStore } from './gameStore';
 import { audioManager } from '../audio/AudioManager';
 
 const SKY_VERT = `
-  varying vec3 vWorldPos;
+  varying vec3 vDir;
   void main() {
+    vDir = normalize(position);
     vec4 wp = modelMatrix * vec4(position, 1.0);
-    vWorldPos = wp.xyz;
     gl_Position = projectionMatrix * viewMatrix * wp;
   }
 `;
@@ -16,25 +16,35 @@ const SKY_VERT = `
 const SKY_FRAG = `
   uniform vec3 uTopColor;
   uniform vec3 uHorizonColor;
-  varying vec3 vWorldPos;
+  uniform vec3 uSunDir;
+  uniform vec3 uSunGlowColor;
+  uniform float uSunGlowStrength;
+  varying vec3 vDir;
   void main() {
-    float h = clamp(normalize(vWorldPos).y, 0.0, 1.0);
-    vec3 col = mix(uHorizonColor, uTopColor, pow(h, 0.55));
-    gl_FragColor = vec4(col, 1.0);
+    float h = clamp(vDir.y, 0.0, 1.0);
+    // Realistic coastal atmospheric Rayleigh scatter curve + soft humid horizon band
+    vec3 sky = mix(uHorizonColor, uTopColor, pow(h, 0.52));
+    float sunAlign = max(dot(normalize(vDir), normalize(uSunDir)), 0.0);
+    float halo = pow(sunAlign, 12.0) * 0.45 + pow(sunAlign, 64.0) * 0.65;
+    sky += uSunGlowColor * halo * uSunGlowStrength;
+    gl_FragColor = vec4(sky, 1.0);
   }
 `;
 
-const SKY_NIGHT = new THREE.Color('#091124');
-const SKY_DAWN = new THREE.Color('#f97316');
-const SKY_DAY = new THREE.Color('#60a5fa');
-const SKY_DUSK = new THREE.Color('#e11d48');
+const SKY_NIGHT = new THREE.Color('#070d1a');
+const SKY_DAWN = new THREE.Color('#f59e0b');
+const SKY_DAY_TOP = new THREE.Color('#1d6fd6');
+const SKY_DAY_HORIZON = new THREE.Color('#cbe7ff');
+const SKY_DUSK = new THREE.Color('#e07a38');
+const SKY_DUSK_TOP = new THREE.Color('#283366');
 const SKY_MONSOON = new THREE.Color('#334155');
 const SKY_HUMID = new THREE.Color('#94a3b8');
 
-const SUN_DAY = new THREE.Color('#fff7ed');
+const SUN_DAY = new THREE.Color('#fffbeb');
 const SUN_GOLDEN = new THREE.Color('#fb923c');
 const SUN_NIGHT = new THREE.Color('#93c5fd');
 const _skyCol = new THREE.Color();
+const _topCol = new THREE.Color();
 
 export function DayNightLighting() {
   const dirLightRef = useRef<THREE.DirectionalLight>(null);
@@ -46,8 +56,11 @@ export function DayNightLighting() {
   const skyMatRef = useRef<THREE.ShaderMaterial>(null);
   const skyUniforms = useMemo(
     () => ({
-      uTopColor: { value: new THREE.Color('#2563eb') },
-      uHorizonColor: { value: new THREE.Color('#93c5fd') },
+      uTopColor: { value: new THREE.Color('#1d6fd6') },
+      uHorizonColor: { value: new THREE.Color('#cbe7ff') },
+      uSunDir: { value: new THREE.Vector3(0.4, 0.6, -0.5).normalize() },
+      uSunGlowColor: { value: new THREE.Color('#fef08a') },
+      uSunGlowStrength: { value: 0.7 },
     }),
     []
   );
@@ -66,27 +79,36 @@ export function DayNightLighting() {
     const sunX = Math.cos(sunAngle);
 
     const skyCol = _skyCol;
+    const topCol = _topCol;
     if (h >= 5.5 && h < 7.5) {
       const t = (h - 5.5) / 2;
       skyCol.lerpColors(SKY_NIGHT, SKY_DAWN, Math.min(1, t * 1.4));
-      if (t > 0.5) skyCol.lerp(SKY_DAY, (t - 0.5) * 2);
+      topCol.lerpColors(SKY_NIGHT, SKY_DAY_TOP, Math.max(0, (t - 0.35) * 1.5));
+      if (t > 0.5) skyCol.lerp(SKY_DAY_HORIZON, (t - 0.5) * 2);
     } else if (h >= 7.5 && h < 16.5) {
-      skyCol.copy(SKY_DAY);
+      skyCol.copy(SKY_DAY_HORIZON);
+      topCol.copy(SKY_DAY_TOP);
     } else if (h >= 16.5 && h < 19.0) {
       const t = (h - 16.5) / 2.5;
       if (t < 0.5) {
-        skyCol.lerpColors(SKY_DAY, SKY_DUSK, t * 2);
+        skyCol.lerpColors(SKY_DAY_HORIZON, SKY_DUSK, t * 2);
+        topCol.lerpColors(SKY_DAY_TOP, SKY_DUSK_TOP, t * 2);
       } else {
         skyCol.lerpColors(SKY_DUSK, SKY_NIGHT, (t - 0.5) * 2);
+        topCol.lerpColors(SKY_DUSK_TOP, SKY_NIGHT, (t - 0.5) * 2);
       }
     } else {
       skyCol.copy(SKY_NIGHT);
+      topCol.copy(SKY_NIGHT);
     }
 
     if (state.weather === 'monsoon' || state.weather === 'flood') {
-      skyCol.lerp(SKY_MONSOON, state.weather === 'flood' ? 0.78 : 0.55);
+      const wFactor = state.weather === 'flood' ? 0.8 : 0.58;
+      skyCol.lerp(SKY_MONSOON, wFactor);
+      topCol.lerp(SKY_MONSOON, wFactor);
     } else if (state.weather === 'humid') {
-      skyCol.lerp(SKY_HUMID, 0.28);
+      skyCol.lerp(SKY_HUMID, 0.25);
+      topCol.lerp(SKY_HUMID, 0.2);
     }
 
     if (bgRef.current) {
@@ -94,18 +116,23 @@ export function DayNightLighting() {
     }
     if (skyMatRef.current) {
       skyMatRef.current.uniforms.uHorizonColor.value.copy(skyCol);
-      skyMatRef.current.uniforms.uTopColor.value.copy(skyCol).multiplyScalar(0.58);
+      skyMatRef.current.uniforms.uTopColor.value.copy(topCol);
+      skyMatRef.current.uniforms.uSunDir.value.set(sunX, Math.max(-0.2, sunY), -0.45).normalize();
+      const isRaining = state.weather === 'monsoon' || state.weather === 'flood';
+      const golden = 1 - THREE.MathUtils.clamp(Math.abs(sunY) * 2.4, 0, 1);
+      skyMatRef.current.uniforms.uSunGlowColor.value.lerpColors(SUN_DAY, SUN_GOLDEN, golden);
+      skyMatRef.current.uniforms.uSunGlowStrength.value = isRaining ? 0.12 : sunY > -0.1 ? 0.75 : 0.15;
     }
     if (fogRef.current) {
       fogRef.current.color.copy(skyCol);
       fogRef.current.density =
         state.weather === 'flood'
-          ? 0.0055
+          ? 0.0046
           : state.weather === 'monsoon'
-          ? 0.0042
+          ? 0.0036
           : state.weather === 'humid'
-          ? 0.0028
-          : 0.0022;
+          ? 0.0021
+          : 0.0017;
     }
 
     const [px, , pz] = state.playerPos;

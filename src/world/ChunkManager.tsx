@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import worldConfig from '../config/world.json';
 import { useGameStore } from '../systems/gameStore';
 import { CityChunk } from './CityChunk';
+import { OceanWater } from './water/OceanWater';
 
 export function ChunkManager() {
   const [pcx, pcz] = useGameStore((s) => s.currentChunk);
@@ -34,11 +35,8 @@ export function ChunkManager() {
         />
       ))}
 
-      {/* Bay of Bengal Ocean Plane (east coast) */}
-      <mesh position={[1780, -0.6, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[640, 4000]} />
-        <meshStandardMaterial color="#0284c7" roughness={0.2} metalness={0.4} transparent opacity={0.9} />
-      </mesh>
+      {/* Animated Bay of Bengal Ocean & Breaking Beach Surf (east coast) */}
+      <OceanWater />
     </group>
   );
 }

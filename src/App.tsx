@@ -27,6 +27,8 @@ import { ChepaukStadium } from './world/landmarks/ChepaukStadium';
 import { ChennaiStreetDetails } from './world/landmarks/ChennaiStreetDetails';
 import { ChennaiCityStores } from './world/landmarks/ChennaiCityStores';
 import { TamilNaduEnvironment } from './world/landmarks/TamilNaduEnvironment';
+import { BesantNagarRoads } from './world/BesantNagarRoads';
+import { BesantNagarNeighbourhood } from './world/landmarks/BesantNagarNeighbourhood';
 import { PosterBoardWorld } from './world/PosterBoardWorld';
 import { WorldInteractables } from './world/WorldInteractables';
 import { RoadLoop } from './world/RoadLoop';
@@ -94,6 +96,8 @@ export function App() {
             <ChennaiStreetDetails />
             <ChennaiCityStores />
             <TamilNaduEnvironment />
+            <BesantNagarRoads />
+            <BesantNagarNeighbourhood />
             <PosterBoardWorld />
             <WorldInteractables />
             <MultiplayerSync />

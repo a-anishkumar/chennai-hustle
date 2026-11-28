@@ -261,6 +261,13 @@ export function CityChunk({ cx, cz, isActiveDetail }: CityChunkProps) {
   const palmCrownGeo = useMemo(() => createPalmCrownGeo(), []);
   const poleGeo = useMemo(() => createUtilityPoleGeo(), []);
 
+  useEffect(() => {
+    return () => {
+      terrainGeo.dispose();
+      terrainNorm.dispose();
+    };
+  }, [terrainGeo, terrainNorm]);
+
   // Split buildings by type for separate instanced meshes
   const { resBldgs, brickBldgs, commBldgs } = useMemo(() => {
     const resBldgs: typeof buildings = [];

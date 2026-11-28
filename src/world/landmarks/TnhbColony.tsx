@@ -187,6 +187,30 @@ export function TnhbColony() {
           }
         />
       </group>
+
+      {/* Courtyard Northern Compound Curb & Gateway Pillars (clean edge against Besant Nagar streets) */}
+      <group position={[-120, 0, 26]}>
+        <mesh position={[-23.5, 0.55, 0]} castShadow receiveShadow>
+          <boxGeometry args={[28, 1.1, 0.35]} />
+          <meshStandardMaterial color="#e2e8f0" roughness={0.88} />
+        </mesh>
+        <mesh position={[23.5, 0.55, 0]} castShadow receiveShadow>
+          <boxGeometry args={[28, 1.1, 0.35]} />
+          <meshStandardMaterial color="#e2e8f0" roughness={0.88} />
+        </mesh>
+        {[-9.6, 9.6].map((gx, gi) => (
+          <group key={gi} position={[gx, 0, 0]}>
+            <mesh position={[0, 1.3, 0]} castShadow>
+              <boxGeometry args={[0.85, 2.6, 0.85]} />
+              <meshStandardMaterial color="#f8fafc" roughness={0.78} />
+            </mesh>
+            <mesh position={[0, 2.7, 0]}>
+              <sphereGeometry args={[0.22, 8, 8]} />
+              <meshStandardMaterial color="#fef08a" emissive={night ? '#fbbf24' : '#000000'} emissiveIntensity={night ? 1.8 : 0} />
+            </mesh>
+          </group>
+        ))}
+      </group>
     </group>
   );
 }

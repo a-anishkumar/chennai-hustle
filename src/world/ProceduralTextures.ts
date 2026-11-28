@@ -45,25 +45,22 @@ export function getAsphaltTexture(): THREE.CanvasTexture {
     ctx.stroke();
   }
 
-  // ── Pedestrian Crosswalk stripes at both ends ──
-  ctx.fillStyle = 'rgba(248,250,252,0.75)';
-  for (let s = 0; s < 8; s++) {
-    const sx = s * 64;
-    ctx.fillRect(sx, 0, 32, 48);     // top crosswalk
-    ctx.fillRect(sx, 464, 32, 48);   // bottom crosswalk
+  // ── Centre broken white/yellow highway dash + clean tarmac shoulders ──
+  // Note: Intersection crosswalks are placed explicitly at junctions by RoadLoop.tsx,
+  // keeping road tile textures crisp and free of repeating stripes along short segments.
+  ctx.fillStyle = '#facc15';
+  for (let d = 0; d < 4; d++) {
+    const dy = 20 + d * 128;
+    ctx.fillRect(247, dy, 6, 84);
+    ctx.fillRect(259, dy, 6, 84);
   }
 
-  // ── Centre double yellow divider (solid, not dashed) ──
-  ctx.fillStyle = '#facc15';
-  ctx.fillRect(248, 52, 8, 420);
-  ctx.fillRect(258, 52, 8, 420);
-
-  // ── White lane dividers (dashed) ──
-  ctx.fillStyle = 'rgba(248,250,252,0.60)';
+  // Subtle dual-lane dashed edge markings
+  ctx.fillStyle = 'rgba(248,250,252,0.52)';
   for (let d = 0; d < 6; d++) {
-    const dy = 60 + d * 68;
-    ctx.fillRect(124, dy, 6, 44);
-    ctx.fillRect(380, dy, 6, 44);
+    const dy = 16 + d * 86;
+    ctx.fillRect(124, dy, 5, 44);
+    ctx.fillRect(382, dy, 5, 44);
   }
 
   // Shoulder solid white lines
