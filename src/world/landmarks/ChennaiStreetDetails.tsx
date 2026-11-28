@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { AnimatedHumanNpc } from '../AnimatedHumanNpc';
+import { SketchfabSlot } from '../SketchfabModel';
 
 function createSignTexture(title: string, subtitle: string, bg: string, fg: string) {
   const canvas = document.createElement('canvas');
@@ -114,17 +115,24 @@ function SittingBench({
           <meshStandardMaterial color="#b45309" roughness={0.8} />
         </mesh>
       </RigidBody>
-      {/* Backrest & Concrete Legs */}
-      <mesh position={[0, 0.85, -0.26]} rotation={[-0.12, 0, 0]} castShadow>
-        <boxGeometry args={[2.2, 0.48, 0.08]} />
-        <meshStandardMaterial color="#92400e" roughness={0.8} />
-      </mesh>
-      {[-0.85, 0.85].map((lx, idx) => (
-        <mesh key={idx} position={[lx, 0.22, 0]} castShadow>
-          <boxGeometry args={[0.16, 0.44, 0.56]} />
-          <meshStandardMaterial color="#94a3b8" roughness={0.9} />
-        </mesh>
-      ))}
+      <SketchfabSlot
+        id="park_bench"
+        maxDist={140}
+        fallback={
+          <>
+            <mesh position={[0, 0.85, -0.26]} rotation={[-0.12, 0, 0]} castShadow>
+              <boxGeometry args={[2.2, 0.48, 0.08]} />
+              <meshStandardMaterial color="#92400e" roughness={0.8} />
+            </mesh>
+            {[-0.85, 0.85].map((lx, idx) => (
+              <mesh key={idx} position={[lx, 0.22, 0]} castShadow>
+                <boxGeometry args={[0.16, 0.44, 0.56]} />
+                <meshStandardMaterial color="#94a3b8" roughness={0.9} />
+              </mesh>
+            ))}
+          </>
+        }
+      />
       {npcProp !== 'none' && (
         <group position={[0.35, 0.46, 0.14]}>
           <AnimatedHumanNpc

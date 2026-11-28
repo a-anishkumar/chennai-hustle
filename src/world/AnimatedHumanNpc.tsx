@@ -4,6 +4,8 @@ import { useAnimations, useGLTF } from '@react-three/drei';
 import { SkeletonUtils } from 'three-stdlib';
 import * as THREE from 'three';
 import { useGameStore } from '../systems/gameStore';
+import { isSketchfabModelDownloaded } from '../config/sketchfabCatalog';
+import { SketchfabSlot } from './SketchfabModel';
 
 export type HumanNpcVariant = 'cesium' | 'soldier' | 'xbot' | 'michelle';
 export type HumanNpcAnim = 'walk' | 'run' | 'idle' | 'dance' | 'agree';
@@ -498,7 +500,7 @@ export function AnimatedHumanNpc({
     );
   }
 
-  return (
+  const fallbackRig = (
     <ChennaiHumanRig
       anim={anim}
       timeScale={timeScale}
@@ -509,4 +511,30 @@ export function AnimatedHumanNpc({
       seed={seed}
     />
   );
+
+  // Swap standing/walking NPCs for Sketchfab rigged models when downloaded locally
+  if (!sitting && prop === 'none') {
+    const sketchfabId =
+      variant === 'michelle'
+        ? 'female_pedestrian'
+        : variant === 'soldier'
+          ? 'construction_worker'
+          : seed % 4 === 1
+            ? 'female_pedestrian'
+            : 'male_pedestrian';
+    if (isSketchfabModelDownloaded(sketchfabId)) {
+      return (
+        <SketchfabSlot
+          id={sketchfabId}
+          scaleMultiplier={scale ?? 1}
+          animName={anim}
+          timeScale={timeScale}
+          maxDist={110}
+          fallback={fallbackRig}
+        />
+      );
+    }
+  }
+
+  return fallbackRig;
 }

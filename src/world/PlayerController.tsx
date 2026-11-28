@@ -8,6 +8,7 @@ import jobsConfig from '../config/jobs.json';
 import { getTerrainHeight } from './TerrainHeight';
 import { AnimatedPlayerMesh } from './AnimatedPlayerMesh';
 import { AnimatedHumanNpc } from './AnimatedHumanNpc';
+import { SketchfabSlot } from './SketchfabModel';
 import { isNightHour } from '../systems/timeUtils';
 import { audioManager } from '../audio/AudioManager';
 
@@ -394,127 +395,147 @@ export function PlayerController() {
 
         {/* Borrowed Bicycle */}
         {isCycle && (
-          <group name="Borrowed_Cycle" position={[0, 0.05, 0]}>
-            {/* Frame */}
-            <mesh position={[0, 0.55, 0]} rotation={[0.15, 0, 0]} castShadow>
-              <boxGeometry args={[0.08, 0.08, 1.15]} />
-              <meshStandardMaterial color="#0284c7" metalness={0.5} roughness={0.3} />
-            </mesh>
-            {/* Seat post */}
-            <mesh position={[0, 0.62, -0.3]} castShadow>
-              <cylinderGeometry args={[0.03, 0.03, 0.55, 6]} />
-              <meshStandardMaterial color="#94a3b8" />
-            </mesh>
-            {/* Handlebars */}
-            <mesh position={[0, 0.92, 0.48]} rotation={[0, 0, Math.PI / 2]} castShadow>
-              <cylinderGeometry args={[0.025, 0.025, 0.58, 6]} />
-              <meshStandardMaterial color="#cbd5e1" />
-            </mesh>
-            {/* Front Wheel */}
-            <mesh ref={frontWheelRef} position={[0, 0.34, 0.56]} rotation={[0, Math.PI / 2, 0]} castShadow>
-              <torusGeometry args={[0.3, 0.05, 8, 16]} />
-              <meshStandardMaterial color="#0f172a" roughness={0.9} />
-            </mesh>
-            {/* Rear Wheel */}
-            <mesh ref={rearWheelRef} position={[0, 0.34, -0.56]} rotation={[0, Math.PI / 2, 0]} castShadow>
-              <torusGeometry args={[0.3, 0.05, 8, 16]} />
-              <meshStandardMaterial color="#0f172a" roughness={0.9} />
-            </mesh>
-          </group>
+          <SketchfabSlot
+            id="bicycle"
+            fallback={
+              <group name="Borrowed_Cycle" position={[0, 0.05, 0]}>
+                {/* Frame */}
+                <mesh position={[0, 0.55, 0]} rotation={[0.15, 0, 0]} castShadow>
+                  <boxGeometry args={[0.08, 0.08, 1.15]} />
+                  <meshStandardMaterial color="#0284c7" metalness={0.5} roughness={0.3} />
+                </mesh>
+                {/* Seat post */}
+                <mesh position={[0, 0.62, -0.3]} castShadow>
+                  <cylinderGeometry args={[0.03, 0.03, 0.55, 6]} />
+                  <meshStandardMaterial color="#94a3b8" />
+                </mesh>
+                {/* Handlebars */}
+                <mesh position={[0, 0.92, 0.48]} rotation={[0, 0, Math.PI / 2]} castShadow>
+                  <cylinderGeometry args={[0.025, 0.025, 0.58, 6]} />
+                  <meshStandardMaterial color="#cbd5e1" />
+                </mesh>
+                {/* Front Wheel */}
+                <mesh ref={frontWheelRef} position={[0, 0.34, 0.56]} rotation={[0, Math.PI / 2, 0]} castShadow>
+                  <torusGeometry args={[0.3, 0.05, 8, 16]} />
+                  <meshStandardMaterial color="#0f172a" roughness={0.9} />
+                </mesh>
+                {/* Rear Wheel */}
+                <mesh ref={rearWheelRef} position={[0, 0.34, -0.56]} rotation={[0, Math.PI / 2, 0]} castShadow>
+                  <torusGeometry args={[0.3, 0.05, 8, 16]} />
+                  <meshStandardMaterial color="#0f172a" roughness={0.9} />
+                </mesh>
+              </group>
+            }
+          />
         )}
 
         {/* 125cc Scooter */}
         {isBike && (
-          <group name="Scooter_125cc" position={[0, 0.05, 0]}>
-            <mesh position={[0, 0.52, -0.05]} castShadow>
-              <boxGeometry args={[0.42, 0.36, 1.35]} />
-              <meshStandardMaterial color="#f59e0b" metalness={0.35} roughness={0.4} />
-            </mesh>
-            <mesh position={[0, 0.92, 0.52]} rotation={[-0.2, 0, 0]} castShadow>
-              <boxGeometry args={[0.28, 0.65, 0.22]} />
-              <meshStandardMaterial color="#1e293b" roughness={0.5} />
-            </mesh>
-            <mesh position={[0, 1.05, 0.65]}>
-              <sphereGeometry args={[0.1, 8, 8]} />
-              <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.6} />
-            </mesh>
-            <mesh position={[0, 1.22, 0.45]} rotation={[0, 0, Math.PI / 2]} castShadow>
-              <cylinderGeometry args={[0.03, 0.03, 0.68, 6]} />
-              <meshStandardMaterial color="#cbd5e1" />
-            </mesh>
-            <mesh position={[0, 0.28, 0.58]} rotation={[0, Math.PI / 2, 0]} castShadow>
-              <torusGeometry args={[0.24, 0.09, 8, 14]} />
-              <meshStandardMaterial color="#0f172a" roughness={0.9} />
-            </mesh>
-            <mesh position={[0, 0.28, -0.55]} rotation={[0, Math.PI / 2, 0]} castShadow>
-              <torusGeometry args={[0.24, 0.09, 8, 14]} />
-              <meshStandardMaterial color="#0f172a" roughness={0.9} />
-            </mesh>
-          </group>
+          <SketchfabSlot
+            id="scooter"
+            fallback={
+              <group name="Scooter_125cc" position={[0, 0.05, 0]}>
+                <mesh position={[0, 0.52, -0.05]} castShadow>
+                  <boxGeometry args={[0.42, 0.36, 1.35]} />
+                  <meshStandardMaterial color="#f59e0b" metalness={0.35} roughness={0.4} />
+                </mesh>
+                <mesh position={[0, 0.92, 0.52]} rotation={[-0.2, 0, 0]} castShadow>
+                  <boxGeometry args={[0.28, 0.65, 0.22]} />
+                  <meshStandardMaterial color="#1e293b" roughness={0.5} />
+                </mesh>
+                <mesh position={[0, 1.05, 0.65]}>
+                  <sphereGeometry args={[0.1, 8, 8]} />
+                  <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.6} />
+                </mesh>
+                <mesh position={[0, 1.22, 0.45]} rotation={[0, 0, Math.PI / 2]} castShadow>
+                  <cylinderGeometry args={[0.03, 0.03, 0.68, 6]} />
+                  <meshStandardMaterial color="#cbd5e1" />
+                </mesh>
+                <mesh position={[0, 0.28, 0.58]} rotation={[0, Math.PI / 2, 0]} castShadow>
+                  <torusGeometry args={[0.24, 0.09, 8, 14]} />
+                  <meshStandardMaterial color="#0f172a" roughness={0.9} />
+                </mesh>
+                <mesh position={[0, 0.28, -0.55]} rotation={[0, Math.PI / 2, 0]} castShadow>
+                  <torusGeometry args={[0.24, 0.09, 8, 14]} />
+                  <meshStandardMaterial color="#0f172a" roughness={0.9} />
+                </mesh>
+              </group>
+            }
+          />
         )}
 
         {/* Namma Auto-Rickshaw */}
         {isAuto && (
-          <group name="Namma_Auto" position={[0, 0.1, 0]}>
-            <mesh position={[0, 0.52, 0]} castShadow>
-              <boxGeometry args={[1.4, 0.72, 2.3]} />
-              <meshStandardMaterial color="#facc15" roughness={0.45} />
-            </mesh>
-            <mesh position={[0, 1.32, -0.15]} castShadow>
-              <boxGeometry args={[1.38, 0.72, 1.85]} />
-              <meshStandardMaterial color="#1e293b" roughness={0.7} />
-            </mesh>
-            {/* Windshield */}
-            <mesh position={[0, 1.05, 0.92]} rotation={[-0.25, 0, 0]}>
-              <boxGeometry args={[1.1, 0.55, 0.08]} />
-              <meshStandardMaterial color="#bae6fd" transparent opacity={0.65} />
-            </mesh>
-            {/* 3 Wheels */}
-            {[
-              [0, 0.24, 0.92],
-              [-0.68, 0.24, -0.78],
-              [0.68, 0.24, -0.78],
-            ].map(([wx, wy, wz], idx) => (
-              <mesh key={idx} position={[wx, wy, wz]} rotation={[0, Math.PI / 2, 0]} castShadow>
-                <torusGeometry args={[0.22, 0.08, 8, 12]} />
-                <meshStandardMaterial color="#0f172a" />
-              </mesh>
-            ))}
-            <mesh position={[0, 0.62, 1.18]}>
-              <sphereGeometry args={[0.14, 8, 8]} />
-              <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.5} />
-            </mesh>
-          </group>
+          <SketchfabSlot
+            id="auto_rickshaw"
+            fallback={
+              <group name="Namma_Auto" position={[0, 0.1, 0]}>
+                <mesh position={[0, 0.52, 0]} castShadow>
+                  <boxGeometry args={[1.4, 0.72, 2.3]} />
+                  <meshStandardMaterial color="#facc15" roughness={0.45} />
+                </mesh>
+                <mesh position={[0, 1.32, -0.15]} castShadow>
+                  <boxGeometry args={[1.38, 0.72, 1.85]} />
+                  <meshStandardMaterial color="#1e293b" roughness={0.7} />
+                </mesh>
+                {/* Windshield */}
+                <mesh position={[0, 1.05, 0.92]} rotation={[-0.25, 0, 0]}>
+                  <boxGeometry args={[1.1, 0.55, 0.08]} />
+                  <meshStandardMaterial color="#bae6fd" transparent opacity={0.65} />
+                </mesh>
+                {/* 3 Wheels */}
+                {[
+                  [0, 0.24, 0.92],
+                  [-0.68, 0.24, -0.78],
+                  [0.68, 0.24, -0.78],
+                ].map(([wx, wy, wz], idx) => (
+                  <mesh key={idx} position={[wx, wy, wz]} rotation={[0, Math.PI / 2, 0]} castShadow>
+                    <torusGeometry args={[0.22, 0.08, 8, 12]} />
+                    <meshStandardMaterial color="#0f172a" />
+                  </mesh>
+                ))}
+                <mesh position={[0, 0.62, 1.18]}>
+                  <sphereGeometry args={[0.14, 8, 8]} />
+                  <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.5} />
+                </mesh>
+              </group>
+            }
+          />
         )}
 
         {/* City Sedan Cab */}
         {isCab && (
-          <group name="City_Cab" position={[0, 0.1, 0]}>
-            <mesh position={[0, 0.52, 0]} castShadow>
-              <boxGeometry args={[1.8, 0.68, 3.8]} />
-              <meshStandardMaterial color="#f8fafc" roughness={0.35} metalness={0.25} />
-            </mesh>
-            <mesh position={[0, 1.06, -0.15]} castShadow>
-              <boxGeometry args={[1.55, 0.56, 2.0]} />
-              <meshStandardMaterial color="#0284c7" roughness={0.3} />
-            </mesh>
-            <mesh position={[0, 1.44, 0.1]}>
-              <boxGeometry args={[0.6, 0.2, 0.25]} />
-              <meshStandardMaterial color="#facc15" emissive="#eab308" emissiveIntensity={0.9} />
-            </mesh>
-            {/* 4 Wheels */}
-            {[
-              [-0.9, 0.28, 1.15],
-              [0.9, 0.28, 1.15],
-              [-0.9, 0.28, -1.15],
-              [0.9, 0.28, -1.15],
-            ].map(([wx, wy, wz], idx) => (
-              <mesh key={idx} position={[wx, wy, wz]} rotation={[0, Math.PI / 2, 0]} castShadow>
-                <torusGeometry args={[0.26, 0.09, 8, 12]} />
-                <meshStandardMaterial color="#0f172a" />
-              </mesh>
-            ))}
-          </group>
+          <SketchfabSlot
+            id="taxi_car"
+            fallback={
+              <group name="City_Cab" position={[0, 0.1, 0]}>
+                <mesh position={[0, 0.52, 0]} castShadow>
+                  <boxGeometry args={[1.8, 0.68, 3.8]} />
+                  <meshStandardMaterial color="#f8fafc" roughness={0.35} metalness={0.25} />
+                </mesh>
+                <mesh position={[0, 1.06, -0.15]} castShadow>
+                  <boxGeometry args={[1.55, 0.56, 2.0]} />
+                  <meshStandardMaterial color="#0284c7" roughness={0.3} />
+                </mesh>
+                <mesh position={[0, 1.44, 0.1]}>
+                  <boxGeometry args={[0.6, 0.2, 0.25]} />
+                  <meshStandardMaterial color="#facc15" emissive="#eab308" emissiveIntensity={0.9} />
+                </mesh>
+                {/* 4 Wheels */}
+                {[
+                  [-0.9, 0.28, 1.15],
+                  [0.9, 0.28, 1.15],
+                  [-0.9, 0.28, -1.15],
+                  [0.9, 0.28, -1.15],
+                ].map(([wx, wy, wz], idx) => (
+                  <mesh key={idx} position={[wx, wy, wz]} rotation={[0, Math.PI / 2, 0]} castShadow>
+                    <torusGeometry args={[0.26, 0.09, 8, 12]} />
+                    <meshStandardMaterial color="#0f172a" />
+                  </mesh>
+                ))}
+              </group>
+            }
+          />
         )}
 
         {/* Flood Rescue Boat */}

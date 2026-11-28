@@ -4,6 +4,7 @@ import { getAsphaltNormalMap, getAsphaltTexture, getChessboardTexture, getSignTe
 import { useGameStore } from '../systems/gameStore';
 import { isNightHour } from '../systems/timeUtils';
 import { AnimatedHumanNpc } from './AnimatedHumanNpc';
+import { SketchfabSlot } from './SketchfabModel';
 
 interface RoadSegmentProps {
   x: number;
@@ -376,25 +377,33 @@ export function RoadLoop() {
         )}
       </group>
 
-      {/* Streetlights with Arm & Night Point Lights */}
+      {/* Streetlights with Arm & Night Point Lights (Sketchfab Street Lamp when downloaded) */}
       {STREETLIGHT_POSITIONS.map(([lx, lz], i) => (
         <group key={i} position={[lx, 0, lz]}>
-          <mesh position={[0, 3.2, 0]} castShadow>
-            <cylinderGeometry args={[0.1, 0.14, 6.4, 8]} />
-            <meshStandardMaterial color="#64748b" metalness={0.5} roughness={0.5} />
-          </mesh>
-          <mesh position={[0.45, 6.2, 0]}>
-            <boxGeometry args={[1.0, 0.12, 0.2]} />
-            <meshStandardMaterial color="#475569" />
-          </mesh>
-          <mesh position={[0.85, 6.1, 0]}>
-            <sphereGeometry args={[0.26, 8, 8]} />
-            <meshStandardMaterial
-              color={night && !powerCut ? '#fef08a' : '#475569'}
-              emissive={night && !powerCut ? '#f59e0b' : '#000000'}
-              emissiveIntensity={night && !powerCut ? 2.8 : 0}
-            />
-          </mesh>
+          <SketchfabSlot
+            id="street_lamp"
+            maxDist={160}
+            fallback={
+              <>
+                <mesh position={[0, 3.2, 0]} castShadow>
+                  <cylinderGeometry args={[0.1, 0.14, 6.4, 8]} />
+                  <meshStandardMaterial color="#64748b" metalness={0.5} roughness={0.5} />
+                </mesh>
+                <mesh position={[0.45, 6.2, 0]}>
+                  <boxGeometry args={[1.0, 0.12, 0.2]} />
+                  <meshStandardMaterial color="#475569" />
+                </mesh>
+                <mesh position={[0.85, 6.1, 0]}>
+                  <sphereGeometry args={[0.26, 8, 8]} />
+                  <meshStandardMaterial
+                    color={night && !powerCut ? '#fef08a' : '#475569'}
+                    emissive={night && !powerCut ? '#f59e0b' : '#000000'}
+                    emissiveIntensity={night && !powerCut ? 2.8 : 0}
+                  />
+                </mesh>
+              </>
+            }
+          />
           {night && !powerCut && i % 3 === 0 && (
             <pointLight position={[0.85, 5.6, 0]} color="#fbbf24" intensity={18} distance={28} decay={2} />
           )}

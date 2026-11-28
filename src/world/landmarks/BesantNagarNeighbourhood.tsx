@@ -10,7 +10,7 @@
  */
 
 import { useMemo } from 'react';
-import { RigidBody } from '@react-three/rapier';
+import { CuboidCollider, RigidBody } from '@react-three/rapier';
 import {
   getAwningTexture,
   getBeachSandTexture,
@@ -20,6 +20,7 @@ import {
   getSignTexture,
 } from '../ProceduralTextures';
 import { AnimatedHumanNpc } from '../AnimatedHumanNpc';
+import { SketchfabSlot } from '../SketchfabModel';
 import { useGameStore } from '../../systems/gameStore';
 import { isNightHour } from '../../systems/timeUtils';
 
@@ -206,20 +207,29 @@ function ShopRow({
         const wallTex = SHOP_WALL_TEXTURES[i % SHOP_WALL_TEXTURES.length];
         return (
           <group key={i} position={[sx, 0, 0]}>
-            <RigidBody type="fixed" colliders="cuboid">
-              <mesh position={[0, 2.3, 0]} castShadow receiveShadow>
-                <boxGeometry args={[shopW - 0.15, 4.6, 6]} />
-                <meshStandardMaterial map={wallTex} roughness={0.82} />
-              </mesh>
+            <RigidBody type="fixed" colliders={false}>
+              <CuboidCollider args={[(shopW - 0.15) / 2, 2.3, 3]} position={[0, 2.3, 0]} />
             </RigidBody>
-            <mesh position={[0, 2.7, 3.25]} rotation={[0.32, 0, 0]} castShadow>
-              <boxGeometry args={[shopW - 0.25, 0.1, 2.1]} />
-              <meshStandardMaterial map={awning} />
-            </mesh>
-            <mesh position={[0, 1.2, 3.04]}>
-              <boxGeometry args={[shopW * 0.68, 2.3, 0.08]} />
-              <meshStandardMaterial color={i % 2 === 0 ? '#bae6fd' : '#64748b'} metalness={0.55} roughness={0.35} />
-            </mesh>
+            <SketchfabSlot
+              id="commercial_shop"
+              maxDist={180}
+              fallback={
+                <>
+                  <mesh position={[0, 2.3, 0]} castShadow receiveShadow>
+                    <boxGeometry args={[shopW - 0.15, 4.6, 6]} />
+                    <meshStandardMaterial map={wallTex} roughness={0.82} />
+                  </mesh>
+                  <mesh position={[0, 2.7, 3.25]} rotation={[0.32, 0, 0]} castShadow>
+                    <boxGeometry args={[shopW - 0.25, 0.1, 2.1]} />
+                    <meshStandardMaterial map={awning} />
+                  </mesh>
+                  <mesh position={[0, 1.2, 3.04]}>
+                    <boxGeometry args={[shopW * 0.68, 2.3, 0.08]} />
+                    <meshStandardMaterial color={i % 2 === 0 ? '#bae6fd' : '#64748b'} metalness={0.55} roughness={0.35} />
+                  </mesh>
+                </>
+              }
+            />
             {night && (
               <mesh position={[0, 2.45, 3.1]}>
                 <boxGeometry args={[shopW * 0.55, 0.12, 0.12]} />
@@ -394,29 +404,38 @@ function BesantNagarChurch({
   );
 }
 
-/** Graceful multi-frond coconut palm */
+/** Graceful multi-frond coconut palm (swaps to Sketchfab Coconut Palm GLB when downloaded) */
 function CoconutPalm({ x, z, h = 9 }: { x: number; z: number; h?: number }) {
   return (
     <group position={[x, 0, z]}>
-      <mesh position={[0, h * 0.5, 0]} castShadow>
-        <cylinderGeometry args={[0.16, 0.28, h, 7]} />
-        <meshStandardMaterial color="#92400e" roughness={0.92} />
-      </mesh>
-      {[0, 1, 2, 3, 4, 5].map((i) => {
-        const a = (i / 6) * Math.PI * 2;
-        return (
-          <mesh key={i} position={[Math.cos(a) * 1.15, h, Math.sin(a) * 1.15]} rotation={[0.52, -a, 0.15]} castShadow>
-            <boxGeometry args={[0.38, 0.08, 3.1]} />
-            <meshStandardMaterial color="#15803d" roughness={0.78} />
-          </mesh>
-        );
-      })}
-      {[0, 1, 2].map((i) => (
-        <mesh key={i} position={[Math.cos(i * 2.1) * 0.48, h - 0.35, Math.sin(i * 2.1) * 0.48]}>
-          <sphereGeometry args={[0.2, 8, 6]} />
-          <meshStandardMaterial color="#78350f" roughness={0.85} />
-        </mesh>
-      ))}
+      <SketchfabSlot
+        id="coconut_palm"
+        scaleMultiplier={h / 9}
+        maxDist={220}
+        fallback={
+          <>
+            <mesh position={[0, h * 0.5, 0]} castShadow>
+              <cylinderGeometry args={[0.16, 0.28, h, 7]} />
+              <meshStandardMaterial color="#92400e" roughness={0.92} />
+            </mesh>
+            {[0, 1, 2, 3, 4, 5].map((i) => {
+              const a = (i / 6) * Math.PI * 2;
+              return (
+                <mesh key={i} position={[Math.cos(a) * 1.15, h, Math.sin(a) * 1.15]} rotation={[0.52, -a, 0.15]} castShadow>
+                  <boxGeometry args={[0.38, 0.08, 3.1]} />
+                  <meshStandardMaterial color="#15803d" roughness={0.78} />
+                </mesh>
+              );
+            })}
+            {[0, 1, 2].map((i) => (
+              <mesh key={i} position={[Math.cos(i * 2.1) * 0.48, h - 0.35, Math.sin(i * 2.1) * 0.48]}>
+                <sphereGeometry args={[0.2, 8, 6]} />
+                <meshStandardMaterial color="#78350f" roughness={0.85} />
+              </mesh>
+            ))}
+          </>
+        }
+      />
     </group>
   );
 }
@@ -476,12 +495,20 @@ function TeaKadai({ x, z, rotY = 0, night = false }: { x: number; z: number; rot
         <boxGeometry args={[3.4, 0.14, 0.6]} />
         <meshStandardMaterial color="#cbd5e1" metalness={0.75} roughness={0.22} />
       </mesh>
-      {[-0.65, 0.65].map((fx, fi) => (
-        <mesh key={fi} position={[fx, 1.38, 1.35]}>
-          <cylinderGeometry args={[0.13, 0.11, 0.54, 8]} />
-          <meshStandardMaterial color="#eab308" metalness={0.75} roughness={0.25} />
-        </mesh>
-      ))}
+      <SketchfabSlot
+        id="tea_boiler"
+        position={[0, 0, 1.35]}
+        fallback={
+          <>
+            {[-0.65, 0.65].map((fx, fi) => (
+              <mesh key={fi} position={[fx, 1.38, 1.35]}>
+                <cylinderGeometry args={[0.13, 0.11, 0.54, 8]} />
+                <meshStandardMaterial color="#eab308" metalness={0.75} roughness={0.25} />
+              </mesh>
+            ))}
+          </>
+        }
+      />
       {night && <pointLight position={[0, 2.5, 2.1]} color="#fde68a" intensity={8} distance={12} decay={2} />}
       {/* Tea vendor standing outside counter */}
       <group position={[0.9, 0, 1.95]} rotation={[0, Math.PI, 0]}>

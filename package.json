@@ -8,7 +8,9 @@
     "server": "node server/index.js",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sketchfab:sync": "node scripts/syncSketchfabManifest.mjs",
+    "sketchfab:download": "node scripts/downloadSketchfabAssets.mjs"
   },
   "dependencies": {
     "@colyseus/ws-transport": "^0.18.5",

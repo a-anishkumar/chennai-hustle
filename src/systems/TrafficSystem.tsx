@@ -11,6 +11,7 @@ import {
   createCarGeometries,
 } from '../world/VehicleGeometries';
 import { OnlineModel } from '../world/OnlineModel';
+import { SketchfabSlot } from '../world/SketchfabModel';
 
 type VehicleKind = 'auto' | 'bus' | 'bike' | 'car';
 
@@ -393,15 +394,23 @@ export function TrafficSystem() {
         const green = isNsCorner ? nsGreen : !nsGreen;
         return (
           <group key={`sig_${idx}`} position={[sx, 0, sz]}>
-            <mesh position={[0, 2.6, 0]} castShadow>
-              <cylinderGeometry args={[0.1, 0.14, 5.2, 8]} />
-              <meshStandardMaterial color="#334155" metalness={0.5} roughness={0.5} />
-            </mesh>
-            <mesh position={[0, 5.2, 0]} castShadow>
-              <boxGeometry args={[0.55, 1.4, 0.45]} />
-              <meshStandardMaterial color="#0f172a" roughness={0.4} />
-            </mesh>
-            {/* Red Light */}
+            <SketchfabSlot
+              id="traffic_signal"
+              maxDist={220}
+              fallback={
+                <group>
+                  <mesh position={[0, 2.6, 0]} castShadow>
+                    <cylinderGeometry args={[0.1, 0.14, 5.2, 8]} />
+                    <meshStandardMaterial color="#334155" metalness={0.5} roughness={0.5} />
+                  </mesh>
+                  <mesh position={[0, 5.2, 0]} castShadow>
+                    <boxGeometry args={[0.55, 1.4, 0.45]} />
+                    <meshStandardMaterial color="#0f172a" roughness={0.4} />
+                  </mesh>
+                </group>
+              }
+            />
+            {/* Active Functional Red / Green Signal Bulbs */}
             <mesh position={[0, 5.55, 0.24]}>
               <sphereGeometry args={[0.15, 8, 8]} />
               <meshStandardMaterial
@@ -410,7 +419,6 @@ export function TrafficSystem() {
                 emissiveIntensity={green ? 0 : 2.6}
               />
             </mesh>
-            {/* Green Light */}
             <mesh position={[0, 4.9, 0.24]}>
               <sphereGeometry args={[0.15, 8, 8]} />
               <meshStandardMaterial
@@ -467,9 +475,9 @@ export function TrafficSystem() {
         <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.5} />
       </instancedMesh>
 
-      {/* Online CC0 Delivery Truck Driving on Loop */}
+      {/* Delivery Van Driving on Loop (Sketchfab Shvan '92 when available, else Khronos Truck) */}
       <group ref={heroTruckRef}>
-        <OnlineModel url={MILK_TRUCK_URL} scale={1.15} />
+        <SketchfabSlot id="delivery_truck" maxDist={260} fallback={<OnlineModel url={MILK_TRUCK_URL} scale={1.15} />} />
       </group>
 
       {/* Police Patrol SUV */}
@@ -508,16 +516,24 @@ export function TrafficSystem() {
 
       {/* Yellow City Taxi */}
       <group ref={taxiRef}>
-        <mesh geometry={geos.car.body} castShadow>
-          <meshStandardMaterial color="#facc15" roughness={0.35} />
-        </mesh>
-        <mesh geometry={geos.car.trim}>
-          <meshStandardMaterial color="#0f172a" />
-        </mesh>
-        <mesh position={[0, 1.36, 0]}>
-          <boxGeometry args={[0.6, 0.18, 0.24]} />
-          <meshStandardMaterial color="#fef08a" emissive="#eab308" emissiveIntensity={1.2} />
-        </mesh>
+        <SketchfabSlot
+          id="taxi_car"
+          maxDist={260}
+          fallback={
+            <>
+              <mesh geometry={geos.car.body} castShadow>
+                <meshStandardMaterial color="#facc15" roughness={0.35} />
+              </mesh>
+              <mesh geometry={geos.car.trim}>
+                <meshStandardMaterial color="#0f172a" />
+              </mesh>
+              <mesh position={[0, 1.36, 0]}>
+                <boxGeometry args={[0.6, 0.18, 0.24]} />
+                <meshStandardMaterial color="#fef08a" emissive="#eab308" emissiveIntensity={1.2} />
+              </mesh>
+            </>
+          }
+        />
       </group>
 
       {/* Metro Water Tanker Truck */}
@@ -546,45 +562,77 @@ export function TrafficSystem() {
 
       {/* R15 Blue Sportbike */}
       <group ref={r15Ref}>
-        <mesh geometry={geos.bike.body} castShadow>
-          <meshStandardMaterial color="#1d4ed8" metalness={0.4} roughness={0.3} />
-        </mesh>
-        <mesh geometry={geos.bike.trim}>
-          <meshStandardMaterial color="#0f172a" />
-        </mesh>
+        <SketchfabSlot
+          id="motorcycle"
+          maxDist={220}
+          fallback={
+            <>
+              <mesh geometry={geos.bike.body} castShadow>
+                <meshStandardMaterial color="#1d4ed8" metalness={0.4} roughness={0.3} />
+              </mesh>
+              <mesh geometry={geos.bike.trim}>
+                <meshStandardMaterial color="#0f172a" />
+              </mesh>
+            </>
+          }
+        />
       </group>
 
       {/* KTM RC Orange/Black Sportbike */}
       <group ref={ktmRef}>
-        <mesh geometry={geos.bike.body} castShadow>
-          <meshStandardMaterial color="#f97316" metalness={0.35} roughness={0.3} />
-        </mesh>
-        <mesh geometry={geos.bike.trim}>
-          <meshStandardMaterial color="#111827" />
-        </mesh>
+        <SketchfabSlot
+          id="motorcycle"
+          maxDist={220}
+          fallback={
+            <>
+              <mesh geometry={geos.bike.body} castShadow>
+                <meshStandardMaterial color="#f97316" metalness={0.35} roughness={0.3} />
+              </mesh>
+              <mesh geometry={geos.bike.trim}>
+                <meshStandardMaterial color="#111827" />
+              </mesh>
+            </>
+          }
+        />
       </group>
 
       {/* KTM Duke Naked Sportbike */}
       <group ref={dukeRef}>
-        <mesh geometry={geos.bike.body} castShadow>
-          <meshStandardMaterial color="#fb923c" roughness={0.35} />
-        </mesh>
-        <mesh geometry={geos.bike.trim}>
-          <meshStandardMaterial color="#f8fafc" />
-        </mesh>
+        <SketchfabSlot
+          id="scooter"
+          maxDist={220}
+          fallback={
+            <>
+              <mesh geometry={geos.bike.body} castShadow>
+                <meshStandardMaterial color="#fb923c" roughness={0.35} />
+              </mesh>
+              <mesh geometry={geos.bike.trim}>
+                <meshStandardMaterial color="#f8fafc" />
+              </mesh>
+            </>
+          }
+        />
       </group>
 
       {/* Coastal Route MTC Beach Shuttle (Marina <-> Lighthouse <-> Elliot's Beach) */}
       <group ref={coastBusRef}>
-        <mesh geometry={geos.bus.body} castShadow>
-          <meshStandardMaterial color="#2563eb" roughness={0.5} />
-        </mesh>
-        <mesh geometry={geos.bus.trim}>
-          <meshStandardMaterial color="#0f172a" roughness={0.6} />
-        </mesh>
-        <mesh geometry={geos.bus.lights}>
-          <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.4} />
-        </mesh>
+        <SketchfabSlot
+          id="mtc_bus"
+          maxDist={280}
+          fallback={
+            <>
+              <mesh geometry={geos.bus.body} castShadow>
+                <meshStandardMaterial color="#2563eb" roughness={0.5} />
+              </mesh>
+              <mesh geometry={geos.bus.trim}>
+                <meshStandardMaterial color="#0f172a" roughness={0.6} />
+              </mesh>
+              <mesh geometry={geos.bus.lights}>
+                <meshStandardMaterial color="#fef08a" emissive="#fde047" emissiveIntensity={1.4} />
+              </mesh>
+            </>
+          }
+        />
       </group>
 
       {honkBubble && (

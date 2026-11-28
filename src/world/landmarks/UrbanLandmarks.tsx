@@ -3,6 +3,7 @@ import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { getAwningTexture, getSignTexture } from '../ProceduralTextures';
 import { OnlineModel } from '../OnlineModel';
+import { SketchfabSlot } from '../SketchfabModel';
 
 const DUCK_URL =
   'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Duck/glTF-Binary/Duck.glb';
@@ -104,16 +105,25 @@ export function UrbanLandmarks() {
             <meshStandardMaterial color="#fef3c7" />
           </mesh>
         </RigidBody>
-        {/* Tiered Gopuram Tower */}
-        {[0, 1, 2, 3, 4].map((tier) => (
-          <mesh key={tier} position={[0, 3 + tier * 3.8, 12]} castShadow>
-            <boxGeometry args={[12 - tier * 1.8, 3.8, 7 - tier * 1.0]} />
-            <meshStandardMaterial
-              color={['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#fde047'][tier]}
-              roughness={0.7}
-            />
-          </mesh>
-        ))}
+        {/* Tiered Gopuram Tower (replaced by Sketchfab South Indian Temple Kit when downloaded) */}
+        <SketchfabSlot
+          id="hindu_temple"
+          position={[0, 0, 12]}
+          maxDist={260}
+          fallback={
+            <>
+              {[0, 1, 2, 3, 4].map((tier) => (
+                <mesh key={tier} position={[0, 3 + tier * 3.8, 12]} castShadow>
+                  <boxGeometry args={[12 - tier * 1.8, 3.8, 7 - tier * 1.0]} />
+                  <meshStandardMaterial
+                    color={['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#fde047'][tier]}
+                    roughness={0.7}
+                  />
+                </mesh>
+              ))}
+            </>
+          }
+        />
         {/* Stepped Temple Tank */}
         <mesh position={[0, 0.06, -4]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[24, 20]} />

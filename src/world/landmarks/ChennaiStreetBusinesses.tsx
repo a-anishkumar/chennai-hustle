@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { RigidBody } from '@react-three/rapier';
 import { getAwningTexture, getSignTexture } from '../ProceduralTextures';
 import { AnimatedHumanNpc } from '../AnimatedHumanNpc';
+import { SketchfabSlot } from '../SketchfabModel';
 
 interface StallSpec {
   id: string;
@@ -162,17 +163,26 @@ export function ChennaiStreetBusinesses() {
         </group>
       ))}
 
-      {/* Roadside Municipal Dustbins (Green & Blue) */}
+      {/* Roadside Municipal Dustbins (Green & Blue — Sketchfab Garbage Bin when downloaded) */}
       {DUSTBINS.map(([dx, dz], i) => (
         <group key={`bin_${i}`} position={[dx, 0, dz]}>
-          <mesh position={[-0.45, 0.5, 0]} castShadow>
-            <cylinderGeometry args={[0.32, 0.28, 1.0, 10]} />
-            <meshStandardMaterial color="#16a34a" />
-          </mesh>
-          <mesh position={[0.45, 0.5, 0]} castShadow>
-            <cylinderGeometry args={[0.32, 0.28, 1.0, 10]} />
-            <meshStandardMaterial color="#2563eb" />
-          </mesh>
+          <SketchfabSlot
+            id="dustbin"
+            position={[0, 0, 0]}
+            maxDist={140}
+            fallback={
+              <>
+                <mesh position={[-0.45, 0.5, 0]} castShadow>
+                  <cylinderGeometry args={[0.32, 0.28, 1.0, 10]} />
+                  <meshStandardMaterial color="#16a34a" />
+                </mesh>
+                <mesh position={[0.45, 0.5, 0]} castShadow>
+                  <cylinderGeometry args={[0.32, 0.28, 1.0, 10]} />
+                  <meshStandardMaterial color="#2563eb" />
+                </mesh>
+              </>
+            }
+          />
         </group>
       ))}
 
@@ -266,32 +276,38 @@ export function ChennaiStreetBusinesses() {
               <meshStandardMaterial color={c.color} roughness={0.65} />
             </mesh>
           </RigidBody>
-          {/* Cart Wheels */}
-          {[
-            [-1.05, 0.24, 0.68],
-            [1.05, 0.24, 0.68],
-            [-1.05, 0.24, -0.68],
-            [1.05, 0.24, -0.68],
-          ].map(([wx, wy, wz], wi) => (
-            <mesh key={wi} position={[wx, wy, wz]} rotation={[Math.PI / 2, 0, 0]}>
-              <cylinderGeometry args={[0.24, 0.24, 0.1, 10]} />
-              <meshStandardMaterial color="#0f172a" />
-            </mesh>
-          ))}
-          {/* Glass Display Box & Glowing Warm Counter */}
-          <mesh position={[0, 1.45, 0.15]}>
-            <boxGeometry args={[1.8, 0.5, 0.8]} />
-            <meshStandardMaterial color="#fef08a" emissive="#f59e0b" emissiveIntensity={0.35} transparent opacity={0.75} />
-          </mesh>
-          {/* Cart Umbrella Pole & Canopy */}
-          <mesh position={[0, 1.9, -0.25]}>
-            <cylinderGeometry args={[0.05, 0.05, 2.2, 8]} />
-            <meshStandardMaterial color="#94a3b8" />
-          </mesh>
-          <mesh position={[0, 2.95, -0.15]} castShadow>
-            <coneGeometry args={[1.85, 0.55, 8]} />
-            <meshStandardMaterial color={c.umbrella} roughness={0.7} />
-          </mesh>
+          {/* Glass Display Box, Wheels & Umbrella (replaced by Sketchfab Food Cart when downloaded) */}
+          <SketchfabSlot
+            id="food_cart"
+            maxDist={160}
+            fallback={
+              <>
+                {[
+                  [-1.05, 0.24, 0.68],
+                  [1.05, 0.24, 0.68],
+                  [-1.05, 0.24, -0.68],
+                  [1.05, 0.24, -0.68],
+                ].map(([wx, wy, wz], wi) => (
+                  <mesh key={wi} position={[wx, wy, wz]} rotation={[Math.PI / 2, 0, 0]}>
+                    <cylinderGeometry args={[0.24, 0.24, 0.1, 10]} />
+                    <meshStandardMaterial color="#0f172a" />
+                  </mesh>
+                ))}
+                <mesh position={[0, 1.45, 0.15]}>
+                  <boxGeometry args={[1.8, 0.5, 0.8]} />
+                  <meshStandardMaterial color="#fef08a" emissive="#f59e0b" emissiveIntensity={0.35} transparent opacity={0.75} />
+                </mesh>
+                <mesh position={[0, 1.9, -0.25]}>
+                  <cylinderGeometry args={[0.05, 0.05, 2.2, 8]} />
+                  <meshStandardMaterial color="#94a3b8" />
+                </mesh>
+                <mesh position={[0, 2.95, -0.15]} castShadow>
+                  <coneGeometry args={[1.85, 0.55, 8]} />
+                  <meshStandardMaterial color={c.umbrella} roughness={0.7} />
+                </mesh>
+              </>
+            }
+          />
           {/* Tamil + English Signboard */}
           <mesh position={[0, 2.2, 0.68]}>
             <boxGeometry args={[2.45, 0.62, 0.12]} />

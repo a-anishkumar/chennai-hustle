@@ -1,0 +1,31 @@
+{
+  "generatedAt": "2026-11-28T07:24:29.898Z",
+  "available": {
+    "auto_rickshaw": false,
+    "mtc_bus": false,
+    "scooter": false,
+    "motorcycle": false,
+    "taxi_car": false,
+    "bicycle": false,
+    "delivery_truck": false,
+    "male_pedestrian": false,
+    "female_pedestrian": false,
+    "police_officer": false,
+    "construction_worker": false,
+    "indian_shop": false,
+    "commercial_shop": false,
+    "apartment_block": false,
+    "hindu_temple": false,
+    "coconut_palm": false,
+    "coconut_palm_lod": false,
+    "food_cart": false,
+    "tea_boiler": false,
+    "park_bench": false,
+    "street_lamp": false,
+    "traffic_signal": false,
+    "utility_pole": false,
+    "dustbin": false,
+    "billboard": false
+  },
+  "resolvedPaths": {}
+}
